@@ -1,4 +1,4 @@
-# AGNT v1.32.3-staging — Teams v2
+# AGNT v1.32.4-staging — Teams v2
 
 STAGING ONLY. Built from the stable pre-Teams v1.30.21 source. This package deliberately contains no production Firebase credentials.
 

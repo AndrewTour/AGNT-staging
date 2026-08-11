@@ -4,7 +4,7 @@ import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, s
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, writeBatch, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
 const stagingBuildMarker=document.getElementById('stagingBuildMarker');
-if(stagingBuildMarker)stagingBuildMarker.textContent='STAGING v1.32.3 · module loaded';
+if(stagingBuildMarker)stagingBuildMarker.textContent='STAGING v1.32.4 · module loaded';
 
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -265,7 +265,15 @@ function leaderboardPayload(){
   return{uid,name:displayAgentName(),email:currentUser?.email||'',date:k,activeToday:isWorkDayKey(k),workDays:[...workDays],calls:d.calls,connects:d.connects,data:d.data,knockMinutes,score:completion(k),targets:{calls:targets.calls,connects:targets.connects,data:targets.data,knock:knockTarget},appointments:appointmentCountsForDate(k),appointmentDetails:leaderboardAppointmentDetailsForDate(k),dailyHistory:recentDailyHistory(),weekHistory:recentWeekHistory(),clientUpdatedAt:Date.now(),updatedAt:serverTimestamp()}
 }
 function leaderboardSignature(payload){const clean={...payload};delete clean.clientUpdatedAt;delete clean.updatedAt;return JSON.stringify(clean)}
-function scheduleLeaderboardPublish(){if(!cloud||!db||!uid)return;clearTimeout(leaderboardPublishTimer);leaderboardPublishTimer=setTimeout(()=>{publishLeaderboard();publishTeamLeaderboard()},180)}
+function scheduleLeaderboardPublish(){
+  if(!cloud||!db||!uid)return;
+  if(accountMode==='solo'){
+    leaderboardEntries=[leaderboardPayload()];
+    renderLeaderboard();
+  }
+  clearTimeout(leaderboardPublishTimer);
+  leaderboardPublishTimer=setTimeout(()=>{publishLeaderboard();publishTeamLeaderboard()},180);
+}
 async function publishLeaderboard(){if(!cloud||!db||!uid)return;const payload=leaderboardPayload(),signature=leaderboardSignature(payload);if(signature===lastLeaderboardSignature){if($('#leaderboardStatus'))$('#leaderboardStatus').textContent='LIVE';return}beginSyncOperation();try{await setDoc(doc(db,'leaderboard',uid),payload,{merge:true});lastLeaderboardSignature=signature;if($('#leaderboardStatus'))$('#leaderboardStatus').textContent='LIVE';endSyncOperation()}catch(err){console.error('Leaderboard publish failed',err);endSyncOperation({error:true});if($('#leaderboardStatus'))$('#leaderboardStatus').textContent='SYNC ERROR'}}
 async function persistDayToCloud(k,clean,{quiet=false}={}){
   if(!cloud||!db||!uid)return;
