@@ -1,6 +1,6 @@
 // AGNT STAGING Firebase configuration.
-// STAGING ONLY — do not replace production firebase-config.js with this file.
-window.AGNT_FIREBASE_CONFIG = {
+// STAGING ONLY — do not use this file in production.
+export const firebaseConfig = {
   apiKey: "AIzaSyANgHpxc_B6EjpJ0woAaeIK90B31_ANVuY",
   authDomain: "agnt-staging-cb6ce.firebaseapp.com",
   projectId: "agnt-staging-cb6ce",

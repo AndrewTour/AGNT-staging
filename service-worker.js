@@ -1,5 +1,5 @@
-const CACHE='agnt-staging-teams-v2-1.32.1';
-const ASSETS=['./','./index.html','./styles.css?v=1.32.1-staging','./app.js?v=1.32.1-staging','./firebase-config.js','./manifest.json','./icons/icon-192.png','./icons/icon-512.png'];
+const CACHE='agnt-staging-teams-v2-1.32.2';
+const ASSETS=['./','./index.html','./styles.css?v=1.32.2-staging','./app.js?v=1.32.2-staging','./firebase-config.js','./manifest.json','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
