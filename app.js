@@ -4,7 +4,7 @@ import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, s
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, writeBatch, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
 const stagingBuildMarker=document.getElementById('stagingBuildMarker');
-if(stagingBuildMarker)stagingBuildMarker.textContent='STAGING v1.32.4 · module loaded';
+if(stagingBuildMarker)stagingBuildMarker.textContent='STAGING v1.32.5 · module loaded';
 
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -1593,7 +1593,7 @@ function renderMondayReview(){
 }
 function renderLeaderboard(){
   const date=todayKey(),rows=sortedTodayLeaderboard(),weeklyRows=currentWeekLeaderboardRows();
-  $('#leaderboardStatus').textContent=!cloud?'DEVICE ONLY':accountMode==='team'?(teamLayerStatus==='error'?'TEAM ERROR':teamLayerStatus==='cached'?'TEAM CACHED':'TEAM LIVE'):accountMode==='solo'?'SOLO':'PRIVATE';
+  $('#leaderboardStatus').textContent=!cloud?'DEVICE ONLY':accountMode==='team'?(teamLayerStatus==='error'?'TEAM ERROR':teamLayerStatus==='cached'?'TEAM CACHED':'TEAM LIVE'):accountMode==='solo'?'SOLO':teamLayerStatus==='connecting'?'TEAM LOADING':'PRIVATE';
   const meIndex=rows.findIndex(r=>r.uid===uid),me=meIndex>=0?rows[meIndex]:null,myScore=me?.score??completion(date),dailyLeader=rows[0]||null,weeklyLeader=weeklyRows[0]||null,leaderScore=dailyLeader?.score||0,gap=rows.length?Math.max(0,leaderScore-myScore):0;
   const dailyLeaderName=dailyLeader?.name||dailyLeader?.email?.split('@')[0]||'—',weeklyLeaderName=weeklyLeader?.name||weeklyLeader?.email?.split('@')[0]||'—';
   if($('#leaderboardRing'))$('#leaderboardRing').style.setProperty('--score',Math.max(0,Math.min(100,leaderScore)));
@@ -2559,6 +2559,7 @@ function renderTeamSettings(){
   setup?.classList.toggle('hidden',accountMode==='team');
   if(accountMode==='team'&&teamId){mode.textContent='Team';name.textContent=teamName||'Team';role.textContent=teamRole==='owner'?'Team owner':'Team member';code.textContent=teamRole==='owner'&&teamJoinCode?`Join code: ${teamJoinCode}`:'';status.textContent=teamLayerStatus==='error'?teamLayerError:'Team leaderboard isolated from core sync.';return}
   if(accountMode==='solo'){mode.textContent='Solo';name.textContent='Solo experience';role.textContent='Only your own leaderboard is shown.';code.textContent='';status.textContent='Core sync remains unchanged.';return}
+  if(teamLayerStatus==='connecting'){mode.textContent='Checking account';name.textContent='Loading team membership…';role.textContent='Your normal AGNT sync is active while this loads.';code.textContent='';status.textContent='Team status is being verified.';return}
   mode.textContent='Not assigned';name.textContent='Set up Solo or Team';role.textContent='Existing accounts are not migrated automatically.';code.textContent='';status.textContent=teamLayerError||'Your normal AGNT sync is active.';
 }
 
@@ -2569,6 +2570,7 @@ function renderAll(){renderDayViews();renderProspecting();const reviewButton=$('
 
 async function startCloud(user,{promptTeamSetup=false}={}){
   unsubDays?.();unsubProfile?.();unsubLeaderboard?.();unsubProspecting?.();currentUser=user;uid=user.uid;loadBuyerSession();cloud=true;loadLocal(uid);await finaliseExpiredTimers();
+  setTeamLayerStatus('connecting');
   syncHasError=false;pendingSyncOperations=0;setSync('','Connecting');clearTimeout(syncTimer);syncTimer=setTimeout(()=>{if($('#syncBadge').dataset.label==='Connecting')refreshSyncStatus()},3500);
   leaderboardEntries=[leaderboardPayload()];renderLeaderboard();
   unsubDays=onSnapshot(collection(db,'users',uid,'days'),{includeMetadataChanges:true},snap=>{
@@ -2591,13 +2593,23 @@ async function startCloud(user,{promptTeamSetup=false}={}){
     if(Array.isArray(profile.workDays)&&profile.workDays.length&&JSON.stringify(normaliseWorkDays(profile.workDays))!==JSON.stringify(workDays)){workDays=normaliseWorkDays(profile.workDays);changed=true}
     if(profile.name&&profile.name!==agentName){agentName=profile.name;changed=true}
     const profileTeamId=String(profile.teamId||'');
-    if(profile.accountMode==='team'&&profileTeamId&&(accountMode!=='team'||teamId!==profileTeamId))initialiseTeamLayer(profile);
-    else if(profile.accountMode==='solo'&&accountMode!=='solo')initialiseTeamLayer(profile);
+    if(teamLayerStatus!=='connecting'){
+      if(profile.accountMode==='team'&&profileTeamId&&(accountMode!=='team'||teamId!==profileTeamId))initialiseTeamLayer(profile);
+      else if(profile.accountMode==='solo'&&accountMode!=='solo')initialiseTeamLayer(profile);
+    }
     if(changed){saveLocal();renderAll();scheduleLeaderboardPublish()}
   },err=>console.error(err));
   unsubProspecting=onSnapshot(doc(db,'users',uid,'prospecting','state'),{includeMetadataChanges:true},snap=>{if(snap.exists()){const data=snap.data(),nextProspects=normaliseProspects(data.prospects),nextInteractions=normaliseProspectInteractions(data.interactions),hasMarketEvents=Object.prototype.hasOwnProperty.call(data,'marketPulseEvents'),cloudMarketEvents=hasMarketEvents?normaliseMarketPulseEvents(data.marketPulseEvents):[],cloudSignature=prospectingSignature(nextProspects,nextInteractions,cloudMarketEvents);if(!snap.metadata.hasPendingWrites)lastProspectingSignature=cloudSignature;const nextMarketEvents=hasMarketEvents?cloudMarketEvents:normaliseMarketPulseEvents(marketPulseEvents),nextSignature=prospectingSignature(nextProspects,nextInteractions,nextMarketEvents);if(nextSignature!==prospectingSignature()){prospects=nextProspects;prospectInteractions=nextInteractions;marketPulseEvents=nextMarketEvents;saveLocal();renderProspecting();renderMarketPulse()}if(!hasMarketEvents&&nextMarketEvents.length&&!snap.metadata.hasPendingWrites&&!snap.metadata.fromCache){queueProspectingSave().catch(err=>console.error('Hot Spotting migration failed',err))}}},err=>{console.error('Prospecting sync failed',err);toast('Prospecting data is saved locally. Cloud sync needs attention.')});
   refreshSyncStatus();showApp();scheduleLeaderboardPublish();
-  try{const profileSnap=await getDoc(doc(db,'users',uid)),profile=profileSnap.exists()?profileSnap.data():{};await initialiseTeamLayer(profile,{promptNew:promptTeamSetup})}catch(err){console.error('Team profile read failed',err);setTeamLayerStatus('error','Team setup could not load. Core sync is unaffected.')}
+  try{
+    const profileSnap=await getDoc(doc(db,'users',uid));
+    const profile=profileSnap.exists()?profileSnap.data():{};
+    await initialiseTeamLayer(profile,{promptNew:promptTeamSetup});
+  }catch(err){
+    console.error('Team profile read failed',err);
+    clearVerifiedTeamState();
+    setTeamLayerStatus('error','Team setup could not load. Core sync is unaffected.');
+  }
 }
 
 function showApp(){setAuthScreenActive(false);$('#authGate').classList.add('hidden');$('#app').classList.remove('hidden');$('#appointmentDatePicker').value=appointmentDate;restoreProspectingSessionState();restoreKnockingSessionState();renderKnockingSession();renderAll();ensureTick();showLaunchExperience()}
