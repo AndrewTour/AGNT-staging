@@ -9,12 +9,12 @@
 <meta name="apple-mobile-web-app-title" content="AGNT">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css?v=1.32.2-staging">
+<link rel="stylesheet" href="styles.css?v=1.32.3-staging">
 <title>AGNT</title>
 </head>
 <body>
 <div id="authGate" class="auth-gate">
-  <form id="authForm" class="auth-card glass">
+  <form id="authForm" class="auth-card glass" onsubmit="return false;">
     <div class="brand-mark">AGNT</div>
     <h1>AGNT</h1>
     <p>Sign in once and your data stays live across your devices.</p>
@@ -23,7 +23,7 @@
     <button class="primary" type="submit">Sign in</button>
     <button id="createAccount" class="secondary" type="button">Create account</button>
     <button id="localMode" class="text-btn" type="button">Continue on this device only</button>
-    <small id="authMessage"></small>
+    <small id="authMessage"></small><small id="stagingBuildMarker" style="display:block;margin-top:8px;opacity:.65">STAGING v1.32.3 · booting…</small>
   </form>
 </div>
 
@@ -897,6 +897,25 @@ Andrew Tour | McGrath</textarea></label>
 </div>
 
 <div id="toast" class="toast"></div>
-<script type="module" src="app.js?v=1.32.2-staging"></script>
+
+<script>
+(function(){
+  const show=function(prefix,value){
+    const el=document.getElementById('authMessage');
+    if(!el)return;
+    const message=value && value.message ? value.message : String(value||'Unknown error');
+    el.textContent=prefix+message;
+  };
+  window.addEventListener('error',function(event){
+    show('BOOT ERROR: ', event.error || event.message);
+  });
+  window.addEventListener('unhandledrejection',function(event){
+    show('ASYNC ERROR: ', event.reason);
+  });
+  window.__AGNT_STAGING_BOOT_DIAGNOSTICS__=true;
+})();
+</script>
+
+<script type="module" src="app.js?v=1.32.3-staging"></script>
 </body>
 </html>

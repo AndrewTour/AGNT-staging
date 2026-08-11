@@ -3,6 +3,10 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/fireba
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, writeBatch, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
+const stagingBuildMarker=document.getElementById('stagingBuildMarker');
+if(stagingBuildMarker)stagingBuildMarker.textContent='STAGING v1.32.3 · module loaded';
+
+
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const DEFAULT_WORK_DAYS=[1,2,4,5];
 let workDays=[...DEFAULT_WORK_DAYS];
@@ -2629,8 +2633,8 @@ function shiftHeaderDate(delta){
 
 function openCalendar(){$('#calendarModal').classList.add('open');renderCalendar()}
 
-$('#authForm').addEventListener('submit',async e=>{e.preventDefault();showAuthMessage('');try{await signInWithEmailAndPassword(auth,$('#email').value,$('#password').value)}catch(err){showAuthMessage(err.message)}});
-$('#createAccount').onclick=async()=>{showAuthMessage('');creatingAccount=true;try{const credential=await createUserWithEmailAndPassword(auth,$('#email').value,$('#password').value);newAccountUidPending=credential.user.uid;try{await setDoc(doc(db,'users',credential.user.uid),{teamOnboardingSuggested:true,teamSchemaVersion:TEAM_SCHEMA_VERSION,email:credential.user.email||'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true})}catch(err){console.error('Team onboarding marker failed',err)}creatingAccount=false;await startCloud(credential.user,{promptTeamSetup:true})}catch(err){creatingAccount=false;showAuthMessage(err.message)}};
+$('#authForm').addEventListener('submit',async e=>{e.preventDefault();showAuthMessage('Signing in…');try{await signInWithEmailAndPassword(auth,$('#email').value,$('#password').value)}catch(err){console.error('Sign in failed',err);showAuthMessage(`SIGN IN ERROR: ${err.code||''} ${err.message||err}`.trim())}});
+$('#createAccount').onclick=async()=>{showAuthMessage('Creating account…');creatingAccount=true;try{const credential=await createUserWithEmailAndPassword(auth,$('#email').value,$('#password').value);newAccountUidPending=credential.user.uid;try{await setDoc(doc(db,'users',credential.user.uid),{teamOnboardingSuggested:true,teamSchemaVersion:TEAM_SCHEMA_VERSION,email:credential.user.email||'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true})}catch(err){console.error('Team onboarding marker failed',err)}creatingAccount=false;await startCloud(credential.user,{promptTeamSetup:true})}catch(err){creatingAccount=false;showAuthMessage(err.message)}};
 
 $('#teamChoiceSolo')?.addEventListener('click',()=>completeSoloSetup());
 $('#teamChoiceCreate')?.addEventListener('click',()=>showTeamSetupPanel('create'));
