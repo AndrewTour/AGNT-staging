@@ -1,52 +1,53 @@
-# AGNT v1.32.8 STAGING — Team Refinement
+# AGNT v1.33.0 STAGING — Team Management
 
-STAGING ONLY. Built incrementally from the verified v1.32.7 Team Sync Stability release, which was built from the clean v1.32.5 Teams v2 staging package. No passkey backend, Firebase Function or Cloudflare Worker code is included.
+STAGING ONLY. Built directly from the verified v1.32.8 Team Refinement release. BETA and the BETA Firebase project are not changed by this package.
 
-## Sync refinement
+## Owner management experience
 
-- Uses exactly one active leaderboard publication path per account.
-- Team accounts publish only to `teams/{teamId}/leaderboard/{uid}`.
-- Solo accounts publish only to `leaderboard/{uid}`.
-- Removes the redundant legacy leaderboard write from team activity updates.
-- Tracks secure team publication in the visible saving state without turning a team-only error into a core-data Sync Error.
-- Retains the v1.32.7 cached-team launch, parallel membership verification, stable connection state and unchanged-row rendering improvements.
+- Adds an owner-only **Manage members** action in Settings.
+- Shows a live list of verified team members with name, email, role and current leaderboard activity.
+- Keeps the owner visually identified and prevents owner self-removal.
+- Includes the current invite code with one-tap copy.
+- Uses the existing AGNT sheet, typography, fields, spacing and dark-mode language.
+- Adds accessible confirmation, progress, success and failure states.
 
-Personal days remain the source of truth at `users/{uid}/days/{date}`. Leaderboard publishing remains a derived summary and does not change personal data persistence.
+## Safe member removal
 
-## Team UI refinement
+Removing a member uses one atomic Firestore batch to:
 
-- Rebuilt Solo/Create/Join setup as a native AGNT bottom sheet on mobile and modal on larger screens.
-- Matched existing AGNT typography, black primary actions, soft fields, spacing, borders and dark mode.
-- Added clearer private-team explanations and account-state language.
-- Added normalised uppercase invite-code entry and Enter-key submission.
-- Added loading states, accessible status messages and duplicate-submission protection.
-- Added owner invite-code presentation and one-tap copy in Settings.
-- Added live, updating, offline, error and Solo states to the Team settings summary.
+1. Delete `teams/{teamId}/members/{memberUid}`.
+2. Delete `teams/{teamId}/leaderboard/{memberUid}`.
+3. Replace the team's invite code.
+4. Create the new `teamCodes/{newCode}` lookup.
+5. Delete the previous invite-code lookup.
+
+The code refresh prevents the removed member from rejoining with an invite code they already know. The removed member's `users/{uid}` profile, days, appointments, contacts, notes and prospecting state are never deleted or edited by the owner action.
+
+## Removed-member recovery
+
+Every team account now listens to its own membership document. After a confirmed removal, AGNT:
+
+- Stops the private team leaderboard subscription.
+- Clears the verified team cache on that device.
+- Preserves all personal data and normal personal-data sync.
+- Explains that team access changed.
+- Opens the existing setup sheet so the user can select Solo or join another team.
+
+This also works after a later login: server membership is re-verified before team access is restored.
+
+## Firebase requirements
+
+No Firebase configuration, Firestore rule, index, Function, billing or schema migration is required. The v1.32.8 staging rules already permit a team owner to remove a member, remove that member's team leaderboard summary, update the team invite code and replace its lookup atomically.
 
 ## Protected systems unchanged
 
-- Firebase project configuration
+- Staging Firebase project configuration
 - Email/password authentication and persistence
-- Firestore collection and document paths
-- Firestore security rules
-- User UID separation
-- Personal day, target and appointment formats
-- Prospecting data format and sync path
-- Leaderboard payload format
-- Atomic Create Team and Join Team batches
-- Offline Firestore cache
+- Personal `users/{uid}` data paths and formats
+- Day, appointment, contact, note and prospecting persistence
+- UID separation and offline Firestore cache
+- Leaderboard payload format and one-writer behaviour
+- Solo/Create/Join flows
 - Manifest and icons
-- Service-worker behaviour, apart from the required release cache identifier
+- Service-worker behaviour apart from the required cache version
 
-## Active publication paths
-
-- Team account: `teams/{teamId}/leaderboard/{uid}` only
-- Solo account: `leaderboard/{uid}` only
-
-All existing Firestore paths remain available; this release only prevents team accounts from making the redundant legacy leaderboard write.
-
-## Firebase configuration
-
-No Firebase Console, Authentication, Firestore rules, schema, index or billing change is required. The included `firebase-config.js` and `firestore.rules` files are byte-for-byte unchanged from v1.32.7 and v1.32.5.
-
-Deploy the frontend files only to the separate `AGNT-staging` GitHub Pages repository. Do not upload this build to BETA until the physical-device validation passes.

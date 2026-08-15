@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="AGNT">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css?v=1.32.8-staging-team-refinement">
+<link rel="stylesheet" href="styles.css?v=1.33.0-staging-team-admin">
 <title>AGNT</title>
 </head>
 <body>
@@ -23,7 +23,7 @@
     <button class="primary" type="submit">Sign in</button>
     <button id="createAccount" class="secondary" type="button">Create account</button>
     <button id="localMode" class="text-btn" type="button">Continue on this device only</button>
-    <small id="authMessage"></small><small id="stagingBuildMarker" style="display:block;margin-top:8px;opacity:.65">STAGING v1.32.8 · booting…</small>
+    <small id="authMessage"></small><small id="stagingBuildMarker" style="display:block;margin-top:8px;opacity:.65">STAGING v1.33.0 · booting…</small>
   </form>
 </div>
 
@@ -54,6 +54,29 @@
       <button id="joinTeamCode" class="primary team-submit" type="button" data-idle-label="Join team">Join team</button>
     </div>
     <p id="teamSetupMessage" role="status" aria-live="polite"></p>
+  </section>
+</div>
+
+<div id="teamManager" class="team-manager hidden" aria-hidden="true">
+  <section class="team-manager-card" role="dialog" aria-modal="true" aria-labelledby="teamManagerTitle" aria-describedby="teamManagerStatus">
+    <div class="team-manager-handle" aria-hidden="true"></div>
+    <div class="team-manager-top"><span class="team-manager-brand">AGNT<span aria-hidden="true">.</span></span><button id="closeTeamManager" class="team-manager-close text-btn" type="button">Done</button></div>
+    <div class="team-manager-heading"><span>TEAM MANAGEMENT</span><h1 id="teamManagerTitle">Your team</h1><p id="teamManagerSummary">Manage access to your private leaderboard.</p></div>
+    <div class="team-manager-invite"><div><span>INVITE CODE</span><strong id="teamManagerCode"></strong><small>Share this code with people you want to add.</small></div><button id="copyTeamManagerCode" type="button">Copy</button></div>
+    <div class="team-manager-section-head"><span>MEMBERS</span><small id="teamManagerMemberCount">0 members</small></div>
+    <div id="teamMemberList" class="team-member-list" role="list" aria-live="polite"></div>
+    <p id="teamManagerStatus" role="status" aria-live="polite"></p>
+  </section>
+</div>
+
+<div id="teamRemoveConfirm" class="team-remove-confirm hidden" aria-hidden="true">
+  <section class="team-remove-confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="teamRemoveTitle" aria-describedby="teamRemoveDescription">
+    <span class="team-remove-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M8 10v7M12 10v7M16 10v7M6 7l1 14h10l1-14"></path></svg></span>
+    <span class="team-remove-kicker">REMOVE ACCESS</span>
+    <h2 id="teamRemoveTitle">Remove member?</h2>
+    <p id="teamRemoveDescription">They will lose access to this team. Their personal AGNT data will not be deleted.</p>
+    <div class="team-remove-actions"><button id="cancelTeamMemberRemoval" class="secondary" type="button">Cancel</button><button id="confirmTeamMemberRemoval" class="danger" type="button">Remove member</button></div>
+    <small id="teamRemoveStatus" role="status" aria-live="polite"></small>
   </section>
 </div>
 
@@ -742,6 +765,7 @@ Andrew Tour | McGrath</textarea></label>
             <div id="teamJoinCodePanel" class="team-code-panel hidden"><div><span>INVITE CODE</span><strong id="teamAccountCode"></strong></div><button id="copyTeamCode" type="button">Copy</button></div>
             <p id="teamAccountStatus" class="team-account-status"></p>
           </div>
+          <button id="manageTeamMembers" class="secondary hidden" type="button">Manage members</button>
           <button id="openTeamSetup" class="secondary" type="button">Choose setup</button>
         </fieldset>
         <label>Agent name<input id="agentName" type="text" maxlength="40" placeholder="Your name"></label>
@@ -923,6 +947,6 @@ Andrew Tour | McGrath</textarea></label>
 })();
 </script>
 
-<script type="module" src="app.js?v=1.32.8-staging-team-refinement"></script>
+<script type="module" src="app.js?v=1.33.0-staging-team-admin"></script>
 </body>
 </html>

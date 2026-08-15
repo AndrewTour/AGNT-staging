@@ -4,7 +4,7 @@ import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, s
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, writeBatch, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
 const stagingBuildMarker=document.getElementById('stagingBuildMarker');
-if(stagingBuildMarker)stagingBuildMarker.textContent='STAGING v1.32.8 · team refinement';
+if(stagingBuildMarker)stagingBuildMarker.textContent='STAGING v1.33.0 · team management';
 
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -18,9 +18,10 @@ const AGNT_BULK_SMS_SHORTCUT='AGNT Bulk SMS';
 let targets={...DEFAULTS}, days={}, prospects=[], prospectInteractions=[], marketPulseEvents=[], prospectFilter='priority', prospectSection='today', prospectContactsMode='active', pipelineTemperature='All', pipelineSort='followup', prospectBulkMode=false, selectedProspectIds=new Set(), activeProspectId=null, prospectSessionIds=[], prospectSessionIndex=0, prospectSessionActive=false, prospectSessionStats={calls:0,connects:0,temperate:0,appointments:0,sms:0}, prospectSessionContext=null, selectedDate=dateKey(new Date()), appointmentDate=selectedDate, appointmentHistoryMode=null, agentName='', calendarPreference='outlook', appearancePreference='system', leaderboardEntries=[], leaderboardMode='day', leaderboardDayOffset=0, leaderboardWeekOffset=0, scorecardWeekOffset=0, prospectInsightPeriod='week', campaignHistory=[], bulkSmsTestLaunches=[], selectedBroadcastType='', selectedBroadcastSuburb='', selectedBroadcastStreet='', selectedBroadcastRecipientIds=new Set(), broadcastStep=1, broadcastReviewMode='live', broadcastLastLaunch=null;
 let knockingSessionActive=false,knockingSessionVisible=false,knockingSessionEnding=false,knockingSessionStats={knocks:0,clients:0,data:0,MAP:0,LAP:0},knockingSessionLog=[],knockingSessionStartSeconds=0,knockingCaptureType='',knockingEditingLogId='';
 let year=new Date().getFullYear(), monthCursor=new Date(), uid='local', currentUser=null, cloud=false, db=null, auth=null;
-let unsubDays=null, unsubProfile=null, unsubLeaderboard=null, unsubProspecting=null, timerTick=null, syncTimer=null, leaderboardPublishTimer=null, prospectingSaveTimer=null;
+let unsubDays=null, unsubProfile=null, unsubLeaderboard=null, unsubProspecting=null, unsubTeamMembership=null, unsubTeamMembers=null, timerTick=null, syncTimer=null, leaderboardPublishTimer=null, prospectingSaveTimer=null;
 let accountMode='unconfigured',teamId=null,teamRole=null,teamName='',teamJoinCode='',teamLayerStatus='idle',teamLayerError='',creatingAccount=false,newAccountUidPending='',teamOnboardingActive=false;
 let teamSetupBusy=false,teamSetupReturnFocus=null;
+let teamMembers=[],teamMembersStatus='idle',teamMembersError='',teamMembersDataSignature='',subscribedMembershipTeamId='',subscribedMembersTeamId='',teamManagerOpen=false,teamManagerReturnFocus=null,pendingTeamMemberRemoval=null,teamMemberActionBusy=false;
 let pendingSyncOperations=0, syncHasError=false, lastLeaderboardSignature='', lastTeamLeaderboardSignature='', lastProspectingSignature='';
 let subscribedTeamId='',teamLeaderboardDataSignature='',teamInitialisationToken=0;
 let leaderboardListRenderMarkup='';
@@ -166,14 +167,14 @@ function cacheVerifiedTeamState(){
   try{localStorage.setItem(teamStateCacheKey(uid),JSON.stringify(value))}catch(err){console.warn('Verified team state could not be cached',err)}
 }
 function forgetCachedTeamState(userId=uid){try{localStorage.removeItem(teamStateCacheKey(userId))}catch{}}
-function resetState(){days={};targets={...DEFAULTS};workDays=[...DEFAULT_WORK_DAYS];agentName='';calendarPreference='outlook';appearancePreference=normaliseAppearance(localStorage.getItem('agnt:appearance')||'system');applyAppearance(appearancePreference,{persist:false});leaderboardEntries=[];marketPulseEvents=[];accountMode='unconfigured';teamId=null;teamRole=null;teamName='';teamJoinCode='';teamLayerStatus='idle';teamLayerError='';teamOnboardingActive=false;teamSetupBusy=false;teamSetupReturnFocus=null;subscribedTeamId='';teamLeaderboardDataSignature='';leaderboardListRenderMarkup='';selectedDate=todayKey();appointmentDate=selectedDate}
+function resetState(){days={};targets={...DEFAULTS};workDays=[...DEFAULT_WORK_DAYS];agentName='';calendarPreference='outlook';appearancePreference=normaliseAppearance(localStorage.getItem('agnt:appearance')||'system');applyAppearance(appearancePreference,{persist:false});leaderboardEntries=[];marketPulseEvents=[];accountMode='unconfigured';teamId=null;teamRole=null;teamName='';teamJoinCode='';teamLayerStatus='idle';teamLayerError='';teamOnboardingActive=false;teamSetupBusy=false;teamSetupReturnFocus=null;teamMembers=[];teamMembersStatus='idle';teamMembersError='';teamMembersDataSignature='';subscribedMembershipTeamId='';subscribedMembersTeamId='';teamManagerOpen=false;teamManagerReturnFocus=null;pendingTeamMemberRemoval=null;teamMemberActionBusy=false;subscribedTeamId='';teamLeaderboardDataSignature='';leaderboardListRenderMarkup='';selectedDate=todayKey();appointmentDate=selectedDate}
 function safeJsonParse(value,fallback){try{return JSON.parse(value)}catch{return fallback}}
 function loadLocal(userId=uid){resetState();const prefix=storagePrefix(userId);try{days=normaliseDaysMap(safeJsonParse(localStorage.getItem(prefix+'days')||localStorage.getItem(prefix+'days-backup')||'{}',{}));targets={...DEFAULTS,...safeJsonParse(localStorage.getItem(prefix+'targets')||'{}',{})};agentName=localStorage.getItem(prefix+'agent-name')||'';const savedWorkDays=safeJsonParse(localStorage.getItem(prefix+'work-days')||'null',null);if(Array.isArray(savedWorkDays)&&savedWorkDays.length)workDays=normaliseWorkDays(savedWorkDays);const savedCalendarPreference=localStorage.getItem(prefix+'calendar-preference');calendarPreference=savedCalendarPreference==='apple'?'apple':'outlook';prospects=normaliseProspects(safeJsonParse(localStorage.getItem(prefix+'prospects')||'[]',[]));prospectInteractions=normaliseProspectInteractions(safeJsonParse(localStorage.getItem(prefix+'prospect-interactions')||'[]',[]));marketPulseEvents=normaliseMarketPulseEvents(safeJsonParse(localStorage.getItem(prefix+'market-pulse-events')||'[]',[]));campaignHistory=safeJsonParse(localStorage.getItem(prefix+'campaign-history')||'[]',[]);bulkSmsTestLaunches=safeJsonParse(localStorage.getItem(prefix+'bulk-sms-test-launches')||'[]',[]);dirtyDayKeys=new Set(safeJsonParse(localStorage.getItem(prefix+'dirty-days')||'[]',[]).filter(validDateKey))}catch(err){console.error('Local data recovery failed',err);resetState();dirtyDayKeys=new Set()}}
 function saveDirtyDays(){try{localStorage.setItem(storagePrefix(uid)+'dirty-days',JSON.stringify([...dirtyDayKeys]))}catch(err){console.error('Dirty-day queue save failed',err)}}
 function markDayDirty(k){dirtyDayKeys.add(k);saveDirtyDays()}
 function clearDayDirty(k,clientUpdatedAt){if(Number(days[k]?.clientUpdatedAt)===Number(clientUpdatedAt)){dirtyDayKeys.delete(k);saveDirtyDays()}}
 function saveLocal(){const prefix=storagePrefix(uid);try{const serialised=JSON.stringify(normaliseDaysMap(days));const previous=localStorage.getItem(prefix+'days');if(previous)localStorage.setItem(prefix+'days-backup',previous);localStorage.setItem(prefix+'days',serialised);localStorage.setItem(prefix+'targets',JSON.stringify(targets));localStorage.setItem(prefix+'agent-name',agentName);localStorage.setItem(prefix+'work-days',JSON.stringify(workDays));localStorage.setItem(prefix+'calendar-preference',calendarPreference);localStorage.setItem(prefix+'prospects',JSON.stringify(prospects));localStorage.setItem(prefix+'prospect-interactions',JSON.stringify(prospectInteractions));localStorage.setItem(prefix+'market-pulse-events',JSON.stringify(marketPulseEvents));localStorage.setItem(prefix+'campaign-history',JSON.stringify(campaignHistory.slice(0,20)));localStorage.setItem(prefix+'bulk-sms-test-launches',JSON.stringify(bulkSmsTestLaunches.slice(0,10)));return true}catch(err){console.error('Local save failed',err);return false}}
-function clearActiveSession(){teamInitialisationToken++;unsubDays?.();unsubProfile?.();unsubLeaderboard?.();unsubProspecting?.();unsubDays=unsubProfile=unsubLeaderboard=unsubProspecting=null;clearInterval(timerTick);clearTimeout(syncTimer);clearTimeout(leaderboardPublishTimer);clearTimeout(prospectingSaveTimer);prospectingSaveTimer=null;pendingProspectingPayload=null;pendingProspectingSignature='';prospectingWriteInFlight=false;prospectingSaveWaiters.splice(0).forEach(({resolve})=>resolve());currentUser=null;uid='local';cloud=false;pendingSyncOperations=0;syncHasError=false;lastLeaderboardSignature='';lastTeamLeaderboardSignature='';lastProspectingSignature='';dirtyDayKeys=new Set();resetState()}
+function clearActiveSession(){teamInitialisationToken++;unsubDays?.();unsubProfile?.();unsubLeaderboard?.();unsubProspecting?.();unsubTeamMembership?.();unsubTeamMembers?.();unsubDays=unsubProfile=unsubLeaderboard=unsubProspecting=unsubTeamMembership=unsubTeamMembers=null;hideTeamManager({restoreFocus:false});closeTeamMemberRemoval({force:true});clearInterval(timerTick);clearTimeout(syncTimer);clearTimeout(leaderboardPublishTimer);clearTimeout(prospectingSaveTimer);prospectingSaveTimer=null;pendingProspectingPayload=null;pendingProspectingSignature='';prospectingWriteInFlight=false;prospectingSaveWaiters.splice(0).forEach(({resolve})=>resolve());currentUser=null;uid='local';cloud=false;pendingSyncOperations=0;syncHasError=false;lastLeaderboardSignature='';lastTeamLeaderboardSignature='';lastProspectingSignature='';dirtyDayKeys=new Set();resetState()}
 function displayAgentName(){return (agentName||currentUser?.displayName||currentUser?.email?.split('@')[0]||'Agent').trim()}
 function welcomeProfileName(){return (agentName||currentUser?.displayName||'Agent').trim()||'Agent'}
 function welcomeStorageKey(){return `${storagePrefix(uid)}welcome:${todayKey()}`}
@@ -2507,7 +2508,7 @@ function normaliseTeamCode(value){return String(value||'').toUpperCase().replace
 function makeTeamCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',bytes=new Uint8Array(10);crypto.getRandomValues(bytes);return Array.from(bytes,b=>chars[b%chars.length]).join('')}
 function makeTeamId(){return `team_${crypto.randomUUID?.()||uuid()}`.replace(/[^A-Za-z0-9_-]/g,'_')}
 function setTeamLayerStatus(status,error=''){teamLayerStatus=status;teamLayerError=error||'';renderTeamSettings();renderLeaderboardStatus()}
-function clearVerifiedTeamState({forgetCached=false}={}){unsubLeaderboard?.();unsubLeaderboard=null;subscribedTeamId='';teamLeaderboardDataSignature='';if(forgetCached)forgetCachedTeamState();accountMode='unconfigured';teamId=null;teamRole=null;teamName='';teamJoinCode='';leaderboardEntries=[leaderboardPayload()];renderLeaderboard()}
+function clearVerifiedTeamState({forgetCached=false}={}){unsubLeaderboard?.();unsubLeaderboard=null;subscribedTeamId='';teamLeaderboardDataSignature='';if(forgetCached)forgetCachedTeamState();accountMode='unconfigured';teamId=null;teamRole=null;teamName='';teamJoinCode='';stopTeamMembershipSubscriptions();leaderboardEntries=[leaderboardPayload()];renderLeaderboard()}
 function setVerifiedTeamState({mode='unconfigured',id=null,role=null,name='',joinCode=''}={}, {cache=true}={}){accountMode=mode;teamId=id;teamRole=role;teamName=name;teamJoinCode=joinCode;if(cache)cacheVerifiedTeamState()}
 function restoreCachedTeamState(){const cached=readCachedTeamState(uid);if(!cached)return false;setVerifiedTeamState(cached,{cache:false});return true}
 function teamLeaderboardEntriesSignature(entries){return JSON.stringify((entries||[]).map(entry=>[String(entry.uid||''),leaderboardSignature(entry)]).sort((a,b)=>a[0].localeCompare(b[0])))}
@@ -2556,8 +2557,105 @@ async function verifyMembership(profile={}){
   const team=teamSnap.data();
   return{id,role:String(member.role||profile.teamRole||'member'),name:String(team.name||profile.teamName||'Team'),joinCode:String(team.joinCode||'')};
 }
+function clearTeamMembersSubscription(){
+  unsubTeamMembers?.();unsubTeamMembers=null;subscribedMembersTeamId='';teamMembers=[];teamMembersStatus='idle';teamMembersError='';teamMembersDataSignature='';renderTeamManager();renderTeamSettings();
+}
+function stopTeamMembershipSubscriptions(){
+  unsubTeamMembership?.();unsubTeamMembership=null;subscribedMembershipTeamId='';clearTeamMembersSubscription();hideTeamManager({restoreFocus:false});closeTeamMemberRemoval({force:true});
+}
+function teamMembersSignature(entries){
+  return JSON.stringify((entries||[]).map(member=>[String(member.uid||''),String(member.role||''),String(member.name||''),String(member.email||''),Number(member.joinedAt?.seconds)||Number(member.joinedAt)||0]).sort((a,b)=>a[0].localeCompare(b[0])));
+}
+function teamMemberDisplayName(member){
+  const live=leaderboardEntries.find(entry=>String(entry.uid||'')===String(member.uid||''));
+  return String(live?.name||member.name||member.email?.split('@')[0]||'Team member').trim()||'Team member';
+}
+function teamMemberInitials(member){return teamMemberDisplayName(member).split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]?.toUpperCase()||'').join('')||'A'}
+function teamMemberActivityLabel(member){
+  const live=leaderboardEntries.find(entry=>String(entry.uid||'')===String(member.uid||''));
+  if(live){const score=Math.max(0,Math.min(100,Number(live.score)||0));return live.date===todayKey()?`${score}% today`:`${score}% latest score`}
+  const raw=member.joinedAt,ms=typeof raw?.toMillis==='function'?raw.toMillis():Number(raw?.seconds)?Number(raw.seconds)*1000:Number(raw)||0;
+  return ms?`Joined ${new Intl.DateTimeFormat('en-AU',{day:'numeric',month:'short'}).format(new Date(ms))}`:'Waiting for activity';
+}
+function teamManagerMessage(message='',state=''){
+  const node=$('#teamManagerStatus');if(!node)return;node.textContent=message;node.dataset.state=message?state:'';
+}
+function renderTeamManager(){
+  const list=$('#teamMemberList');if(!list)return;
+  $('#teamManagerTitle').textContent=teamName||'Your team';
+  $('#teamManagerCode').textContent=teamRole==='owner'?teamJoinCode:'';
+  const count=teamMembers.length;$('#teamManagerMemberCount').textContent=`${count} member${count===1?'':'s'}`;
+  $('#teamManagerSummary').textContent=count?`${count} verified member${count===1?'':'s'} can access this private leaderboard.`:'Manage access to your private leaderboard.';
+  if(teamMembers.length){
+    list.innerHTML=teamMembers.map(member=>{
+      const memberId=String(member.uid||''),isOwner=member.role==='owner',isCurrent=memberId===uid,name=teamMemberDisplayName(member),email=String(member.email||'');
+      const action=isOwner||isCurrent?`<span class="team-member-you">${isCurrent?'You':'Owner'}</span>`:`<button class="team-member-action" type="button" data-remove-team-member="${escapeHtml(memberId)}" aria-label="Remove ${escapeHtml(name)} from ${escapeHtml(teamName||'team')}">Remove</button>`;
+      return `<article class="team-member-row" role="listitem"><span class="team-member-avatar" aria-hidden="true">${escapeHtml(teamMemberInitials(member))}</span><div class="team-member-copy"><div class="team-member-name-line"><strong>${escapeHtml(name)}</strong><span class="team-member-role">${isOwner?'Owner':'Member'}</span></div><small>${escapeHtml(email||'No email shown')}</small><em>${escapeHtml(teamMemberActivityLabel(member))}</em></div>${action}</article>`;
+    }).join('');
+  }else if(teamMembersStatus==='connecting'||teamMembersStatus==='cached')list.innerHTML='<div class="team-member-empty"><strong>Loading members…</strong><small>Confirming the latest team access.</small></div>';
+  else list.innerHTML='<div class="team-member-empty"><strong>No members found</strong><small>Share the invite code to add your first team member.</small></div>';
+  if(!navigator.onLine)teamManagerMessage('Offline. The last confirmed member list is shown.');
+  else if(teamMembersStatus==='error')teamManagerMessage(teamMembersError||'The member list could not be loaded.','error');
+  else if(teamMembersStatus==='connecting')teamManagerMessage('Updating the member list…');
+  else if($('#teamManagerStatus')?.dataset.state!=='success')teamManagerMessage('');
+}
+function showTeamManager(){
+  if(!cloud||accountMode!=='team'||teamRole!=='owner'||!teamId)return toast('Only the team owner can manage members');
+  subscribeTeamMembersForOwner();teamManagerReturnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;teamManagerOpen=true;teamManagerMessage('');renderTeamManager();
+  $('#teamManager').classList.remove('hidden');$('#teamManager').setAttribute('aria-hidden','false');document.body.classList.add('team-manager-open');requestAnimationFrame(()=>$('#closeTeamManager')?.focus({preventScroll:true}));
+}
+function hideTeamManager({restoreFocus=true}={}){
+  teamManagerOpen=false;$('#teamManager')?.classList.add('hidden');$('#teamManager')?.setAttribute('aria-hidden','true');document.body.classList.remove('team-manager-open');closeTeamMemberRemoval();
+  const returnFocus=teamManagerReturnFocus;teamManagerReturnFocus=null;if(restoreFocus&&returnFocus?.isConnected)requestAnimationFrame(()=>returnFocus.focus({preventScroll:true}));
+}
+function openTeamMemberRemoval(memberId){
+  if(teamMemberActionBusy||accountMode!=='team'||teamRole!=='owner')return;
+  const member=teamMembers.find(entry=>String(entry.uid||'')===String(memberId||''));if(!member||member.role==='owner'||member.uid===uid)return;
+  pendingTeamMemberRemoval=member;const name=teamMemberDisplayName(member);$('#teamRemoveTitle').textContent=`Remove ${name}?`;$('#teamRemoveDescription').textContent=`${name} will lose access to ${teamName||'this team'} and its leaderboard. Their contacts, notes and personal AGNT data will not be deleted. The invite code will refresh so the old code cannot be reused.`;$('#teamRemoveStatus').textContent='';
+  $('#teamRemoveConfirm').classList.remove('hidden');$('#teamRemoveConfirm').setAttribute('aria-hidden','false');requestAnimationFrame(()=>$('#cancelTeamMemberRemoval')?.focus({preventScroll:true}));
+}
+function closeTeamMemberRemoval({force=false}={}){
+  if(teamMemberActionBusy&&!force)return;if(force)teamMemberActionBusy=false;pendingTeamMemberRemoval=null;$('#teamRemoveConfirm')?.classList.add('hidden');$('#teamRemoveConfirm')?.setAttribute('aria-hidden','true');if(teamManagerOpen)requestAnimationFrame(()=>$('#closeTeamManager')?.focus({preventScroll:true}));
+}
+async function confirmTeamMemberRemoval(){
+  if(teamMemberActionBusy||!pendingTeamMemberRemoval||accountMode!=='team'||teamRole!=='owner'||!teamId)return;
+  if(!navigator.onLine){$('#teamRemoveStatus').textContent='Connect to the internet to remove this member.';return}
+  const member={...pendingTeamMemberRemoval},removalTeamId=teamId,name=teamMemberDisplayName(member),previousCode=String(teamJoinCode||''),nextCode=makeTeamCode();if(member.role==='owner'||member.uid===uid)return;
+  teamMemberActionBusy=true;$('#cancelTeamMemberRemoval').disabled=true;$('#confirmTeamMemberRemoval').disabled=true;$('#confirmTeamMemberRemoval').textContent='Removing…';$('#teamRemoveStatus').textContent='Updating team access…';
+  try{
+    const batch=writeBatch(db),now=serverTimestamp();batch.delete(doc(db,'teams',removalTeamId,'members',member.uid));batch.delete(doc(db,'teams',removalTeamId,'leaderboard',member.uid));batch.set(doc(db,'teams',removalTeamId),{joinCode:nextCode,updatedAt:now},{merge:true});batch.set(doc(db,'teamCodes',nextCode),{code:nextCode,teamId:removalTeamId,teamName:teamName||'Team',ownerUid:uid,createdAt:now});if(previousCode)batch.delete(doc(db,'teamCodes',previousCode));await batch.commit();
+    teamJoinCode=nextCode;cacheVerifiedTeamState();teamMembers=teamMembers.filter(entry=>String(entry.uid||'')!==String(member.uid));teamMembersDataSignature=teamMembersSignature(teamMembers);pendingTeamMemberRemoval=null;teamMemberActionBusy=false;$('#teamRemoveConfirm').classList.add('hidden');$('#teamRemoveConfirm').setAttribute('aria-hidden','true');renderTeamManager();renderTeamSettings();teamManagerMessage(`${name} was removed. Their personal AGNT data is unchanged and the invite code was refreshed.`,'success');toast(`${name} removed from ${teamName||'team'}`);
+  }catch(err){console.error('Remove team member failed',err);$('#teamRemoveStatus').textContent='This member could not be removed. No personal data was changed.'}
+  finally{teamMemberActionBusy=false;$('#cancelTeamMemberRemoval').disabled=false;$('#confirmTeamMemberRemoval').disabled=false;$('#confirmTeamMemberRemoval').textContent='Remove member'}
+}
+function handleTeamAccessRemoved(removedTeamId,removedTeamName=''){
+  if(teamId&&removedTeamId&&teamId!==removedTeamId)return;
+  const previousName=String(removedTeamName||teamName||'your previous team');clearVerifiedTeamState({forgetCached:true});setTeamLayerStatus('removed',`You no longer have access to ${previousName}. Your personal AGNT data is safe.`);renderSettings();showTeamOnboarding();requestAnimationFrame(()=>teamSetupMessage(`Your access to ${previousName} was removed. Choose Solo or join another team. Your personal data is unchanged.`,'info'));
+}
+function subscribeOwnTeamMembership(){
+  if(accountMode!=='team'||!teamId){unsubTeamMembership?.();unsubTeamMembership=null;subscribedMembershipTeamId='';return}
+  if(unsubTeamMembership&&subscribedMembershipTeamId===teamId)return;
+  unsubTeamMembership?.();unsubTeamMembership=null;subscribedMembershipTeamId=teamId;const listeningTeamId=teamId,listeningTeamName=teamName;
+  unsubTeamMembership=onSnapshot(doc(db,'teams',listeningTeamId,'members',uid),{includeMetadataChanges:true},snap=>{
+    if(accountMode!=='team'||teamId!==listeningTeamId||subscribedMembershipTeamId!==listeningTeamId)return;
+    if(!snap.exists()){if(snap.metadata.fromCache)return;handleTeamAccessRemoved(listeningTeamId,listeningTeamName);return}
+    const nextRole=String(snap.data().role||teamRole||'member');if(nextRole!==teamRole){teamRole=nextRole;cacheVerifiedTeamState();subscribeTeamMembersForOwner();renderSettings()}
+  },err=>{if(teamId!==listeningTeamId)return;console.error('Team membership listener failed',err);if(String(err?.code||'').includes('permission-denied'))handleTeamAccessRemoved(listeningTeamId,listeningTeamName)});
+}
+function subscribeTeamMembersForOwner(){
+  if(accountMode!=='team'||teamRole!=='owner'||!teamId){clearTeamMembersSubscription();return}
+  if(unsubTeamMembers&&subscribedMembersTeamId===teamId)return;
+  unsubTeamMembers?.();unsubTeamMembers=null;subscribedMembersTeamId=teamId;teamMembersStatus='connecting';teamMembersError='';renderTeamManager();renderTeamSettings();const listeningTeamId=teamId;
+  unsubTeamMembers=onSnapshot(collection(db,'teams',listeningTeamId,'members'),{includeMetadataChanges:true},snap=>{
+    if(accountMode!=='team'||teamRole!=='owner'||teamId!==listeningTeamId||subscribedMembersTeamId!==listeningTeamId)return;
+    const next=snap.docs.map(item=>({...item.data(),uid:item.id})).sort((a,b)=>(a.role==='owner'?-1:b.role==='owner'?1:0)||teamMemberDisplayName(a).localeCompare(teamMemberDisplayName(b))),signature=teamMembersSignature(next),changed=signature!==teamMembersDataSignature;
+    if(changed){teamMembers=next;teamMembersDataSignature=signature}teamMembersStatus=snap.metadata.fromCache?'cached':'live';teamMembersError='';renderTeamManager();renderTeamSettings();
+  },err=>{if(teamId!==listeningTeamId)return;console.error('Team member list failed',err);teamMembersStatus='error';teamMembersError=err.message||'Member list unavailable';renderTeamManager();renderTeamSettings()});
+}
+function subscribeTeamMembershipLayer(){subscribeOwnTeamMembership();subscribeTeamMembersForOwner()}
 function subscribeSecureLeaderboard(){
-  if(accountMode!=='team'||!teamId){unsubLeaderboard?.();unsubLeaderboard=null;subscribedTeamId='';teamLeaderboardDataSignature='';leaderboardEntries=[leaderboardPayload()];renderLeaderboard();return}
+  if(accountMode!=='team'||!teamId){stopTeamMembershipSubscriptions();unsubLeaderboard?.();unsubLeaderboard=null;subscribedTeamId='';teamLeaderboardDataSignature='';leaderboardEntries=[leaderboardPayload()];renderLeaderboard();return}
+  subscribeTeamMembershipLayer();
   if(unsubLeaderboard&&subscribedTeamId===teamId)return;
   unsubLeaderboard?.();unsubLeaderboard=null;subscribedTeamId=teamId;teamLeaderboardDataSignature='';
   const listeningTeamId=teamId;
@@ -2567,7 +2665,7 @@ function subscribeSecureLeaderboard(){
     const documents=snap.docs.map(d=>({uid:d.id,...d.data()})),next=documents.length?documents:[leaderboardPayload()],signature=teamLeaderboardEntriesSignature(next),dataChanged=signature!==teamLeaderboardDataSignature;
     if(dataChanged){leaderboardEntries=next;teamLeaderboardDataSignature=signature}
     const own=documents.find(entry=>entry.uid===uid);if(own)lastTeamLeaderboardSignature=leaderboardSignature(own);
-    setTeamLayerStatus(snap.metadata.fromCache?'cached':'live');if(dataChanged)renderLeaderboard();
+    setTeamLayerStatus(snap.metadata.fromCache?'cached':'live');if(dataChanged){renderLeaderboard();renderTeamManager()}
   },err=>{if(teamId!==listeningTeamId)return;console.error('Team leaderboard read failed',err);unsubLeaderboard=null;subscribedTeamId='';teamLeaderboardDataSignature='';leaderboardEntries=[leaderboardPayload()];setTeamLayerStatus('error',err.message||'Team leaderboard unavailable');renderLeaderboard()});
 }
 async function initialiseTeamLayer(profile={}, {promptNew=false}={}){
@@ -2582,7 +2680,7 @@ async function initialiseTeamLayer(profile={}, {promptNew=false}={}){
       if(accountMode==='team'&&teamId&&teamId!==requestedTeamId){clearVerifiedTeamState();setTeamLayerStatus('connecting')}
       const verified=await verifyMembership(profile);
       if(!stillCurrent())return;
-      if(!verified){clearVerifiedTeamState({forgetCached:true});setTeamLayerStatus('error','Team membership needs attention. Your accountability data is still syncing normally.');return}
+      if(!verified){handleTeamAccessRemoved(requestedTeamId,profile.teamName||'your previous team');return}
       setVerifiedTeamState({mode:'team',...verified});subscribeSecureLeaderboard();scheduleLeaderboardPublish();return;
     }
     if(!stillCurrent())return;
@@ -2646,13 +2744,16 @@ async function completeJoinTeam(){
 }
 function renderTeamSettings(){
   const card=$('#teamAccountCard');if(!card)return;
-  const mode=$('#teamAccountMode'),name=$('#teamAccountName'),role=$('#teamAccountRole'),code=$('#teamAccountCode'),codePanel=$('#teamJoinCodePanel'),status=$('#teamAccountStatus'),setup=$('#openTeamSetup');
+  const mode=$('#teamAccountMode'),name=$('#teamAccountName'),role=$('#teamAccountRole'),code=$('#teamAccountCode'),codePanel=$('#teamJoinCodePanel'),status=$('#teamAccountStatus'),setup=$('#openTeamSetup'),manage=$('#manageTeamMembers');
   const setStatus=(message,state='offline')=>{status.textContent=message||'';status.dataset.state=state};
-  code.textContent='';codePanel?.classList.add('hidden');role.textContent='';setup?.classList.remove('hidden');
+  code.textContent='';codePanel?.classList.add('hidden');role.textContent='';setup?.classList.remove('hidden');manage?.classList.add('hidden');
   if(!cloud){mode.textContent='DEVICE ONLY';name.textContent='No cloud team';setStatus('Accountability is stored on this device.','offline');setup?.classList.add('hidden');return}
   if(accountMode==='team'&&teamId){
     mode.textContent='TEAM ACCOUNT';name.textContent=teamName||'Team';role.textContent=teamRole==='owner'?'Owner':'Member';setup?.classList.add('hidden');
-    if(teamRole==='owner'&&teamJoinCode){code.textContent=teamJoinCode;codePanel?.classList.remove('hidden')}
+    if(teamRole==='owner'){
+      if(teamJoinCode){code.textContent=teamJoinCode;codePanel?.classList.remove('hidden')}
+      if(manage){manage.textContent=teamMembers.length?`Manage ${teamMembers.length} member${teamMembers.length===1?'':'s'}`:'Manage members';manage.classList.remove('hidden')}
+    }
     if(!navigator.onLine)setStatus('Offline. Saved team results remain available.','offline');
     else if(teamLayerStatus==='error')setStatus(teamLayerError||'The team leaderboard needs attention.','error');
     else if(teamLayerStatus==='live')setStatus('Leaderboard is live across your team.','live');
@@ -2660,12 +2761,13 @@ function renderTeamSettings(){
     return;
   }
   if(accountMode==='solo'){mode.textContent='PRIVATE ACCOUNT';name.textContent='Just me';role.textContent='Solo';setStatus('Your leaderboard is private to this account.','solo');setup.textContent='Change setup';return}
+  if(teamLayerStatus==='removed'){mode.textContent='TEAM ACCESS UPDATED';name.textContent='Choose a new setup';setStatus(teamLayerError||'Your previous team access was removed. Your personal data is safe.','error');setup.textContent='Choose setup';return}
   if(teamLayerStatus==='connecting'){mode.textContent='ACCOUNT SETUP';name.textContent='Checking your team…';setStatus('Confirming your account and membership.','connecting');setup.textContent='Choose setup';return}
   mode.textContent='ACCOUNT SETUP';name.textContent='Choose Solo or Team';setStatus(teamLayerError||'Choose how you want to use the leaderboard.',teamLayerError?'error':'offline');setup.textContent='Choose setup';
 }
-async function copyTeamJoinCode(){
+async function copyTeamJoinCode(buttonSelector='#copyTeamCode'){
   const value=String(teamJoinCode||'');if(!value)return;
-  const button=$('#copyTeamCode');
+  const button=$(buttonSelector);
   try{
     if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(value);
     else{
@@ -2683,7 +2785,7 @@ function renderDayViews(){renderToday();renderTimeline();renderAppointments();re
 function renderAll(){renderDayViews();renderProspecting();const reviewButton=$('#openDayReview');if(reviewButton)reviewButton.classList.toggle('hidden',new Date().getHours()<17||selectedDate!==todayKey()||!isWorkDayKey(todayKey()));maybeShowDayReview()}
 
 async function startCloud(user,{promptTeamSetup=false}={}){
-  teamInitialisationToken++;unsubDays?.();unsubProfile?.();unsubLeaderboard?.();unsubProspecting?.();unsubDays=unsubProfile=unsubLeaderboard=unsubProspecting=null;currentUser=user;uid=user.uid;loadBuyerSession();cloud=true;loadLocal(uid);
+  teamInitialisationToken++;unsubDays?.();unsubProfile?.();unsubLeaderboard?.();unsubProspecting?.();unsubTeamMembership?.();unsubTeamMembers?.();unsubDays=unsubProfile=unsubLeaderboard=unsubProspecting=unsubTeamMembership=unsubTeamMembers=null;currentUser=user;uid=user.uid;loadBuyerSession();cloud=true;loadLocal(uid);
   const restoredTeamState=restoreCachedTeamState();
   leaderboardEntries=restoredTeamState&&accountMode==='team'?[]:[leaderboardPayload()];
   if(restoredTeamState&&accountMode==='team'){setTeamLayerStatus('connecting');subscribeSecureLeaderboard()}
@@ -2777,11 +2879,17 @@ $('#joinTeamCode')?.addEventListener('click',()=>completeJoinTeam());
 $('#openTeamSetup')?.addEventListener('click',()=>showTeamOnboarding());
 $('#closeTeamSetup')?.addEventListener('click',()=>hideTeamOnboarding());
 $('#copyTeamCode')?.addEventListener('click',()=>copyTeamJoinCode());
+$('#manageTeamMembers')?.addEventListener('click',()=>showTeamManager());
+$('#closeTeamManager')?.addEventListener('click',()=>hideTeamManager());
+$('#copyTeamManagerCode')?.addEventListener('click',()=>copyTeamJoinCode('#copyTeamManagerCode'));
+$('#teamMemberList')?.addEventListener('click',event=>{const button=event.target.closest('[data-remove-team-member]');if(button)openTeamMemberRemoval(button.dataset.removeTeamMember)});
+$('#cancelTeamMemberRemoval')?.addEventListener('click',()=>closeTeamMemberRemoval());
+$('#confirmTeamMemberRemoval')?.addEventListener('click',()=>confirmTeamMemberRemoval());
 $('#teamCodeInput')?.addEventListener('input',event=>{event.target.value=normaliseTeamCode(event.target.value);teamSetupMessage('')});
 $('#teamCodeInput')?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();completeJoinTeam()}});
 $('#newTeamName')?.addEventListener('input',()=>teamSetupMessage(''));
 $('#newTeamName')?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();completeCreateTeam()}});
-document.addEventListener('keydown',event=>{if(event.key==='Escape'&&teamOnboardingActive)hideTeamOnboarding()});
+document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;if(!$('#teamRemoveConfirm')?.classList.contains('hidden')){closeTeamMemberRemoval();return}if(teamManagerOpen){hideTeamManager();return}if(teamOnboardingActive)hideTeamOnboarding()});
 
 $('#startDayButton').onclick=dismissDailyWelcome;
 $('#openAgntButton').onclick=dismissOffDayReview;
@@ -2996,7 +3104,7 @@ $('#syncBadge').onclick=e=>{e.stopPropagation();const p=$('#syncPopover'),openin
 $('#syncPopover').onclick=e=>e.stopPropagation();
 document.addEventListener('click',closeSyncPopover);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSyncPopover()});
-window.addEventListener('online',()=>{if(cloud){clearSyncError();setSync('','Connecting');renderLeaderboardStatus();renderTeamSettings();scheduleLeaderboardPublish();for(const k of [...dirtyDayKeys]){const clean=dayData(k);if(clean.clientUpdatedAt)persistDayToCloud(k,clean,{quiet:true}).catch(()=>{})}}});window.addEventListener('offline',()=>{refreshSyncStatus();renderLeaderboardStatus();renderTeamSettings()});
+window.addEventListener('online',()=>{if(cloud){clearSyncError();setSync('','Connecting');renderLeaderboardStatus();renderTeamSettings();renderTeamManager();scheduleLeaderboardPublish();for(const k of [...dirtyDayKeys]){const clean=dayData(k);if(clean.clientUpdatedAt)persistDayToCloud(k,clean,{quiet:true}).catch(()=>{})}}});window.addEventListener('offline',()=>{refreshSyncStatus();renderLeaderboardStatus();renderTeamSettings();renderTeamManager()});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&pendingProspectingPayload)flushProspectingSave()});
 window.addEventListener('pagehide',()=>{if(pendingProspectingPayload)flushProspectingSave()});
 window.addEventListener('error',event=>console.error('Unhandled app error',event.error||event.message));
