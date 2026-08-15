@@ -6,6 +6,5 @@ export const firebaseConfig = {
   projectId: "agnt-staging-cb6ce",
   storageBucket: "agnt-staging-cb6ce.firebasestorage.app",
   messagingSenderId: "359375504502",
-  appId: "1:359375504502:web:040ba98cb9eeca5c15cb57",
-  passkeyApiUrl: "https://australia-southeast1-agnt-staging-cb6ce.cloudfunctions.net/passkeyApi"
+  appId: "1:359375504502:web:040ba98cb9eeca5c15cb57"
 };

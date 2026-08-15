@@ -1,58 +1,51 @@
-# AGNT v1.32.6-staging — Teams v2 + Passkey POC
+# AGNT v1.32.7 STAGING — Team Sync Stability
 
-STAGING ONLY. Built incrementally from the confirmed v1.32.5 STAGING Teams v2 MultiTab Team State Fix package. This package targets Firebase project `agnt-staging-cb6ce` and deliberately contains no production Firebase credentials.
+STAGING ONLY. Built incrementally from the verified clean `AGNT-v1.32.5-STAGING-Teams-v2-MultiTab-Team-State-Fix.zip` package. No passkey backend, Firebase Function or Cloudflare Worker code is included.
 
-## Passkey proof-of-concept
+## Stability improvements
 
-- Optional Apple/Android WebAuthn passkey sign-in
-- Passkey registration, status and removal in Settings
-- Existing Firebase UID preserved through a staging custom token
-- Email/password, account creation, device-only mode and Teams v2 preserved
-- Separate deployable staging Firebase Function included
+- Restores the last verified Solo/Team identity from UID-specific local storage on launch.
+- Starts the secure team leaderboard listener immediately for a remembered team.
+- Re-verifies the profile, membership and team records against Firestore in the background.
+- Reads the membership and team documents in parallel.
+- Uses one controller for `TEAM SYNCING`, `TEAM LIVE`, `TEAM OFFLINE` and `TEAM ERROR`.
+- Prevents the legacy leaderboard publisher from overwriting the team connection label.
+- Keeps cached team statistics visible while Firebase confirms the live snapshot.
+- Avoids rebuilding identical leaderboard rows during metadata-only cache/server transitions and unrelated profile renders.
+- Invalid or changed membership clears the remembered team safely.
+- Async team initialisation from an older login cannot apply to a newer user session.
 
-The Function must be deployed before passkey registration or sign-in can work. Follow `PASSKEY-STAGING-SETUP.md` and do not deploy it to the OG/BETA project.
+The remembered state contains only account mode, team ID, role, name and the owner's join code. It is namespaced to the Firebase UID. Firestore security rules remain the authority and every launch re-verifies membership.
 
-## Core paths preserved
+## Protected systems unchanged
+
+- Firebase project configuration
+- Email/password authentication and persistence
+- Firestore collection and document paths
+- Firestore security rules
+- User UID separation
+- Personal day/target/appointment data formats
+- Prospecting data format and sync path
+- Legacy `leaderboard/{uid}` publication path and payload
+- Secure `teams/{teamId}/leaderboard/{uid}` path and payload
+- Atomic Create Team and Join Team batches
+- Offline Firestore cache
+- Manifest and icons
+- Service-worker behaviour, apart from the required release cache identifier
+
+## Firestore paths
+
 - `users/{uid}`
 - `users/{uid}/days/{date}`
 - `users/{uid}/prospecting/state`
-- `leaderboard/{uid}` publication
-
-`publishLeaderboard()` remains the stable writer to `leaderboard/{uid}`. Teams are additive and use a separate secure read/write mirror under `teams/{teamId}/leaderboard/{uid}`.
-
-## Team layer
-- Solo account mode
-- Create Team
-- Join Team by private code
-- Verified membership under `teams/{teamId}/members/{uid}`
-- Team account information in Settings
-- Secure team-only leaderboard listener
-- Separate team error state that does not set the main accountability Sync Error
-- No automatic legacy migration on login
-
-## Firestore schema
+- `leaderboard/{uid}`
 - `teams/{teamId}`
 - `teams/{teamId}/members/{uid}`
 - `teams/{teamId}/leaderboard/{uid}`
 - `teamCodes/{code}`
 
-Create Team and Join Team use atomic Firestore write batches. User profile team metadata is committed in the same atomic operation as the required team/membership records, preventing partial profile-first migration states.
+## Firebase configuration
 
-## Staging setup required
-1. Confirm the Firebase CLI is using `agnt-staging-cb6ce`.
-2. Enable Email/Password Authentication and Firestore in staging.
-3. Deploy the included `firestore.rules` to the staging project only if the Teams v2 rules are not already active.
-4. Upgrade the staging project to Blaze and deploy only `functions:passkeyApi` for the passkey test.
-5. Host this build on a staging-only HTTPS target. Do not point production Pages at this branch.
+No Firebase Console, Authentication, Firestore schema, index or billing change is required for this release. The included `firestore.rules` file is byte-for-byte unchanged from v1.32.5.
 
-## Test accounts required
-- Team Pana owner analogue
-- Team Pana existing-member analogue
-- Additional Team Pana member analogue
-- New Team Pana joiner
-- Solo user
-- Team B owner
-- Team B member
-
-## Important
-No production migration has been implemented. Existing users with no team metadata remain unassigned and continue normal core sync. They can explicitly configure Solo or join/create a team from Settings in staging.
+Deploy the frontend files only to the separate `AGNT-staging` GitHub Pages repository. Do not upload this build to BETA.
