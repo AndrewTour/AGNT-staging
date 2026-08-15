@@ -1,4 +1,4 @@
-# AGNT v1.34.1 UI Polish + Weekly Sync — Staging Validation
+# AGNT v1.34.2 UI Polish + Weekly Sync — Staging Validation
 
 ## Added validation
 
@@ -87,3 +87,10 @@ Do not port this release to BETA until Create, Share, Join confirmation, manual 
 - Confirm Past and Upcoming Appointments still open normally.
 - Confirm booking, editing and deleting an appointment behave exactly as before.
 - Confirm the current-week leaderboard still updates from live daily records.
+
+
+## v1.34.2 button contrast regression check
+- Light mode: enabled controls retain full opacity and original pre-polish fills/text contrast.
+- Dark mode: enabled controls retain full opacity and original pre-polish fills/text contrast.
+- Disabled controls alone use reduced opacity/saturation.
+- Weekly leaderboard live sync remains unchanged from v1.34.1.

@@ -1,4 +1,13 @@
-# AGNT v1.34.1 STAGING — UI Polish + Weekly Leaderboard Sync
+# AGNT v1.34.2 STAGING — Button Contrast Restore
+
+## v1.34.2 correction
+
+- Restored button colour and contrast behaviour to the pre-polish Staging/BETA treatment in both light and dark mode.
+- Corrected a selector that was applying disabled opacity/saturation to every button.
+- Disabled styling now applies only to genuinely disabled or aria-disabled controls.
+- Removed v1.34-specific dark-mode button recolouring so the proven existing button styles remain authoritative.
+- Preserved the v1.34 button geometry/touch-target improvements, universal navigation treatment and weekly leaderboard sync fix.
+- No Firebase, authentication, Firestore path/rule, team workflow or data changes.
 
 ## Appointment correction
 

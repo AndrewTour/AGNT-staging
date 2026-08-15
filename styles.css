@@ -9881,7 +9881,8 @@ html[data-theme="dark"] .leaderboard-live.offline{color:#a5abb4;background:rgba(
 html[data-theme="dark"] .leaderboard-live.error{color:#ff8fa1;background:rgba(216,60,84,.12);border-color:rgba(216,60,84,.26)}
 
 
-/* v1.34.1 STAGING — UI consistency & iPhone PWA polish. Presentation only. Appointments restored to v1.33.2 presentation. */
+/* v1.34.2 STAGING — UI consistency & iPhone PWA polish. Presentation only.
+   Button colour/contrast inherits the proven v1.33.2/BETA styling; only geometry/touch-target improvements remain here. */
 :root{--agnt-control-h:44px;--agnt-control-radius:14px;--agnt-nested-radius:18px}
 
 /* Universal nested navigation: one back language across sessions and secondary screens. */
@@ -9908,7 +9909,7 @@ html[data-theme="dark"] .leaderboard-live.error{color:#ff8fa1;background:rgba(21
 /* Tap-target audit: preserve compact visuals while keeping iPhone hit areas reliable. */
 :is(.text-btn,.leaderboard-period-controls button,.leaderboard-mode-tabs button,.insight-period-switch button,.pipeline-temperature-filter button,.action-sheet-close,.team-close,.team-manager-close){min-height:44px}
 :is(button,a,input,select,textarea):not(#appointmentsView *):focus-visible{outline:3px solid rgba(11,99,243,.22)!important;outline-offset:2px}
-:is(button,[aria-disabled="true"]):not(#appointmentsView *){cursor:default;filter:saturate(.75);opacity:.42}
+button:disabled:not(#appointmentsView *),[aria-disabled="true"]:not(#appointmentsView *){cursor:not-allowed;filter:saturate(.75);opacity:.42}
 
 /* Reduce visual noise from nested cards without flattening hierarchy. */
 .prospect-session-card,.prospect-editor,.buyer-import-review,.market-session-context,.knocking-history-list-wrap,.leaderboard-dashboard,.campaign-builder,.pipeline-timeframe{border-radius:var(--agnt-nested-radius)!important}
@@ -9928,16 +9929,9 @@ html[data-theme="dark"] .leaderboard-live.error{color:#ff8fa1;background:rgba(21
 /* Dark mode: explicit contrast for controls that previously inherited light surfaces. */
 html[data-theme="dark"] :is(.prospect-session-head,.prospect-detail-nav,.knocking-history-head){border-bottom-color:#272c34}
 html[data-theme="dark"] :is(.prospect-session-card,.prospect-editor,.buyer-import-review,.market-session-context,.knocking-history-list-wrap,.leaderboard-dashboard,.campaign-builder,.pipeline-timeframe){background:#13161b!important;border-color:#292e36!important;box-shadow:none!important}
-html[data-theme="dark"] :is(.secondary,.text-btn,.scorecard-followup-actions button):not(#appointmentsView *){color:#eef1f5!important}
-html[data-theme="dark"] :is(.secondary,.scorecard-followup-actions button):not(#appointmentsView *){background:#1b1f26!important;border:1px solid #303641!important}
 html[data-theme="dark"] :is(.leaderboard-mode-tabs,.insight-period-switch){background:#171a20!important;border-color:#2a2f37!important}
-html[data-theme="dark"] :is(.leaderboard-mode-tabs button,.insight-period-switch button){color:#aeb5c0!important}
-html[data-theme="dark"] :is(.leaderboard-mode-tabs button.active,.insight-period-switch button.active){background:#f1f3f6!important;color:#111318!important;box-shadow:none!important}
-html[data-theme="dark"] :is(.action-sheet-close,.manual-dialler-head button){background:#242932!important;color:#f5f6f7!important;border:1px solid #313742!important}
 html[data-theme="dark"] :is(.settings,.prospect-editor,.campaign-builder,.pipeline-controls) :is(input,select,textarea){background:#191d23!important;border-color:#303640!important;color:#f5f6f7!important;-webkit-text-fill-color:#f5f6f7!important}
-html[data-theme="dark"] :is(.prospect-session-card .text-btn,.prospect-editor .text-btn){color:#b8c0cb!important}
 html[data-theme="dark"] .prospect-session-head>button:last-child{color:#ff8fa1!important}
-html[data-theme="dark"] :is([data-team-back],#backFromArchivedContacts,#backFromMarketPulse,#broadcastBack,.prospect-session-head>button:first-child,.prospect-detail-nav>button:first-child,.knocking-history-head>button:first-child){color:#8db8ff!important}
 
 /* Small-screen guardrails for long session labels. */
 @media(max-width:390px){
