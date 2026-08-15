@@ -4,7 +4,7 @@ import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, s
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, writeBatch, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
 const stagingBuildMarker=document.getElementById('stagingBuildMarker');
-if(stagingBuildMarker)stagingBuildMarker.textContent='STAGING v1.34.0 · UI polish + weekly sync';
+if(stagingBuildMarker)stagingBuildMarker.textContent='STAGING v1.34.1 · UI polish + weekly sync + appointment restore';
 
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];

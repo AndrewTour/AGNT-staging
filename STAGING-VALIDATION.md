@@ -1,4 +1,4 @@
-# AGNT v1.34.0 UI Polish + Weekly Sync — Staging Validation
+# AGNT v1.34.1 UI Polish + Weekly Sync — Staging Validation
 
 ## Added validation
 
@@ -79,3 +79,11 @@
 ## Promotion gate
 
 Do not port this release to BETA until Create, Share, Join confirmation, manual invite refresh, owner removal and voluntary member leave have been reviewed in staging with at least one owner and one disposable member account.
+
+
+## Appointments regression check
+
+- Confirm the Appointments landing screen matches Staging 12 and no additional button is shown.
+- Confirm Past and Upcoming Appointments still open normally.
+- Confirm booking, editing and deleting an appointment behave exactly as before.
+- Confirm the current-week leaderboard still updates from live daily records.

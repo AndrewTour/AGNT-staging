@@ -1,4 +1,11 @@
-# AGNT v1.34.0 STAGING — UI Polish + Weekly Leaderboard Sync
+# AGNT v1.34.1 STAGING — UI Polish + Weekly Leaderboard Sync
+
+## Appointment correction
+
+- Restored the Appointments surface to the v1.33.2 Staging 12 presentation.
+- Removed appointment-specific v1.34.0 polish overrides that could surface/restyle controls unexpectedly.
+- No appointment workflow, data or booking logic changed.
+- Weekly leaderboard live-sync fix remains unchanged.
 
 Built incrementally from AGNT Staging 12 / v1.33.2 Complete Team Workflow.
 
