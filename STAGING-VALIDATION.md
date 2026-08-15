@@ -1,3 +1,20 @@
+# AGNT v1.34.0 UI Polish + Weekly Sync — Staging Validation
+
+## Added validation
+
+- [x] JavaScript syntax check passes after weekly leaderboard derivation update.
+- [x] Current weekly leaderboard can be reconstructed from each member's synced daily records.
+- [x] Historical weekly leaderboard continues to read the existing published `weekHistory`.
+- [x] No new Firestore collection, document path, index or rule is required.
+- [x] Universal nested back controls share minimum 44px touch targets.
+- [x] Session, appointment and knocking secondary headers share one visual navigation language.
+- [x] Dark-mode secondary buttons, segmented controls, inputs and close controls receive explicit contrast.
+- [ ] Verify two signed-in staging team members: change today's Calls/Connects/Data and confirm both Daily and current Weekly views update on the second device.
+- [ ] Verify installed iPhone Home Screen PWA in Light, Dark and System appearance.
+- [ ] Verify Buyer Session, Prospecting Session, Hot Spotting SMS, Appointment booking-from-session and Knocking History back navigation.
+
+---
+
 # AGNT v1.33.2 Complete Team Workflow — Staging Validation
 
 ## Automated checks completed

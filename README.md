@@ -1,3 +1,22 @@
+# AGNT v1.34.0 STAGING — UI Polish + Weekly Leaderboard Sync
+
+Built incrementally from AGNT Staging 12 / v1.33.2 Complete Team Workflow.
+
+## Changes in this staging build
+
+- Adds a universal nested-screen/back-navigation treatment across prospecting sessions, buyer sessions, appointment flows, knocking history, team onboarding and secondary prospecting screens.
+- Standardises touch targets, selected states, form radii, nested-card hierarchy and session control spacing for the installed iPhone PWA.
+- Adds explicit dark-mode contrast for secondary buttons, segmented controls, modal close controls, forms and nested session surfaces.
+- Fixes current-week leaderboard freshness by deriving the current weekly row from the same synced daily records used by the daily leaderboard, while retaining published `weekHistory` for historical weeks and backward compatibility.
+- Publishes `weeklyKnockTarget` inside the existing leaderboard document so the derived weekly score can preserve the configured weekly knocking target without adding a new Firestore path or schema migration.
+- Bumps the service-worker cache key so installed staging PWAs receive the updated CSS and JavaScript.
+
+## Protected systems unchanged
+
+Firebase configuration, authentication, UID separation, Firestore paths/rules, personal data documents, local cache, prospecting persistence, team membership writes, invite-code workflow and deployment model are unchanged.
+
+---
+
 # AGNT v1.33.2 STAGING — Complete Team Workflow
 
 STAGING ONLY. Built directly from the verified v1.32.8 Team Refinement release. BETA and the BETA Firebase project are not changed by this package.
