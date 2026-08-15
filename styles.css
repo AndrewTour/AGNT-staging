@@ -9938,3 +9938,60 @@ html[data-theme="dark"] .prospect-session-head>button:last-child{color:#ff8fa1!i
   .prospect-session-head{grid-template-columns:minmax(58px,1fr) auto minmax(58px,1fr)!important}.prospect-session-head>button{font-size:.66rem!important;padding-inline:6px!important}.prospect-session-head-status{font-size:.62rem!important}
   #backFromMarketPulse,#broadcastBack{max-width:150px;overflow:hidden;text-overflow:ellipsis}
 }
+
+
+/* v1.34.3 STAGING — targeted Broadcast + Pipeline Session corrections only. */
+/* Contacts no longer renders a dead top-level Back control. Archived mode remains accessible through its existing toggle. */
+
+/* Broadcast menu dark-mode parity: keep the same structured list but restore readable surfaces and text. */
+html[data-theme="dark"] #broadcastMenu .broadcast-type-list{
+  background:#13161b!important;
+  border-color:#2a2f37!important;
+  box-shadow:none!important;
+}
+html[data-theme="dark"] #broadcastMenu .broadcast-type-card{
+  background:transparent!important;
+  border-top-color:#272c34!important;
+  color:#f5f6f7!important;
+}
+html[data-theme="dark"] #broadcastMenu .broadcast-type-card:active{background:#191d23!important}
+html[data-theme="dark"] #broadcastMenu .broadcast-type-card strong{color:#f5f6f7!important}
+html[data-theme="dark"] #broadcastMenu .broadcast-type-card small{color:#9da5b1!important}
+html[data-theme="dark"] #broadcastMenu .broadcast-type-card>b{color:#89919e!important}
+html[data-theme="dark"] #broadcastMenu .broadcast-type-icon{background:#1b1f26!important;color:#a7b0bd!important}
+
+/* Broadcast progress always stays inside the iPhone header viewport. */
+#app.broadcast-building .topbar{gap:10px}
+#app.broadcast-building .topbar>div:first-child{flex:1 1 auto;min-width:0;max-width:calc(100% - 106px)}
+#app.broadcast-building .top-actions{flex:0 0 auto;min-width:92px;max-width:104px;justify-content:flex-end;overflow:visible}
+#app.broadcast-building .broadcast-step-progress{width:100%;max-width:104px;gap:4px!important;justify-content:flex-end!important}
+#app.broadcast-building .broadcast-step-progress span{width:24px!important;height:24px!important;flex:0 0 24px!important}
+#app.broadcast-building .broadcast-step-progress i{width:10px!important;flex:0 0 10px!important}
+@media(max-width:390px){
+  #app.broadcast-building .topbar>div:first-child{max-width:calc(100% - 94px)}
+  #app.broadcast-building .top-actions{min-width:82px;max-width:90px}
+  #app.broadcast-building .broadcast-step-progress{max-width:90px;gap:3px!important}
+  #app.broadcast-building .broadcast-step-progress span{width:22px!important;height:22px!important;flex-basis:22px!important;font-size:9px!important}
+  #app.broadcast-building .broadcast-step-progress i{width:7px!important;flex-basis:7px!important}
+}
+
+/* Pipeline session queue refresh: intentionally small and secondary to the call workflow. */
+.prospect-session-head-status{align-items:center!important}
+.prospect-session-refresh{
+  display:grid!important;place-items:center!important;width:28px!important;height:28px!important;min-width:28px!important;min-height:28px!important;padding:0!important;margin-left:2px!important;
+  border:1px solid rgba(11,99,243,.16)!important;border-radius:999px!important;background:rgba(11,99,243,.07)!important;color:var(--blue)!important;
+  font-size:17px!important;font-weight:700!important;line-height:1!important
+}
+.prospect-session-refresh:active{transform:rotate(18deg);background:rgba(11,99,243,.13)!important}
+.pipeline-refresh-overlay{position:fixed;inset:0;z-index:1200;display:grid;place-items:center;padding:20px;background:rgba(8,11,16,.46);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.pipeline-refresh-card{width:min(100%,430px);padding:22px;border-radius:24px;background:#fff;border:1px solid rgba(18,26,40,.1);box-shadow:0 24px 70px rgba(13,18,28,.2)}
+.pipeline-refresh-card .eyebrow{display:block;color:#7d8590;font-size:10px;font-weight:850;letter-spacing:.16em}
+.pipeline-refresh-card h2{margin:7px 0 8px;font-size:23px;line-height:1.12;letter-spacing:-.035em}
+.pipeline-refresh-card p{margin:0;color:#68717e;font-size:13px;line-height:1.5}
+.pipeline-refresh-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:20px}
+.pipeline-refresh-actions button{min-height:48px;border-radius:15px}
+html[data-theme="dark"] .prospect-session-refresh{background:rgba(65,139,255,.1)!important;border-color:rgba(65,139,255,.22)!important;color:#78aaff!important}
+html[data-theme="dark"] .pipeline-refresh-card{background:#13161b!important;border-color:#2b3038!important;box-shadow:0 24px 70px rgba(0,0,0,.48)!important}
+html[data-theme="dark"] .pipeline-refresh-card h2{color:#f5f6f7!important}
+html[data-theme="dark"] .pipeline-refresh-card p{color:#a0a7b2!important}
+html[data-theme="dark"] .pipeline-refresh-actions .secondary{background:#191d23!important;border-color:#303640!important;color:#f5f6f7!important}

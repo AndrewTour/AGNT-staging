@@ -1,3 +1,14 @@
+# AGNT v1.34.3 STAGING — Broadcast + Pipeline Session Refinement
+
+## v1.34.3 changes
+
+- Fixed dark-mode contrast in the Broadcast campaign selector without changing the Broadcast workflow.
+- Removed the dead Contacts back button from the normal Contacts database view.
+- Constrained the Broadcast 1–2–3 progress indicator so it remains fully inside the iPhone viewport through the complete workflow.
+- Added a small refresh action to active Pipeline Sessions. It asks for confirmation, then replaces the current queue with up to 50 new eligible contacts using the exact existing pipeline eligibility and ordering logic.
+- Previously logged activity and session stats are preserved when refreshing; no prospecting criteria, Firebase paths, sync architecture or leaderboard behaviour changed.
+- Preserved all v1.34.2 UI/button contrast corrections and the working current-week leaderboard sync fix.
+
 # AGNT v1.34.2 STAGING — Button Contrast Restore
 
 ## v1.34.2 correction

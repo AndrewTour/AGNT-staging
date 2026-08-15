@@ -1,3 +1,14 @@
+# v1.34.3 targeted validation
+
+- Broadcast menu: in dark mode, campaign titles/descriptions/icons are readable against a dark list surface.
+- Broadcast steps: confirm 1–2–3 progress indicator fits without clipping on iPhone width at Recipients, Message and Review.
+- Contacts: normal Contacts view has no dead Back button; Archived toggle still works.
+- Pipeline Session: refresh icon appears only in standard pipeline sessions, not Hot Spotting sessions.
+- Refresh confirmation: Keep Current leaves queue unchanged; Refresh replaces queue with up to 50 new eligible contacts.
+- Pipeline criteria/order are unchanged because refresh reuses the same eligibility + sorting helper as initial queue creation.
+- Weekly leaderboard current-week live sync remains unchanged.
+- No Firebase config/rule/path changes.
+
 # AGNT v1.34.2 UI Polish + Weekly Sync — Staging Validation
 
 ## Added validation
