@@ -9630,7 +9630,7 @@ html[data-theme="dark"] .prospect-insight-link{
   color:#d7e5ff!important;
 }
 
-/* v1.33.0 STAGING — Teams UI aligned to the AGNT design system */
+/* v1.33.2 STAGING — Teams UI aligned to the AGNT design system */
 body.team-setup-open{overflow:hidden}
 .team-onboarding{
   position:fixed;inset:0;z-index:1200;display:grid;place-items:center;
@@ -9681,6 +9681,24 @@ body.team-setup-open{overflow:hidden}
 .team-privacy-note strong{color:var(--agnt-ink,#111318);font-size:12px;line-height:1.25}
 .team-privacy-note small{color:var(--agnt-muted,#8b909a);font-size:10px;line-height:1.38}
 .team-submit{min-height:50px;margin-top:0;border-radius:16px;font-size:14px}
+.team-join-confirm-card{display:grid;grid-template-columns:48px minmax(0,1fr);align-items:center;gap:13px;padding:14px;border:1px solid var(--agnt-border,#e1e3e8);border-radius:19px;background:var(--agnt-field,#f4f5f7)}
+.team-join-confirm-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:16px;background:var(--agnt-card,#fff);color:var(--agnt-blue,#1769ff);border:1px solid var(--agnt-divider,#eceef1)}
+.team-join-confirm-icon svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.team-join-confirm-card>div{min-width:0;display:grid;gap:4px}
+.team-join-confirm-card>div>span,.team-created-summary>div>span,.team-created-code>span{color:var(--agnt-label,#858b98);font-size:9px;font-weight:820;letter-spacing:.14em}
+.team-join-confirm-card strong,.team-created-summary strong{overflow:hidden;color:var(--agnt-ink,#111318);font-size:17px;line-height:1.15;font-weight:790;letter-spacing:-.02em;text-overflow:ellipsis;white-space:nowrap}
+.team-join-confirm-card small{color:var(--agnt-muted,#8b909a);font-size:10px;line-height:1.3}.team-join-confirm-card b{color:var(--agnt-ink,#111318);font-weight:800;letter-spacing:.09em}
+.team-created-heading{margin-bottom:16px}
+.team-created-summary{display:grid;grid-template-columns:38px minmax(0,1fr);align-items:center;gap:11px;margin-bottom:10px;padding:12px 14px;border:1px solid #cfe9de;border-radius:17px;background:#eef8f4}
+.team-created-check{width:38px;height:38px;display:grid;place-items:center;border-radius:13px;background:#d8f2e7;color:#07875b;font-size:16px;font-weight:900}
+.team-created-summary>div{min-width:0;display:grid;gap:4px}
+.team-created-code{display:grid;gap:5px;padding:17px 15px;border:1px solid var(--agnt-border,#e1e3e8);border-radius:19px;background:var(--agnt-field,#f4f5f7);text-align:center}
+.team-created-code strong{color:var(--agnt-ink,#111318);font-size:23px;font-weight:850;letter-spacing:.16em;font-variant-numeric:tabular-nums}
+.team-created-code small{color:var(--agnt-muted,#8b909a);font-size:9px;line-height:1.4}
+.team-created-actions{display:grid;grid-template-columns:1.15fr .85fr;gap:8px;margin-top:12px}
+.team-created-actions button{min-height:48px;margin:0;border-radius:15px;font-size:12px;font-weight:780}
+.team-created-actions .secondary{background:var(--agnt-soft,#f5f6f7)!important;border:1px solid var(--agnt-border,#e1e3e8)!important;color:var(--agnt-ink,#111318)!important}
+.team-created-done{width:100%;margin:7px 0 0;padding:10px;color:var(--agnt-blue,#1769ff);font-size:12px;font-weight:760}
 .team-onboarding-card[aria-busy="true"] .team-submit{cursor:progress}
 .team-onboarding-card button:disabled,.team-onboarding-card input:disabled{opacity:.58;cursor:not-allowed}
 #teamSetupMessage{min-height:18px;margin:11px 2px 0;color:var(--agnt-muted,#8b909a);font-size:11px;line-height:1.4;text-align:center}
@@ -9710,14 +9728,15 @@ body.team-setup-open{overflow:hidden}
 .team-account-status[data-state="error"]::before{background:var(--agnt-red,#d83c54)}
 .team-account-status[data-state="solo"]::before{background:var(--agnt-blue,#1769ff)}
 .team-account-settings>.secondary{min-height:46px;margin-top:9px;border-radius:15px;background:var(--agnt-soft,#f5f6f7)!important;border:1px solid var(--agnt-border,#e1e3e8)!important;color:var(--agnt-ink,#111318)!important;font-size:12px;font-weight:760}
+.team-account-settings>.secondary.team-leave-button{background:#fff5f6!important;border-color:#f0ccd1!important;color:#c8324b!important}
 
-body.team-manager-open{overflow:hidden}
+body.team-manager-open,body.team-leave-open,body.team-code-refresh-open{overflow:hidden}
 .team-manager{
   position:fixed;inset:0;z-index:1210;display:grid;place-items:center;
   padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));
   background:rgba(247,248,250,.97);overflow:auto;color:var(--agnt-ink,#111318)
 }
-.team-manager.hidden,.team-remove-confirm.hidden{display:none}
+.team-manager.hidden,.team-remove-confirm.hidden,.team-leave-confirm.hidden,.team-code-refresh-confirm.hidden{display:none}
 .team-manager-card{
   position:relative;width:min(100%,460px);max-height:calc(100dvh - max(36px,env(safe-area-inset-top) + env(safe-area-inset-bottom)));
   overflow:auto;overscroll-behavior:contain;padding:18px 20px 20px;border:1px solid var(--agnt-border,#e1e3e8);border-radius:28px;
@@ -9738,6 +9757,11 @@ body.team-manager-open{overflow:hidden}
 .team-manager-invite strong{overflow:hidden;color:var(--agnt-ink,#111318);font-size:17px;font-weight:830;letter-spacing:.13em;text-overflow:ellipsis;white-space:nowrap;font-variant-numeric:tabular-nums}
 .team-manager-invite small{color:var(--agnt-muted,#8b909a);font-size:10px;line-height:1.35}
 .team-manager-invite button{flex:0 0 auto;min-width:64px;min-height:38px;padding:0 13px;border:0;border-radius:12px;background:var(--agnt-ink,#111318);color:var(--agnt-page,#fff);font-size:11px;font-weight:780}
+.team-manager-invite>.team-manager-invite-actions{min-width:auto;display:grid;gap:6px}
+.team-manager-invite-actions button{min-width:62px;min-height:34px;padding:0 10px}
+.team-manager-invite-actions button+button{background:var(--agnt-card,#fff);color:var(--agnt-ink,#111318);border:1px solid var(--agnt-border,#e1e3e8)}
+.team-manager-refresh{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;align-items:center;margin:-12px 0 21px;padding:11px 13px;border:1px solid var(--agnt-border,#e1e3e8);border-radius:15px;background:var(--agnt-card,#fff);color:var(--agnt-ink,#111318);text-align:left}
+.team-manager-refresh>span{font-size:11px;font-weight:760}.team-manager-refresh>small{grid-column:1;color:var(--agnt-muted,#8b909a);font-size:9px;line-height:1.35}.team-manager-refresh>b{grid-column:2;grid-row:1/3;color:var(--agnt-faint,#a4a9b1);font-size:22px;font-weight:400}
 .team-manager-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 2px 8px}
 .team-manager-section-head small{color:var(--agnt-muted,#8b909a);font-size:10px;font-weight:650}
 .team-member-list{display:grid;border:1px solid var(--agnt-border,#e1e3e8);border-radius:19px;background:var(--agnt-field,#f4f5f7);overflow:hidden}
@@ -9758,20 +9782,35 @@ body.team-manager-open{overflow:hidden}
 #teamManagerStatus:empty{visibility:hidden}
 #teamManagerStatus[data-state="error"]{color:var(--agnt-red,#d83c54)}
 #teamManagerStatus[data-state="success"]{color:var(--agnt-green,#079a67)}
-.team-remove-confirm{position:fixed;inset:0;z-index:1230;display:grid;place-items:center;padding:18px;background:rgba(11,13,17,.48);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.team-remove-confirm-card{width:min(100%,360px);box-sizing:border-box;padding:24px 20px 19px;border:1px solid var(--agnt-border,#e1e3e8);border-radius:25px;background:var(--agnt-card,#fff);box-shadow:0 24px 70px rgba(0,0,0,.22);text-align:center}
-.team-remove-icon{width:48px;height:48px;display:grid;place-items:center;margin:0 auto 13px;border-radius:16px;background:#fff0f2;color:#cf344c}
-.team-remove-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.team-remove-kicker{display:block;color:#cf344c;font-size:9px;font-weight:830;letter-spacing:.14em}
-.team-remove-confirm-card h2{margin:7px 0 8px;color:var(--agnt-ink,#111318);font-size:23px;line-height:1.1;letter-spacing:-.035em}
-.team-remove-confirm-card p{margin:0;color:var(--agnt-muted,#8b909a);font-size:12px;line-height:1.48}
-.team-remove-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:19px}
-.team-remove-actions button{min-height:46px;margin:0;border-radius:14px;font-size:12px;font-weight:780}
-.team-remove-actions .secondary{background:var(--agnt-soft,#f5f6f7)!important;border:1px solid var(--agnt-border,#e1e3e8)!important;color:var(--agnt-ink,#111318)!important}
-.team-remove-actions .danger{border:0;background:#cf344c;color:#fff}
-.team-remove-actions button:disabled{opacity:.55;cursor:not-allowed}
-#teamRemoveStatus{display:block;min-height:16px;margin-top:9px;color:var(--agnt-red,#d83c54);font-size:10px}
-.team-manager button:focus-visible,.team-remove-confirm button:focus-visible{outline:3px solid rgba(23,105,255,.18);outline-offset:2px}
+.team-remove-confirm,.team-leave-confirm,.team-code-refresh-confirm{position:fixed;inset:0;z-index:1230;display:grid;place-items:center;padding:18px;background:rgba(11,13,17,.48);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.team-remove-confirm-card,.team-leave-confirm-card,.team-code-refresh-confirm-card{width:min(100%,360px);box-sizing:border-box;padding:24px 20px 19px;border:1px solid var(--agnt-border,#e1e3e8);border-radius:25px;background:var(--agnt-card,#fff);box-shadow:0 24px 70px rgba(0,0,0,.22);text-align:center}
+.team-remove-icon,.team-leave-icon{width:48px;height:48px;display:grid;place-items:center;margin:0 auto 13px;border-radius:16px;background:#fff0f2;color:#cf344c}
+.team-remove-icon svg,.team-leave-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.team-remove-kicker,.team-leave-kicker{display:block;color:#cf344c;font-size:9px;font-weight:830;letter-spacing:.14em}
+.team-remove-confirm-card h2,.team-leave-confirm-card h2{margin:7px 0 8px;color:var(--agnt-ink,#111318);font-size:23px;line-height:1.1;letter-spacing:-.035em}
+.team-remove-confirm-card p,.team-leave-confirm-card p{margin:0;color:var(--agnt-muted,#8b909a);font-size:12px;line-height:1.48}
+.team-leave-data-note{display:grid;grid-template-columns:24px minmax(0,1fr);gap:9px;align-items:start;margin:16px 0 0;padding:12px;border-radius:15px;background:#eef8f4;text-align:left}
+.team-leave-data-note>span{width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:#d8f2e7;color:#07875b;font-size:12px;font-weight:900}
+.team-leave-data-note p{display:grid;gap:3px}
+.team-leave-data-note strong{color:var(--agnt-ink,#111318);font-size:11px;line-height:1.25}
+.team-leave-data-note small{color:var(--agnt-muted,#8b909a);font-size:9px;line-height:1.4}
+.team-remove-actions,.team-leave-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:19px}
+.team-remove-actions button,.team-leave-actions button{min-height:46px;margin:0;border-radius:14px;font-size:12px;font-weight:780}
+.team-remove-actions .secondary,.team-leave-actions .secondary{background:var(--agnt-soft,#f5f6f7)!important;border:1px solid var(--agnt-border,#e1e3e8)!important;color:var(--agnt-ink,#111318)!important}
+.team-remove-actions .danger,.team-leave-actions .danger{border:0;background:#cf344c;color:#fff}
+.team-remove-actions button:disabled,.team-leave-actions button:disabled{opacity:.55;cursor:not-allowed}
+#teamRemoveStatus,#teamLeaveStatus{display:block;min-height:16px;margin-top:9px;color:var(--agnt-red,#d83c54);font-size:10px}
+.team-code-refresh-icon{width:48px;height:48px;display:grid;place-items:center;margin:0 auto 13px;border-radius:16px;background:#edf3ff;color:var(--agnt-blue,#1769ff)}
+.team-code-refresh-icon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.team-code-refresh-kicker{display:block;color:var(--agnt-blue,#1769ff);font-size:9px;font-weight:830;letter-spacing:.14em}
+.team-code-refresh-confirm-card h2{margin:7px 0 8px;color:var(--agnt-ink,#111318);font-size:23px;line-height:1.1;letter-spacing:-.035em}
+.team-code-refresh-confirm-card>p{margin:0;color:var(--agnt-muted,#8b909a);font-size:12px;line-height:1.48}
+.team-code-refresh-note{display:grid;grid-template-columns:24px minmax(0,1fr);gap:9px;align-items:start;margin:16px 0 0;padding:12px;border-radius:15px;background:#eef8f4;text-align:left}
+.team-code-refresh-note>span{width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:#d8f2e7;color:#07875b;font-size:12px;font-weight:900}
+.team-code-refresh-note p{display:grid;gap:3px;margin:0}.team-code-refresh-note strong{color:var(--agnt-ink,#111318);font-size:11px;line-height:1.25}.team-code-refresh-note small{color:var(--agnt-muted,#8b909a);font-size:9px;line-height:1.4}
+.team-code-refresh-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:19px}.team-code-refresh-actions button{min-height:46px;margin:0;border-radius:14px;font-size:12px;font-weight:780}.team-code-refresh-actions .secondary{background:var(--agnt-soft,#f5f6f7)!important;border:1px solid var(--agnt-border,#e1e3e8)!important;color:var(--agnt-ink,#111318)!important}.team-code-refresh-actions button:disabled{opacity:.55;cursor:not-allowed}
+#teamCodeRefreshStatus{display:block;min-height:16px;margin-top:9px;color:var(--agnt-red,#d83c54);font-size:10px}
+.team-manager button:focus-visible,.team-remove-confirm button:focus-visible,.team-leave-confirm button:focus-visible,.team-code-refresh-confirm button:focus-visible{outline:3px solid rgba(23,105,255,.18);outline-offset:2px}
 
 html[data-theme="dark"] .team-onboarding{background:rgba(11,13,17,.98);color:#f5f6f7}
 html[data-theme="dark"] .team-onboarding-card{background:#11141a;border-color:#292d35;box-shadow:0 24px 70px rgba(0,0,0,.48)}
@@ -9782,24 +9821,38 @@ html[data-theme="dark"] .team-choice-icon{background:#11141a;border-color:#25293
 html[data-theme="dark"] .team-field input{background:#171a20;border-color:#2a2e36;color:#f5f6f7;-webkit-text-fill-color:#f5f6f7}
 html[data-theme="dark"] .team-privacy-note{background:#171a20}
 html[data-theme="dark"] .team-privacy-note>span{background:#143428;color:#65d6a8}
+html[data-theme="dark"] .team-join-confirm-card,html[data-theme="dark"] .team-created-code{background:#171a20;border-color:#2a2e36}
+html[data-theme="dark"] .team-join-confirm-icon{background:#11141a;border-color:#252932}
+html[data-theme="dark"] .team-created-summary{background:#14241e;border-color:#244a3b}
+html[data-theme="dark"] .team-created-check{background:#183c2e;color:#65d6a8}
+html[data-theme="dark"] .team-created-actions .secondary{background:#171a20!important;border-color:#2a2e36!important;color:#f5f6f7!important}
 html[data-theme="dark"] .team-account-summary{background:#15191f;border-color:#2a2f37}
 html[data-theme="dark"] .team-role-badge,html[data-theme="dark"] .team-code-panel{background:#11141a;border-color:#292d35}
 html[data-theme="dark"] .team-code-panel button{background:#f5f6f7;color:#111318}
 html[data-theme="dark"] .settings .team-account-status{color:#969ca7!important}
 html[data-theme="dark"] .settings .team-account-status[data-state="error"]{color:#ff8fa1!important}
 html[data-theme="dark"] .team-account-settings>.secondary{background:#171a20!important;border-color:#2a2e36!important;color:#f5f6f7!important}
+html[data-theme="dark"] .team-account-settings>.secondary.team-leave-button{background:rgba(216,60,84,.12)!important;border-color:rgba(216,60,84,.28)!important;color:#ff8fa1!important}
 html[data-theme="dark"] .team-manager{background:rgba(11,13,17,.98);color:#f5f6f7}
-html[data-theme="dark"] .team-manager-card,html[data-theme="dark"] .team-remove-confirm-card{background:#11141a;border-color:#292d35;box-shadow:0 24px 70px rgba(0,0,0,.48)}
+html[data-theme="dark"] .team-manager-card,html[data-theme="dark"] .team-remove-confirm-card,html[data-theme="dark"] .team-leave-confirm-card,html[data-theme="dark"] .team-code-refresh-confirm-card{background:#11141a;border-color:#292d35;box-shadow:0 24px 70px rgba(0,0,0,.48)}
 html[data-theme="dark"] .team-manager-handle{background:#3a4049}
 html[data-theme="dark"] .team-manager-invite,html[data-theme="dark"] .team-member-list{background:#15191f;border-color:#2a2f37}
 html[data-theme="dark"] .team-manager-invite button{background:#f5f6f7;color:#111318}
+html[data-theme="dark"] .team-manager-invite-actions button+button{background:#171a20;color:#f5f6f7;border-color:#2a2e36}
+html[data-theme="dark"] .team-manager-refresh{background:#171a20;border-color:#2a2e36;color:#f5f6f7}
 html[data-theme="dark"] .team-member-row,html[data-theme="dark"] .team-member-empty{background:#11141a}
 html[data-theme="dark"] .team-member-row+.team-member-row{border-color:#292d35}
 html[data-theme="dark"] .team-member-avatar{background:#182235;color:#91b9ff}
 html[data-theme="dark"] .team-member-role{background:#20242b;color:#aeb4be}
 html[data-theme="dark"] .team-member-action{background:rgba(216,60,84,.12);border-color:rgba(216,60,84,.28);color:#ff8fa1}
-html[data-theme="dark"] .team-remove-icon{background:rgba(216,60,84,.13);color:#ff8fa1}
-html[data-theme="dark"] .team-remove-actions .secondary{background:#171a20!important;border-color:#2a2e36!important;color:#f5f6f7!important}
+html[data-theme="dark"] .team-remove-icon,html[data-theme="dark"] .team-leave-icon{background:rgba(216,60,84,.13);color:#ff8fa1}
+html[data-theme="dark"] .team-leave-data-note{background:#14241e}
+html[data-theme="dark"] .team-leave-data-note>span{background:#183c2e;color:#65d6a8}
+html[data-theme="dark"] .team-remove-actions .secondary,html[data-theme="dark"] .team-leave-actions .secondary{background:#171a20!important;border-color:#2a2e36!important;color:#f5f6f7!important}
+html[data-theme="dark"] .team-code-refresh-icon{background:#182235;color:#91b9ff}
+html[data-theme="dark"] .team-code-refresh-note{background:#14241e}
+html[data-theme="dark"] .team-code-refresh-note>span{background:#183c2e;color:#65d6a8}
+html[data-theme="dark"] .team-code-refresh-actions .secondary{background:#171a20!important;border-color:#2a2e36!important;color:#f5f6f7!important}
 
 @media(max-width:520px){
   .team-onboarding,.team-manager{place-items:end center;padding:max(12px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
@@ -9819,7 +9872,7 @@ html[data-theme="dark"] .team-remove-actions .secondary{background:#171a20!impor
   .team-field{margin-top:14px}
 }
 
-/* v1.33.0 STAGING — stable team connection states */
+/* v1.33.2 STAGING — stable team connection states */
 .leaderboard-live.connecting{color:#a46a00;background:#fff6dc;border-color:#f1d698;text-shadow:none}
 .leaderboard-live.offline{color:#6f7681;background:#f1f3f5;border-color:#dde1e6;text-shadow:none}
 .leaderboard-live.error{color:#c8324b;background:#fff0f2;border-color:#f2c5cc;text-shadow:none}

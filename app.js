@@ -4,7 +4,7 @@ import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, s
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, writeBatch, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
 const stagingBuildMarker=document.getElementById('stagingBuildMarker');
-if(stagingBuildMarker)stagingBuildMarker.textContent='STAGING v1.33.0 · team management';
+if(stagingBuildMarker)stagingBuildMarker.textContent='STAGING v1.33.2 · team workflow';
 
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -20,8 +20,10 @@ let knockingSessionActive=false,knockingSessionVisible=false,knockingSessionEndi
 let year=new Date().getFullYear(), monthCursor=new Date(), uid='local', currentUser=null, cloud=false, db=null, auth=null;
 let unsubDays=null, unsubProfile=null, unsubLeaderboard=null, unsubProspecting=null, unsubTeamMembership=null, unsubTeamMembers=null, timerTick=null, syncTimer=null, leaderboardPublishTimer=null, prospectingSaveTimer=null;
 let accountMode='unconfigured',teamId=null,teamRole=null,teamName='',teamJoinCode='',teamLayerStatus='idle',teamLayerError='',creatingAccount=false,newAccountUidPending='',teamOnboardingActive=false;
-let teamSetupBusy=false,teamSetupReturnFocus=null;
+let teamSetupBusy=false,teamSetupReturnFocus=null,pendingTeamJoin=null;
 let teamMembers=[],teamMembersStatus='idle',teamMembersError='',teamMembersDataSignature='',subscribedMembershipTeamId='',subscribedMembersTeamId='',teamManagerOpen=false,teamManagerReturnFocus=null,pendingTeamMemberRemoval=null,teamMemberActionBusy=false;
+let teamLeaveBusy=false,teamLeaveReturnFocus=null;
+let teamInviteRefreshBusy=false,teamInviteRefreshReturnFocus=null;
 let pendingSyncOperations=0, syncHasError=false, lastLeaderboardSignature='', lastTeamLeaderboardSignature='', lastProspectingSignature='';
 let subscribedTeamId='',teamLeaderboardDataSignature='',teamInitialisationToken=0;
 let leaderboardListRenderMarkup='';
@@ -167,14 +169,14 @@ function cacheVerifiedTeamState(){
   try{localStorage.setItem(teamStateCacheKey(uid),JSON.stringify(value))}catch(err){console.warn('Verified team state could not be cached',err)}
 }
 function forgetCachedTeamState(userId=uid){try{localStorage.removeItem(teamStateCacheKey(userId))}catch{}}
-function resetState(){days={};targets={...DEFAULTS};workDays=[...DEFAULT_WORK_DAYS];agentName='';calendarPreference='outlook';appearancePreference=normaliseAppearance(localStorage.getItem('agnt:appearance')||'system');applyAppearance(appearancePreference,{persist:false});leaderboardEntries=[];marketPulseEvents=[];accountMode='unconfigured';teamId=null;teamRole=null;teamName='';teamJoinCode='';teamLayerStatus='idle';teamLayerError='';teamOnboardingActive=false;teamSetupBusy=false;teamSetupReturnFocus=null;teamMembers=[];teamMembersStatus='idle';teamMembersError='';teamMembersDataSignature='';subscribedMembershipTeamId='';subscribedMembersTeamId='';teamManagerOpen=false;teamManagerReturnFocus=null;pendingTeamMemberRemoval=null;teamMemberActionBusy=false;subscribedTeamId='';teamLeaderboardDataSignature='';leaderboardListRenderMarkup='';selectedDate=todayKey();appointmentDate=selectedDate}
+function resetState(){days={};targets={...DEFAULTS};workDays=[...DEFAULT_WORK_DAYS];agentName='';calendarPreference='outlook';appearancePreference=normaliseAppearance(localStorage.getItem('agnt:appearance')||'system');applyAppearance(appearancePreference,{persist:false});leaderboardEntries=[];marketPulseEvents=[];accountMode='unconfigured';teamId=null;teamRole=null;teamName='';teamJoinCode='';teamLayerStatus='idle';teamLayerError='';teamOnboardingActive=false;teamSetupBusy=false;teamSetupReturnFocus=null;pendingTeamJoin=null;teamMembers=[];teamMembersStatus='idle';teamMembersError='';teamMembersDataSignature='';subscribedMembershipTeamId='';subscribedMembersTeamId='';teamManagerOpen=false;teamManagerReturnFocus=null;pendingTeamMemberRemoval=null;teamMemberActionBusy=false;teamLeaveBusy=false;teamLeaveReturnFocus=null;teamInviteRefreshBusy=false;teamInviteRefreshReturnFocus=null;subscribedTeamId='';teamLeaderboardDataSignature='';leaderboardListRenderMarkup='';selectedDate=todayKey();appointmentDate=selectedDate}
 function safeJsonParse(value,fallback){try{return JSON.parse(value)}catch{return fallback}}
 function loadLocal(userId=uid){resetState();const prefix=storagePrefix(userId);try{days=normaliseDaysMap(safeJsonParse(localStorage.getItem(prefix+'days')||localStorage.getItem(prefix+'days-backup')||'{}',{}));targets={...DEFAULTS,...safeJsonParse(localStorage.getItem(prefix+'targets')||'{}',{})};agentName=localStorage.getItem(prefix+'agent-name')||'';const savedWorkDays=safeJsonParse(localStorage.getItem(prefix+'work-days')||'null',null);if(Array.isArray(savedWorkDays)&&savedWorkDays.length)workDays=normaliseWorkDays(savedWorkDays);const savedCalendarPreference=localStorage.getItem(prefix+'calendar-preference');calendarPreference=savedCalendarPreference==='apple'?'apple':'outlook';prospects=normaliseProspects(safeJsonParse(localStorage.getItem(prefix+'prospects')||'[]',[]));prospectInteractions=normaliseProspectInteractions(safeJsonParse(localStorage.getItem(prefix+'prospect-interactions')||'[]',[]));marketPulseEvents=normaliseMarketPulseEvents(safeJsonParse(localStorage.getItem(prefix+'market-pulse-events')||'[]',[]));campaignHistory=safeJsonParse(localStorage.getItem(prefix+'campaign-history')||'[]',[]);bulkSmsTestLaunches=safeJsonParse(localStorage.getItem(prefix+'bulk-sms-test-launches')||'[]',[]);dirtyDayKeys=new Set(safeJsonParse(localStorage.getItem(prefix+'dirty-days')||'[]',[]).filter(validDateKey))}catch(err){console.error('Local data recovery failed',err);resetState();dirtyDayKeys=new Set()}}
 function saveDirtyDays(){try{localStorage.setItem(storagePrefix(uid)+'dirty-days',JSON.stringify([...dirtyDayKeys]))}catch(err){console.error('Dirty-day queue save failed',err)}}
 function markDayDirty(k){dirtyDayKeys.add(k);saveDirtyDays()}
 function clearDayDirty(k,clientUpdatedAt){if(Number(days[k]?.clientUpdatedAt)===Number(clientUpdatedAt)){dirtyDayKeys.delete(k);saveDirtyDays()}}
 function saveLocal(){const prefix=storagePrefix(uid);try{const serialised=JSON.stringify(normaliseDaysMap(days));const previous=localStorage.getItem(prefix+'days');if(previous)localStorage.setItem(prefix+'days-backup',previous);localStorage.setItem(prefix+'days',serialised);localStorage.setItem(prefix+'targets',JSON.stringify(targets));localStorage.setItem(prefix+'agent-name',agentName);localStorage.setItem(prefix+'work-days',JSON.stringify(workDays));localStorage.setItem(prefix+'calendar-preference',calendarPreference);localStorage.setItem(prefix+'prospects',JSON.stringify(prospects));localStorage.setItem(prefix+'prospect-interactions',JSON.stringify(prospectInteractions));localStorage.setItem(prefix+'market-pulse-events',JSON.stringify(marketPulseEvents));localStorage.setItem(prefix+'campaign-history',JSON.stringify(campaignHistory.slice(0,20)));localStorage.setItem(prefix+'bulk-sms-test-launches',JSON.stringify(bulkSmsTestLaunches.slice(0,10)));return true}catch(err){console.error('Local save failed',err);return false}}
-function clearActiveSession(){teamInitialisationToken++;unsubDays?.();unsubProfile?.();unsubLeaderboard?.();unsubProspecting?.();unsubTeamMembership?.();unsubTeamMembers?.();unsubDays=unsubProfile=unsubLeaderboard=unsubProspecting=unsubTeamMembership=unsubTeamMembers=null;hideTeamManager({restoreFocus:false});closeTeamMemberRemoval({force:true});clearInterval(timerTick);clearTimeout(syncTimer);clearTimeout(leaderboardPublishTimer);clearTimeout(prospectingSaveTimer);prospectingSaveTimer=null;pendingProspectingPayload=null;pendingProspectingSignature='';prospectingWriteInFlight=false;prospectingSaveWaiters.splice(0).forEach(({resolve})=>resolve());currentUser=null;uid='local';cloud=false;pendingSyncOperations=0;syncHasError=false;lastLeaderboardSignature='';lastTeamLeaderboardSignature='';lastProspectingSignature='';dirtyDayKeys=new Set();resetState()}
+function clearActiveSession(){teamInitialisationToken++;unsubDays?.();unsubProfile?.();unsubLeaderboard?.();unsubProspecting?.();unsubTeamMembership?.();unsubTeamMembers?.();unsubDays=unsubProfile=unsubLeaderboard=unsubProspecting=unsubTeamMembership=unsubTeamMembers=null;hideTeamManager({restoreFocus:false});closeTeamMemberRemoval({force:true});hideTeamLeaveConfirmation({force:true,restoreFocus:false});hideTeamCodeRefreshConfirmation({force:true,restoreFocus:false});clearInterval(timerTick);clearTimeout(syncTimer);clearTimeout(leaderboardPublishTimer);clearTimeout(prospectingSaveTimer);prospectingSaveTimer=null;pendingProspectingPayload=null;pendingProspectingSignature='';prospectingWriteInFlight=false;prospectingSaveWaiters.splice(0).forEach(({resolve})=>resolve());currentUser=null;uid='local';cloud=false;pendingSyncOperations=0;syncHasError=false;lastLeaderboardSignature='';lastTeamLeaderboardSignature='';lastProspectingSignature='';dirtyDayKeys=new Set();resetState()}
 function displayAgentName(){return (agentName||currentUser?.displayName||currentUser?.email?.split('@')[0]||'Agent').trim()}
 function welcomeProfileName(){return (agentName||currentUser?.displayName||'Agent').trim()||'Agent'}
 function welcomeStorageKey(){return `${storagePrefix(uid)}welcome:${todayKey()}`}
@@ -2508,7 +2510,7 @@ function normaliseTeamCode(value){return String(value||'').toUpperCase().replace
 function makeTeamCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',bytes=new Uint8Array(10);crypto.getRandomValues(bytes);return Array.from(bytes,b=>chars[b%chars.length]).join('')}
 function makeTeamId(){return `team_${crypto.randomUUID?.()||uuid()}`.replace(/[^A-Za-z0-9_-]/g,'_')}
 function setTeamLayerStatus(status,error=''){teamLayerStatus=status;teamLayerError=error||'';renderTeamSettings();renderLeaderboardStatus()}
-function clearVerifiedTeamState({forgetCached=false}={}){unsubLeaderboard?.();unsubLeaderboard=null;subscribedTeamId='';teamLeaderboardDataSignature='';if(forgetCached)forgetCachedTeamState();accountMode='unconfigured';teamId=null;teamRole=null;teamName='';teamJoinCode='';stopTeamMembershipSubscriptions();leaderboardEntries=[leaderboardPayload()];renderLeaderboard()}
+function clearVerifiedTeamState({forgetCached=false}={}){unsubLeaderboard?.();unsubLeaderboard=null;subscribedTeamId='';teamLeaderboardDataSignature='';lastTeamLeaderboardSignature='';if(forgetCached)forgetCachedTeamState();accountMode='unconfigured';teamId=null;teamRole=null;teamName='';teamJoinCode='';stopTeamMembershipSubscriptions();leaderboardEntries=[leaderboardPayload()];renderLeaderboard()}
 function setVerifiedTeamState({mode='unconfigured',id=null,role=null,name='',joinCode=''}={}, {cache=true}={}){accountMode=mode;teamId=id;teamRole=role;teamName=name;teamJoinCode=joinCode;if(cache)cacheVerifiedTeamState()}
 function restoreCachedTeamState(){const cached=readCachedTeamState(uid);if(!cached)return false;setVerifiedTeamState(cached,{cache:false});return true}
 function teamLeaderboardEntriesSignature(entries){return JSON.stringify((entries||[]).map(entry=>[String(entry.uid||''),leaderboardSignature(entry)]).sort((a,b)=>a[0].localeCompare(b[0])))}
@@ -2527,24 +2529,27 @@ function setTeamSetupBusy(busy,{button=null,label=''}={}){
 }
 function showTeamSetupPanel(panel='choices'){
   if(teamSetupBusy)return;
-  const titles={choices:'teamOnboardingTitle',create:'teamCreateTitle',join:'teamJoinTitle'};
+  const titles={choices:'teamOnboardingTitle',create:'teamCreateTitle',join:'teamJoinTitle','join-confirm':'teamJoinConfirmTitle',created:'teamCreatedTitle'};
   $$('[data-team-panel]').forEach(el=>el.classList.toggle('hidden',el.dataset.teamPanel!==panel));
   $('.team-onboarding-card')?.setAttribute('aria-labelledby',titles[panel]||titles.choices);
+  const close=$('#closeTeamSetup');if(close)close.textContent=panel==='created'?'Done':'Later';
   teamSetupMessage('');
   requestAnimationFrame(()=>{
-    const focusTarget=panel==='create'?$('#newTeamName'):panel==='join'?$('#teamCodeInput'):$('#teamChoiceSolo');
+    const focusTarget=panel==='create'?$('#newTeamName'):panel==='join'?$('#teamCodeInput'):panel==='join-confirm'?$('#confirmJoinTeam'):panel==='created'?$('#shareCreatedTeamInvite'):$('#teamChoiceSolo');
     focusTarget?.focus({preventScroll:true});
   });
 }
 function showTeamOnboarding(){
   if(!cloud||!currentUser)return;
+  if(accountMode==='team'&&teamId)return toast(teamRole==='owner'?'Use Team Management for your current team':'Leave your current team before choosing another setup');
+  pendingTeamJoin=null;
   teamSetupReturnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
   teamOnboardingActive=true;$('#teamOnboardingEmail').textContent=currentUser.email||'';
   $('#teamOnboarding').classList.remove('hidden');$('#teamOnboarding').setAttribute('aria-hidden','false');document.body.classList.add('team-setup-open');
   showTeamSetupPanel('choices');
 }
 function hideTeamOnboarding(){
-  teamOnboardingActive=false;$('#teamOnboarding').classList.add('hidden');$('#teamOnboarding').setAttribute('aria-hidden','true');document.body.classList.remove('team-setup-open');
+  pendingTeamJoin=null;teamOnboardingActive=false;$('#teamOnboarding').classList.add('hidden');$('#teamOnboarding').setAttribute('aria-hidden','true');document.body.classList.remove('team-setup-open');if($('#closeTeamSetup'))$('#closeTeamSetup').textContent='Later';
   const returnFocus=teamSetupReturnFocus;teamSetupReturnFocus=null;if(returnFocus?.isConnected)requestAnimationFrame(()=>returnFocus.focus({preventScroll:true}));
 }
 async function verifyMembership(profile={}){
@@ -2561,7 +2566,7 @@ function clearTeamMembersSubscription(){
   unsubTeamMembers?.();unsubTeamMembers=null;subscribedMembersTeamId='';teamMembers=[];teamMembersStatus='idle';teamMembersError='';teamMembersDataSignature='';renderTeamManager();renderTeamSettings();
 }
 function stopTeamMembershipSubscriptions(){
-  unsubTeamMembership?.();unsubTeamMembership=null;subscribedMembershipTeamId='';clearTeamMembersSubscription();hideTeamManager({restoreFocus:false});closeTeamMemberRemoval({force:true});
+  unsubTeamMembership?.();unsubTeamMembership=null;subscribedMembershipTeamId='';clearTeamMembersSubscription();hideTeamManager({restoreFocus:false});closeTeamMemberRemoval({force:true});hideTeamCodeRefreshConfirmation({force:true,restoreFocus:false});
 }
 function teamMembersSignature(entries){
   return JSON.stringify((entries||[]).map(member=>[String(member.uid||''),String(member.role||''),String(member.name||''),String(member.email||''),Number(member.joinedAt?.seconds)||Number(member.joinedAt)||0]).sort((a,b)=>a[0].localeCompare(b[0])));
@@ -2628,9 +2633,66 @@ async function confirmTeamMemberRemoval(){
   }catch(err){console.error('Remove team member failed',err);$('#teamRemoveStatus').textContent='This member could not be removed. No personal data was changed.'}
   finally{teamMemberActionBusy=false;$('#cancelTeamMemberRemoval').disabled=false;$('#confirmTeamMemberRemoval').disabled=false;$('#confirmTeamMemberRemoval').textContent='Remove member'}
 }
+function showTeamCodeRefreshConfirmation(){
+  if(!cloud||accountMode!=='team'||teamRole!=='owner'||!teamId||teamInviteRefreshBusy)return;
+  teamInviteRefreshReturnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
+  $('#teamCodeRefreshDescription').textContent=`The current code${teamJoinCode?` ${teamJoinCode}`:''} will stop working immediately and a new code will be created for ${teamName||'your team'}.`;
+  $('#teamCodeRefreshStatus').textContent='';$('#teamCodeRefreshConfirm').classList.remove('hidden');$('#teamCodeRefreshConfirm').setAttribute('aria-hidden','false');document.body.classList.add('team-code-refresh-open');requestAnimationFrame(()=>$('#cancelTeamCodeRefresh')?.focus({preventScroll:true}));
+}
+function hideTeamCodeRefreshConfirmation({force=false,restoreFocus=true}={}){
+  if(teamInviteRefreshBusy&&!force)return;if(force)teamInviteRefreshBusy=false;
+  $('#teamCodeRefreshConfirm')?.classList.add('hidden');$('#teamCodeRefreshConfirm')?.setAttribute('aria-hidden','true');document.body.classList.remove('team-code-refresh-open');
+  const cancel=$('#cancelTeamCodeRefresh'),confirm=$('#confirmTeamCodeRefresh'),status=$('#teamCodeRefreshStatus');if(cancel)cancel.disabled=false;if(confirm){confirm.disabled=false;confirm.textContent='Refresh code'}if(status)status.textContent='';
+  const returnFocus=teamInviteRefreshReturnFocus;teamInviteRefreshReturnFocus=null;if(restoreFocus&&returnFocus?.isConnected)requestAnimationFrame(()=>returnFocus.focus({preventScroll:true}));
+}
+async function confirmTeamCodeRefresh(){
+  if(teamInviteRefreshBusy||!cloud||!db||!uid||accountMode!=='team'||teamRole!=='owner'||!teamId)return;
+  if(!navigator.onLine){$('#teamCodeRefreshStatus').textContent='Connect to the internet to refresh the invite code.';return}
+  const refreshTeamId=String(teamId),refreshTeamName=String(teamName||'Team'),previousCode=String(teamJoinCode||''),nextCode=makeTeamCode();teamInviteRefreshBusy=true;$('#cancelTeamCodeRefresh').disabled=true;$('#confirmTeamCodeRefresh').disabled=true;$('#confirmTeamCodeRefresh').textContent='Refreshing…';$('#teamCodeRefreshStatus').textContent='Creating a secure new invite code…';
+  try{
+    const batch=writeBatch(db),now=serverTimestamp();batch.set(doc(db,'teams',refreshTeamId),{joinCode:nextCode,updatedAt:now},{merge:true});batch.set(doc(db,'teamCodes',nextCode),{code:nextCode,teamId:refreshTeamId,teamName:refreshTeamName,ownerUid:uid,createdAt:now});if(previousCode)batch.delete(doc(db,'teamCodes',previousCode));await batch.commit();
+    teamJoinCode=nextCode;cacheVerifiedTeamState();teamInviteRefreshBusy=false;renderTeamManager();renderTeamSettings();hideTeamCodeRefreshConfirmation({force:true,restoreFocus:false});teamManagerMessage('Invite code refreshed. Existing members stay connected.','success');toast('New team invite code ready');requestAnimationFrame(()=>$('#shareTeamManagerInvite')?.focus({preventScroll:true}));
+  }catch(err){console.error('Refresh team invite code failed',err);teamInviteRefreshBusy=false;$('#teamCodeRefreshStatus').textContent='The invite code was not changed. Please try again.';$('#cancelTeamCodeRefresh').disabled=false;$('#confirmTeamCodeRefresh').disabled=false;$('#confirmTeamCodeRefresh').textContent='Refresh code'}
+}
+function showTeamLeaveConfirmation(){
+  if(!cloud||accountMode!=='team'||teamRole==='owner'||!teamId)return;
+  teamLeaveReturnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
+  $('#teamLeaveTitle').textContent=`Leave ${teamName||'your team'}?`;
+  $('#teamLeaveDescription').textContent=`You will leave ${teamName||'this team'} and be removed from its leaderboard. Your contacts, notes, appointments, activity history and account data will stay with you.`;
+  $('#teamLeaveStatus').textContent='';
+  $('#teamLeaveConfirm').classList.remove('hidden');$('#teamLeaveConfirm').setAttribute('aria-hidden','false');document.body.classList.add('team-leave-open');
+  requestAnimationFrame(()=>$('#cancelTeamLeave')?.focus({preventScroll:true}));
+}
+function hideTeamLeaveConfirmation({force=false,restoreFocus=true}={}){
+  if(teamLeaveBusy&&!force)return;
+  if(force)teamLeaveBusy=false;
+  $('#teamLeaveConfirm')?.classList.add('hidden');$('#teamLeaveConfirm')?.setAttribute('aria-hidden','true');document.body.classList.remove('team-leave-open');
+  const cancel=$('#cancelTeamLeave'),confirm=$('#confirmTeamLeave'),status=$('#teamLeaveStatus');if(cancel)cancel.disabled=false;if(confirm){confirm.disabled=false;confirm.textContent='Leave team'}if(status)status.textContent='';
+  const returnFocus=teamLeaveReturnFocus;teamLeaveReturnFocus=null;if(restoreFocus&&returnFocus?.isConnected)requestAnimationFrame(()=>returnFocus.focus({preventScroll:true}));
+}
+function completeTeamLeaveTransition(previousTeamName='your previous team'){
+  const safeName=String(previousTeamName||'your previous team');teamLeaveBusy=false;clearVerifiedTeamState({forgetCached:true});setTeamLayerStatus('left',`You left ${safeName}. Your personal AGNT data is safe.`);hideTeamLeaveConfirmation({force:true,restoreFocus:false});
+  if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
+  renderSettings();showTeamOnboarding();teamSetupReturnFocus=null;
+  requestAnimationFrame(()=>teamSetupMessage(`You left ${safeName}. Choose Solo, create a team or join another team. Your personal data is unchanged.`,'success'));
+}
+async function confirmTeamLeave(){
+  if(teamLeaveBusy||!cloud||!db||!uid||accountMode!=='team'||teamRole==='owner'||!teamId)return;
+  if(!navigator.onLine){$('#teamLeaveStatus').textContent='Connect to the internet before leaving your team.';return}
+  const leavingTeamId=String(teamId),leavingTeamName=String(teamName||'your team');teamLeaveBusy=true;$('#cancelTeamLeave').disabled=true;$('#confirmTeamLeave').disabled=true;$('#confirmTeamLeave').textContent='Leaving…';$('#teamLeaveStatus').textContent='Protecting your data and updating team access…';
+  try{
+    const batch=writeBatch(db),now=serverTimestamp();
+    batch.delete(doc(db,'teams',leavingTeamId,'members',uid));
+    batch.delete(doc(db,'teams',leavingTeamId,'leaderboard',uid));
+    batch.set(doc(db,'users',uid),{accountMode:'unconfigured',teamId:null,teamRole:null,teamName:null,teamSchemaVersion:TEAM_SCHEMA_VERSION,teamOnboardingSuggested:true,updatedAt:now},{merge:true});
+    await batch.commit();completeTeamLeaveTransition(leavingTeamName);
+  }catch(err){
+    console.error('Leave team failed',err);teamLeaveBusy=false;$('#teamLeaveStatus').textContent='You are still in the team. No personal data was changed.';$('#cancelTeamLeave').disabled=false;$('#confirmTeamLeave').disabled=false;$('#confirmTeamLeave').textContent='Leave team';
+  }
+}
 function handleTeamAccessRemoved(removedTeamId,removedTeamName=''){
   if(teamId&&removedTeamId&&teamId!==removedTeamId)return;
-  const previousName=String(removedTeamName||teamName||'your previous team');clearVerifiedTeamState({forgetCached:true});setTeamLayerStatus('removed',`You no longer have access to ${previousName}. Your personal AGNT data is safe.`);renderSettings();showTeamOnboarding();requestAnimationFrame(()=>teamSetupMessage(`Your access to ${previousName} was removed. Choose Solo or join another team. Your personal data is unchanged.`,'info'));
+  const previousName=String(removedTeamName||teamName||'your previous team');clearVerifiedTeamState({forgetCached:true});setTeamLayerStatus('removed',`You no longer have access to ${previousName}. Your personal AGNT data is safe.`);renderSettings();showTeamOnboarding();requestAnimationFrame(()=>teamSetupMessage(`Your access to ${previousName} was removed. Choose Solo, create a team or join another team. Your personal data is unchanged.`,'info'));
 }
 function subscribeOwnTeamMembership(){
   if(accountMode!=='team'||!teamId){unsubTeamMembership?.();unsubTeamMembership=null;subscribedMembershipTeamId='';return}
@@ -2638,7 +2700,7 @@ function subscribeOwnTeamMembership(){
   unsubTeamMembership?.();unsubTeamMembership=null;subscribedMembershipTeamId=teamId;const listeningTeamId=teamId,listeningTeamName=teamName;
   unsubTeamMembership=onSnapshot(doc(db,'teams',listeningTeamId,'members',uid),{includeMetadataChanges:true},snap=>{
     if(accountMode!=='team'||teamId!==listeningTeamId||subscribedMembershipTeamId!==listeningTeamId)return;
-    if(!snap.exists()){if(snap.metadata.fromCache)return;handleTeamAccessRemoved(listeningTeamId,listeningTeamName);return}
+    if(!snap.exists()){if(snap.metadata.fromCache||teamLeaveBusy)return;handleTeamAccessRemoved(listeningTeamId,listeningTeamName);return}
     const nextRole=String(snap.data().role||teamRole||'member');if(nextRole!==teamRole){teamRole=nextRole;cacheVerifiedTeamState();subscribeTeamMembersForOwner();renderSettings()}
   },err=>{if(teamId!==listeningTeamId)return;console.error('Team membership listener failed',err);if(String(err?.code||'').includes('permission-denied'))handleTeamAccessRemoved(listeningTeamId,listeningTeamName)});
 }
@@ -2701,7 +2763,7 @@ async function publishTeamLeaderboard(){
   catch(err){console.error('Team leaderboard publish failed',err);endSyncOperation();setTeamLayerStatus('error',err.message||'Team leaderboard could not update')}
 }
 async function completeSoloSetup(){
-  if(!cloud||!uid||teamSetupBusy)return;if(!navigator.onLine)return teamSetupMessage('Connect to the internet to save your setup.','error');
+  if(!cloud||!uid||teamSetupBusy)return;if(accountMode==='team'&&teamId)return teamSetupMessage('Leave your current team before continuing Solo.','error');if(!navigator.onLine)return teamSetupMessage('Connect to the internet to save your setup.','error');
   setTeamSetupBusy(true);teamSetupMessage('Saving your private setup…');
   try{
     await setDoc(doc(db,'users',uid),{accountMode:'solo',teamId:null,teamRole:null,teamName:null,teamSchemaVersion:TEAM_SCHEMA_VERSION,teamOnboardingSuggested:false,updatedAt:serverTimestamp()},{merge:true});
@@ -2710,9 +2772,9 @@ async function completeSoloSetup(){
   finally{setTeamSetupBusy(false)}
 }
 async function completeCreateTeam(){
-  if(teamSetupBusy)return;if(!navigator.onLine)return teamSetupMessage('Connect to the internet to create a team.','error');
+  if(teamSetupBusy)return;if(accountMode==='team'&&teamId)return teamSetupMessage('Leave your current team before creating another team.','error');if(!navigator.onLine)return teamSetupMessage('Connect to the internet to create a team.','error');
   const name=$('#newTeamName').value.trim();if(!name){teamSetupMessage('Add a team name to continue.','error');$('#newTeamName').focus();return}
-  setTeamSetupBusy(true,{button:'#createTeamSubmit',label:'Creating team…'});teamSetupMessage('Creating your private leaderboard…');
+  let created=false;setTeamSetupBusy(true,{button:'#createTeamSubmit',label:'Creating team…'});teamSetupMessage('Creating your private leaderboard…');
   try{
     const id=makeTeamId(),code=makeTeamCode(),batch=writeBatch(db),now=serverTimestamp();
     const teamRef=doc(db,'teams',id),memberRef=doc(db,'teams',id,'members',uid),codeRef=doc(db,'teamCodes',code),userRef=doc(db,'users',uid);
@@ -2722,38 +2784,46 @@ async function completeCreateTeam(){
     batch.set(userRef,{accountMode:'team',teamId:id,teamRole:'owner',teamName:name,teamSchemaVersion:TEAM_SCHEMA_VERSION,teamOnboardingSuggested:false,updatedAt:now},{merge:true});
     await batch.commit();const verified=await verifyMembership({accountMode:'team',teamId:id,teamRole:'owner',teamName:name});
     if(!verified)throw new Error('Team records were not confirmed.');
-    setVerifiedTeamState({mode:'team',...verified});subscribeSecureLeaderboard();hideTeamOnboarding();scheduleLeaderboardPublish();renderSettings();
+    setVerifiedTeamState({mode:'team',...verified});subscribeSecureLeaderboard();scheduleLeaderboardPublish();renderSettings();created=true;
   }catch(err){console.error('Create team failed',err);teamSetupMessage('Team setup could not be completed. Your AGNT data is safe.','error')}
   finally{setTeamSetupBusy(false,{button:'#createTeamSubmit'})}
+  if(created){$('#teamCreatedName').textContent=teamName||name;$('#teamCreatedCode').textContent=teamJoinCode;showTeamSetupPanel('created')}
 }
 async function completeJoinTeam(){
-  if(teamSetupBusy)return;if(!navigator.onLine)return teamSetupMessage('Connect to the internet to join your team.','error');
+  if(teamSetupBusy)return;if(accountMode==='team'&&teamId)return teamSetupMessage('Leave your current team before joining another team.','error');if(!navigator.onLine)return teamSetupMessage('Connect to the internet to join your team.','error');
   const code=normaliseTeamCode($('#teamCodeInput').value);if(!code){teamSetupMessage('Enter your team code to continue.','error');$('#teamCodeInput').focus();return}
-  $('#teamCodeInput').value=code;setTeamSetupBusy(true,{button:'#joinTeamCode',label:'Joining team…'});teamSetupMessage('Confirming your invite code…');
+  let ready=false;$('#teamCodeInput').value=code;pendingTeamJoin=null;setTeamSetupBusy(true,{button:'#joinTeamCode',label:'Checking team…'});teamSetupMessage('Confirming your invite code…');
   try{
     const codeSnap=await getDoc(doc(db,'teamCodes',code));if(!codeSnap.exists())throw new Error('Team code not found.');
     const codeData=codeSnap.data(),id=String(codeData.teamId||'');if(!id)throw new Error('Team code is invalid.');
-    const name=String(codeData.teamName||'Team'),batch=writeBatch(db),now=serverTimestamp();
-    batch.set(doc(db,'teams',id,'members',uid),{uid,role:'member',name:displayAgentName(),email:currentUser?.email||'',teamId:id,joinCodeUsed:code,joinedAt:now},{merge:true});
-    batch.set(doc(db,'users',uid),{accountMode:'team',teamId:id,teamRole:'member',teamName:name,teamSchemaVersion:TEAM_SCHEMA_VERSION,teamOnboardingSuggested:false,updatedAt:now},{merge:true});
-    await batch.commit();const verified=await verifyMembership({accountMode:'team',teamId:id,teamRole:'member',teamName:name});
-    if(!verified)throw new Error('Membership could not be confirmed.');
-    setVerifiedTeamState({mode:'team',...verified});subscribeSecureLeaderboard();hideTeamOnboarding();scheduleLeaderboardPublish();renderSettings();
-  }catch(err){console.error('Join team failed',err);teamSetupMessage(err.message||'Could not join that team. Your AGNT data is safe.','error')}
+    pendingTeamJoin={id,name:String(codeData.teamName||'Team'),code};$('#teamJoinConfirmName').textContent=pendingTeamJoin.name;$('#teamJoinConfirmCode').textContent=code;ready=true;
+  }catch(err){console.error('Team code confirmation failed',err);teamSetupMessage(err.message||'Could not confirm that team code.','error')}
   finally{setTeamSetupBusy(false,{button:'#joinTeamCode'})}
+  if(ready)showTeamSetupPanel('join-confirm');
+}
+async function confirmJoinTeam(){
+  if(teamSetupBusy||!pendingTeamJoin)return;if(accountMode==='team'&&teamId)return teamSetupMessage('Leave your current team before joining another team.','error');if(!navigator.onLine)return teamSetupMessage('Connect to the internet to join your team.','error');
+  const requested={...pendingTeamJoin};setTeamSetupBusy(true,{button:'#confirmJoinTeam',label:'Joining team…'});teamSetupMessage('Joining your private team leaderboard…');
+  try{
+    const codeSnap=await getDoc(doc(db,'teamCodes',requested.code));if(!codeSnap.exists()||String(codeSnap.data().teamId||'')!==requested.id)throw new Error('This invite code is no longer active. Ask the team owner for the new code.');
+    const batch=writeBatch(db),now=serverTimestamp();batch.set(doc(db,'teams',requested.id,'members',uid),{uid,role:'member',name:displayAgentName(),email:currentUser?.email||'',teamId:requested.id,joinCodeUsed:requested.code,joinedAt:now},{merge:true});batch.set(doc(db,'users',uid),{accountMode:'team',teamId:requested.id,teamRole:'member',teamName:requested.name,teamSchemaVersion:TEAM_SCHEMA_VERSION,teamOnboardingSuggested:false,updatedAt:now},{merge:true});
+    await batch.commit();const verified=await verifyMembership({accountMode:'team',teamId:requested.id,teamRole:'member',teamName:requested.name});if(!verified)throw new Error('Membership could not be confirmed.');
+    pendingTeamJoin=null;setVerifiedTeamState({mode:'team',...verified});subscribeSecureLeaderboard();scheduleLeaderboardPublish();renderSettings();hideTeamOnboarding();
+  }catch(err){console.error('Join team failed',err);teamSetupMessage(err.message||'Could not join that team. Your AGNT data is safe.','error')}
+  finally{setTeamSetupBusy(false,{button:'#confirmJoinTeam'})}
 }
 function renderTeamSettings(){
   const card=$('#teamAccountCard');if(!card)return;
-  const mode=$('#teamAccountMode'),name=$('#teamAccountName'),role=$('#teamAccountRole'),code=$('#teamAccountCode'),codePanel=$('#teamJoinCodePanel'),status=$('#teamAccountStatus'),setup=$('#openTeamSetup'),manage=$('#manageTeamMembers');
+  const mode=$('#teamAccountMode'),name=$('#teamAccountName'),role=$('#teamAccountRole'),code=$('#teamAccountCode'),codePanel=$('#teamJoinCodePanel'),status=$('#teamAccountStatus'),setup=$('#openTeamSetup'),manage=$('#manageTeamMembers'),leave=$('#leaveCurrentTeam');
   const setStatus=(message,state='offline')=>{status.textContent=message||'';status.dataset.state=state};
-  code.textContent='';codePanel?.classList.add('hidden');role.textContent='';setup?.classList.remove('hidden');manage?.classList.add('hidden');
+  code.textContent='';codePanel?.classList.add('hidden');role.textContent='';setup?.classList.remove('hidden');manage?.classList.add('hidden');leave?.classList.add('hidden');
   if(!cloud){mode.textContent='DEVICE ONLY';name.textContent='No cloud team';setStatus('Accountability is stored on this device.','offline');setup?.classList.add('hidden');return}
   if(accountMode==='team'&&teamId){
     mode.textContent='TEAM ACCOUNT';name.textContent=teamName||'Team';role.textContent=teamRole==='owner'?'Owner':'Member';setup?.classList.add('hidden');
     if(teamRole==='owner'){
       if(teamJoinCode){code.textContent=teamJoinCode;codePanel?.classList.remove('hidden')}
       if(manage){manage.textContent=teamMembers.length?`Manage ${teamMembers.length} member${teamMembers.length===1?'':'s'}`:'Manage members';manage.classList.remove('hidden')}
-    }
+    }else leave?.classList.remove('hidden');
     if(!navigator.onLine)setStatus('Offline. Saved team results remain available.','offline');
     else if(teamLayerStatus==='error')setStatus(teamLayerError||'The team leaderboard needs attention.','error');
     else if(teamLayerStatus==='live')setStatus('Leaderboard is live across your team.','live');
@@ -2761,12 +2831,16 @@ function renderTeamSettings(){
     return;
   }
   if(accountMode==='solo'){mode.textContent='PRIVATE ACCOUNT';name.textContent='Just me';role.textContent='Solo';setStatus('Your leaderboard is private to this account.','solo');setup.textContent='Change setup';return}
+  if(teamLayerStatus==='left'){mode.textContent='TEAM LEFT';name.textContent='Choose what’s next';setStatus(teamLayerError||'Your personal data is safe. Choose Solo or another team.','solo');setup.textContent='Choose setup';return}
   if(teamLayerStatus==='removed'){mode.textContent='TEAM ACCESS UPDATED';name.textContent='Choose a new setup';setStatus(teamLayerError||'Your previous team access was removed. Your personal data is safe.','error');setup.textContent='Choose setup';return}
   if(teamLayerStatus==='connecting'){mode.textContent='ACCOUNT SETUP';name.textContent='Checking your team…';setStatus('Confirming your account and membership.','connecting');setup.textContent='Choose setup';return}
   mode.textContent='ACCOUNT SETUP';name.textContent='Choose Solo or Team';setStatus(teamLayerError||'Choose how you want to use the leaderboard.',teamLayerError?'error':'offline');setup.textContent='Choose setup';
 }
-async function copyTeamJoinCode(buttonSelector='#copyTeamCode'){
-  const value=String(teamJoinCode||'');if(!value)return;
+function setTeamActionButtonLabel(button,label){
+  if(!button)return;if(!button.dataset.idleLabel)button.dataset.idleLabel=button.textContent||'';button.textContent=label;clearTimeout(button._teamActionTimer);button._teamActionTimer=setTimeout(()=>button.textContent=button.dataset.idleLabel||'Copy',1400);
+}
+async function copyTeamJoinCode(buttonSelector='#copyTeamCode',codeValue=teamJoinCode){
+  const value=String(codeValue||'');if(!value)return;
   const button=$(buttonSelector);
   try{
     if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(value);
@@ -2774,9 +2848,16 @@ async function copyTeamJoinCode(buttonSelector='#copyTeamCode'){
       const field=document.createElement('textarea');field.value=value;field.setAttribute('readonly','');field.style.position='fixed';field.style.opacity='0';document.body.appendChild(field);field.select();
       const copied=document.execCommand?.('copy');field.remove();if(!copied)throw new Error('Copy unavailable');
     }
-    if(button){button.textContent='Copied';clearTimeout(button._copyTimer);button._copyTimer=setTimeout(()=>button.textContent='Copy',1400)}
+    setTeamActionButtonLabel(button,'Copied');
     toast('Team code copied');
   }catch(err){console.error('Team code copy failed',err);toast('Could not copy the team code')}
+}
+async function shareTeamInvite(buttonSelector,{name=teamName,code=teamJoinCode}={}){
+  const safeName=String(name||'your team'),safeCode=String(code||'');if(!safeCode)return;
+  const button=$(buttonSelector),payload={title:`Join ${safeName} on AGNT`,text:`Join ${safeName} on AGNT using invite code ${safeCode}.`,url:new URL('./',window.location.href).href};
+  if(typeof navigator.share!=='function')return copyTeamJoinCode(buttonSelector,safeCode);
+  try{await navigator.share(payload);setTeamActionButtonLabel(button,'Shared');toast('Team invite shared')}
+  catch(err){if(err?.name==='AbortError')return;console.warn('Team invite share unavailable, copying code instead',err);await copyTeamJoinCode(buttonSelector,safeCode)}
 }
 
 
@@ -2873,23 +2954,34 @@ $('#createAccount').onclick=async()=>{showAuthMessage('Creating account…');cre
 $('#teamChoiceSolo')?.addEventListener('click',()=>completeSoloSetup());
 $('#teamChoiceCreate')?.addEventListener('click',()=>showTeamSetupPanel('create'));
 $('#teamChoiceJoin')?.addEventListener('click',()=>showTeamSetupPanel('join'));
-$$('[data-team-back]').forEach(button=>button.addEventListener('click',()=>showTeamSetupPanel('choices')));
+$$('[data-team-back]').forEach(button=>button.addEventListener('click',()=>showTeamSetupPanel(button.dataset.teamBack||'choices')));
 $('#createTeamSubmit')?.addEventListener('click',()=>completeCreateTeam());
 $('#joinTeamCode')?.addEventListener('click',()=>completeJoinTeam());
+$('#confirmJoinTeam')?.addEventListener('click',()=>confirmJoinTeam());
+$('#shareCreatedTeamInvite')?.addEventListener('click',()=>shareTeamInvite('#shareCreatedTeamInvite'));
+$('#copyCreatedTeamCode')?.addEventListener('click',()=>copyTeamJoinCode('#copyCreatedTeamCode'));
+$('#finishTeamCreation')?.addEventListener('click',()=>hideTeamOnboarding());
 $('#openTeamSetup')?.addEventListener('click',()=>showTeamOnboarding());
 $('#closeTeamSetup')?.addEventListener('click',()=>hideTeamOnboarding());
 $('#copyTeamCode')?.addEventListener('click',()=>copyTeamJoinCode());
 $('#manageTeamMembers')?.addEventListener('click',()=>showTeamManager());
+$('#leaveCurrentTeam')?.addEventListener('click',()=>showTeamLeaveConfirmation());
 $('#closeTeamManager')?.addEventListener('click',()=>hideTeamManager());
 $('#copyTeamManagerCode')?.addEventListener('click',()=>copyTeamJoinCode('#copyTeamManagerCode'));
+$('#shareTeamManagerInvite')?.addEventListener('click',()=>shareTeamInvite('#shareTeamManagerInvite'));
+$('#refreshTeamInviteCode')?.addEventListener('click',()=>showTeamCodeRefreshConfirmation());
 $('#teamMemberList')?.addEventListener('click',event=>{const button=event.target.closest('[data-remove-team-member]');if(button)openTeamMemberRemoval(button.dataset.removeTeamMember)});
 $('#cancelTeamMemberRemoval')?.addEventListener('click',()=>closeTeamMemberRemoval());
 $('#confirmTeamMemberRemoval')?.addEventListener('click',()=>confirmTeamMemberRemoval());
-$('#teamCodeInput')?.addEventListener('input',event=>{event.target.value=normaliseTeamCode(event.target.value);teamSetupMessage('')});
+$('#cancelTeamLeave')?.addEventListener('click',()=>hideTeamLeaveConfirmation());
+$('#confirmTeamLeave')?.addEventListener('click',()=>confirmTeamLeave());
+$('#cancelTeamCodeRefresh')?.addEventListener('click',()=>hideTeamCodeRefreshConfirmation());
+$('#confirmTeamCodeRefresh')?.addEventListener('click',()=>confirmTeamCodeRefresh());
+$('#teamCodeInput')?.addEventListener('input',event=>{pendingTeamJoin=null;event.target.value=normaliseTeamCode(event.target.value);teamSetupMessage('')});
 $('#teamCodeInput')?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();completeJoinTeam()}});
 $('#newTeamName')?.addEventListener('input',()=>teamSetupMessage(''));
 $('#newTeamName')?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();completeCreateTeam()}});
-document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;if(!$('#teamRemoveConfirm')?.classList.contains('hidden')){closeTeamMemberRemoval();return}if(teamManagerOpen){hideTeamManager();return}if(teamOnboardingActive)hideTeamOnboarding()});
+document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;if(!$('#teamRemoveConfirm')?.classList.contains('hidden')){closeTeamMemberRemoval();return}if(!$('#teamLeaveConfirm')?.classList.contains('hidden')){hideTeamLeaveConfirmation();return}if(!$('#teamCodeRefreshConfirm')?.classList.contains('hidden')){hideTeamCodeRefreshConfirmation();return}if(teamManagerOpen){hideTeamManager();return}if(teamOnboardingActive)hideTeamOnboarding()});
 
 $('#startDayButton').onclick=dismissDailyWelcome;
 $('#openAgntButton').onclick=dismissOffDayReview;

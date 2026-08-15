@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="AGNT">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css?v=1.33.0-staging-team-admin">
+<link rel="stylesheet" href="styles.css?v=1.33.2-staging-team-workflow">
 <title>AGNT</title>
 </head>
 <body>
@@ -23,7 +23,7 @@
     <button class="primary" type="submit">Sign in</button>
     <button id="createAccount" class="secondary" type="button">Create account</button>
     <button id="localMode" class="text-btn" type="button">Continue on this device only</button>
-    <small id="authMessage"></small><small id="stagingBuildMarker" style="display:block;margin-top:8px;opacity:.65">STAGING v1.33.0 · booting…</small>
+    <small id="authMessage"></small><small id="stagingBuildMarker" style="display:block;margin-top:8px;opacity:.65">STAGING v1.33.2 · booting…</small>
   </form>
 </div>
 
@@ -51,7 +51,21 @@
       <div class="team-onboarding-heading"><span class="team-onboarding-kicker">JOIN TEAM</span><h1 id="teamJoinTitle">Join your team</h1><p>Enter the private invite code supplied by your team owner.</p></div>
       <label class="team-field"><span>Team code</span><input id="teamCodeInput" type="text" inputmode="text" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="10" placeholder="ABCD123456"></label>
       <div class="team-privacy-note"><span aria-hidden="true">✓</span><p><strong>Your data stays with you</strong><small>Joining only adds your accountability results to the team leaderboard.</small></p></div>
-      <button id="joinTeamCode" class="primary team-submit" type="button" data-idle-label="Join team">Join team</button>
+      <button id="joinTeamCode" class="primary team-submit" type="button" data-idle-label="Continue">Continue</button>
+    </div>
+    <div class="team-panel hidden" data-team-panel="join-confirm">
+      <button class="team-back" type="button" data-team-back="join" aria-label="Back to team code"><span aria-hidden="true">‹</span> Back</button>
+      <div class="team-onboarding-heading"><span class="team-onboarding-kicker">CONFIRM TEAM</span><h1 id="teamJoinConfirmTitle">Join this team?</h1><p>Confirm the team before your accountability results appear on its private leaderboard.</p></div>
+      <div class="team-join-confirm-card"><span class="team-join-confirm-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="9" r="2.5"></circle><path d="M2.8 19c.5-3.5 2.2-5.2 5.2-5.2 3.1 0 4.8 1.7 5.2 5.2M13 15.2c.8-.8 1.8-1.2 3.2-1.2 2.6 0 4.1 1.5 4.5 4.5"></path></svg></span><div><span>YOU’RE JOINING</span><strong id="teamJoinConfirmName">Team</strong><small>Invite code <b id="teamJoinConfirmCode"></b></small></div></div>
+      <div class="team-privacy-note"><span aria-hidden="true">✓</span><p><strong>Your personal data stays with you</strong><small>Only your accountability summary is shared with this team leaderboard.</small></p></div>
+      <button id="confirmJoinTeam" class="primary team-submit" type="button" data-idle-label="Join team">Join team</button>
+    </div>
+    <div class="team-panel hidden" data-team-panel="created">
+      <div class="team-onboarding-heading team-created-heading"><span class="team-onboarding-kicker">TEAM CREATED</span><h1 id="teamCreatedTitle">Your team is ready</h1><p>Invite your members now or return to this code anytime from Settings.</p></div>
+      <div class="team-created-summary"><span class="team-created-check" aria-hidden="true">✓</span><div><span>TEAM</span><strong id="teamCreatedName">Your team</strong></div></div>
+      <div class="team-created-code"><span>INVITE CODE</span><strong id="teamCreatedCode"></strong><small>Only share this code with people you want on the leaderboard.</small></div>
+      <div class="team-created-actions"><button id="shareCreatedTeamInvite" class="primary" type="button" data-idle-label="Share invite">Share invite</button><button id="copyCreatedTeamCode" class="secondary" type="button" data-idle-label="Copy code">Copy code</button></div>
+      <button id="finishTeamCreation" class="team-created-done text-btn" type="button">Done</button>
     </div>
     <p id="teamSetupMessage" role="status" aria-live="polite"></p>
   </section>
@@ -62,7 +76,8 @@
     <div class="team-manager-handle" aria-hidden="true"></div>
     <div class="team-manager-top"><span class="team-manager-brand">AGNT<span aria-hidden="true">.</span></span><button id="closeTeamManager" class="team-manager-close text-btn" type="button">Done</button></div>
     <div class="team-manager-heading"><span>TEAM MANAGEMENT</span><h1 id="teamManagerTitle">Your team</h1><p id="teamManagerSummary">Manage access to your private leaderboard.</p></div>
-    <div class="team-manager-invite"><div><span>INVITE CODE</span><strong id="teamManagerCode"></strong><small>Share this code with people you want to add.</small></div><button id="copyTeamManagerCode" type="button">Copy</button></div>
+    <div class="team-manager-invite"><div><span>INVITE CODE</span><strong id="teamManagerCode"></strong><small>Share this code with people you want to add.</small></div><div class="team-manager-invite-actions"><button id="shareTeamManagerInvite" type="button" data-idle-label="Share">Share</button><button id="copyTeamManagerCode" type="button" data-idle-label="Copy">Copy</button></div></div>
+    <button id="refreshTeamInviteCode" class="team-manager-refresh" type="button"><span>Refresh invite code</span><small>Disable the current code and create a new one.</small><b aria-hidden="true">›</b></button>
     <div class="team-manager-section-head"><span>MEMBERS</span><small id="teamManagerMemberCount">0 members</small></div>
     <div id="teamMemberList" class="team-member-list" role="list" aria-live="polite"></div>
     <p id="teamManagerStatus" role="status" aria-live="polite"></p>
@@ -77,6 +92,30 @@
     <p id="teamRemoveDescription">They will lose access to this team. Their personal AGNT data will not be deleted.</p>
     <div class="team-remove-actions"><button id="cancelTeamMemberRemoval" class="secondary" type="button">Cancel</button><button id="confirmTeamMemberRemoval" class="danger" type="button">Remove member</button></div>
     <small id="teamRemoveStatus" role="status" aria-live="polite"></small>
+  </section>
+</div>
+
+<div id="teamLeaveConfirm" class="team-leave-confirm hidden" aria-hidden="true">
+  <section class="team-leave-confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="teamLeaveTitle" aria-describedby="teamLeaveDescription">
+    <span class="team-leave-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M10 5H5v14h5M14 8l4 4-4 4M8 12h10"></path></svg></span>
+    <span class="team-leave-kicker">LEAVE TEAM</span>
+    <h2 id="teamLeaveTitle">Leave your team?</h2>
+    <p id="teamLeaveDescription">You will leave this team and its leaderboard. Your personal AGNT data will stay with your account.</p>
+    <div class="team-leave-data-note"><span aria-hidden="true">✓</span><p><strong>Your data stays protected</strong><small>Contacts, notes, appointments and activity history will not be deleted.</small></p></div>
+    <div class="team-leave-actions"><button id="cancelTeamLeave" class="secondary" type="button">Cancel</button><button id="confirmTeamLeave" class="danger" type="button">Leave team</button></div>
+    <small id="teamLeaveStatus" role="status" aria-live="polite"></small>
+  </section>
+</div>
+
+<div id="teamCodeRefreshConfirm" class="team-code-refresh-confirm hidden" aria-hidden="true">
+  <section class="team-code-refresh-confirm-card" role="alertdialog" aria-modal="true" aria-labelledby="teamCodeRefreshTitle" aria-describedby="teamCodeRefreshDescription">
+    <span class="team-code-refresh-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M18.5 12a6.5 6.5 0 0 0-11-4.5L4 11M5.5 12a6.5 6.5 0 0 0 11 4.5L20 13"></path></svg></span>
+    <span class="team-code-refresh-kicker">REFRESH INVITE</span>
+    <h2 id="teamCodeRefreshTitle">Refresh invite code?</h2>
+    <p id="teamCodeRefreshDescription">The current code will stop working immediately and a new code will be created.</p>
+    <div class="team-code-refresh-note"><span aria-hidden="true">✓</span><p><strong>Current members stay connected</strong><small>This only changes how new members join your team.</small></p></div>
+    <div class="team-code-refresh-actions"><button id="cancelTeamCodeRefresh" class="secondary" type="button">Cancel</button><button id="confirmTeamCodeRefresh" class="primary" type="button">Refresh code</button></div>
+    <small id="teamCodeRefreshStatus" role="status" aria-live="polite"></small>
   </section>
 </div>
 
@@ -766,6 +805,7 @@ Andrew Tour | McGrath</textarea></label>
             <p id="teamAccountStatus" class="team-account-status"></p>
           </div>
           <button id="manageTeamMembers" class="secondary hidden" type="button">Manage members</button>
+          <button id="leaveCurrentTeam" class="secondary team-leave-button hidden" type="button">Leave team</button>
           <button id="openTeamSetup" class="secondary" type="button">Choose setup</button>
         </fieldset>
         <label>Agent name<input id="agentName" type="text" maxlength="40" placeholder="Your name"></label>
@@ -947,6 +987,6 @@ Andrew Tour | McGrath</textarea></label>
 })();
 </script>
 
-<script type="module" src="app.js?v=1.33.0-staging-team-admin"></script>
+<script type="module" src="app.js?v=1.33.2-staging-team-workflow"></script>
 </body>
 </html>
