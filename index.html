@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="AGNT">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css?v=1.32.7-staging-team-sync">
+<link rel="stylesheet" href="styles.css?v=1.32.8-staging-team-refinement">
 <title>AGNT</title>
 </head>
 <body>
@@ -23,28 +23,37 @@
     <button class="primary" type="submit">Sign in</button>
     <button id="createAccount" class="secondary" type="button">Create account</button>
     <button id="localMode" class="text-btn" type="button">Continue on this device only</button>
-    <small id="authMessage"></small><small id="stagingBuildMarker" style="display:block;margin-top:8px;opacity:.65">STAGING v1.32.7 · booting…</small>
+    <small id="authMessage"></small><small id="stagingBuildMarker" style="display:block;margin-top:8px;opacity:.65">STAGING v1.32.8 · booting…</small>
   </form>
 </div>
 
 <div id="teamOnboarding" class="team-onboarding hidden" aria-hidden="true">
-  <section class="team-onboarding-card glass" role="dialog" aria-modal="true" aria-labelledby="teamOnboardingTitle">
-    <div class="team-onboarding-top"><div class="brand-mark">AGNT</div><button id="closeTeamSetup" class="team-close text-btn" type="button">Set up later</button></div>
-    <div data-team-panel="choices">
-      <span class="team-onboarding-kicker">ACCOUNT SETUP</span><h1 id="teamOnboardingTitle">How are you using AGNT?</h1><p id="teamOnboardingEmail" class="team-onboarding-email"></p>
-      <button id="teamChoiceSolo" class="team-choice" type="button"><strong>Just me</strong><span>Use AGNT solo. Your accountability stays private.</span></button>
-      <button id="teamChoiceCreate" class="team-choice" type="button"><strong>Create a team</strong><span>Start a private team leaderboard.</span></button>
-      <button id="teamChoiceJoin" class="team-choice" type="button"><strong>Join a team</strong><span>Join securely with your team code.</span></button>
+  <section class="team-onboarding-card" role="dialog" aria-modal="true" aria-labelledby="teamOnboardingTitle" aria-describedby="teamSetupMessage">
+    <div class="team-onboarding-handle" aria-hidden="true"></div>
+    <div class="team-onboarding-top"><span class="team-onboarding-brand">AGNT<span aria-hidden="true">.</span></span><button id="closeTeamSetup" class="team-close text-btn" type="button">Later</button></div>
+    <div class="team-panel" data-team-panel="choices">
+      <div class="team-onboarding-heading"><span class="team-onboarding-kicker">ACCOUNT SETUP</span><h1 id="teamOnboardingTitle">Choose how you work</h1><p>Set up your leaderboard without changing your existing accountability data.</p><small id="teamOnboardingEmail" class="team-onboarding-email"></small></div>
+      <div class="team-choice-list">
+        <button id="teamChoiceSolo" class="team-choice" type="button"><span class="team-choice-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"></circle><path d="M5.5 20c.6-4 2.8-6 6.5-6s5.9 2 6.5 6"></path></svg></span><span class="team-choice-copy"><strong>Just me</strong><small>Keep your leaderboard private to this account.</small></span><span class="team-choice-arrow" aria-hidden="true">›</span></button>
+        <button id="teamChoiceCreate" class="team-choice" type="button"><span class="team-choice-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><path d="M3.5 19c.5-3.5 2.3-5.2 5.5-5.2 2.1 0 3.7.8 4.6 2.4M17.5 8v6M14.5 11h6"></path></svg></span><span class="team-choice-copy"><strong>Create a team</strong><small>Start a private leaderboard and invite your team.</small></span><span class="team-choice-arrow" aria-hidden="true">›</span></button>
+        <button id="teamChoiceJoin" class="team-choice" type="button"><span class="team-choice-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"></circle><circle cx="16" cy="9" r="2.5"></circle><path d="M2.8 19c.5-3.5 2.2-5.2 5.2-5.2 3.1 0 4.8 1.7 5.2 5.2M13 15.2c.8-.8 1.8-1.2 3.2-1.2 2.6 0 4.1 1.5 4.5 4.5"></path></svg></span><span class="team-choice-copy"><strong>Join a team</strong><small>Connect securely using your team invite code.</small></span><span class="team-choice-arrow" aria-hidden="true">›</span></button>
+      </div>
     </div>
-    <div data-team-panel="create" class="hidden">
-      <button class="team-back text-btn" type="button" data-team-back>Back</button><span class="team-onboarding-kicker">CREATE TEAM</span><h1>Start your team</h1><p>Team setup is separate from your normal AGNT sync.</p>
-      <label>Team name<input id="newTeamName" type="text" maxlength="60" placeholder="Team name"></label><button id="createTeamSubmit" class="primary" type="button">Create team</button>
+    <div class="team-panel hidden" data-team-panel="create">
+      <button class="team-back" type="button" data-team-back aria-label="Back to account setup"><span aria-hidden="true">‹</span> Back</button>
+      <div class="team-onboarding-heading"><span class="team-onboarding-kicker">CREATE TEAM</span><h1 id="teamCreateTitle">Start your team</h1><p>Create a private leaderboard. You’ll receive one invite code to share with your team.</p></div>
+      <label class="team-field"><span>Team name</span><input id="newTeamName" type="text" maxlength="60" autocomplete="organization" placeholder="e.g. Team Pana"></label>
+      <div class="team-privacy-note"><span aria-hidden="true">✓</span><p><strong>Private by default</strong><small>Only verified members can view the team leaderboard.</small></p></div>
+      <button id="createTeamSubmit" class="primary team-submit" type="button" data-idle-label="Create team">Create team</button>
     </div>
-    <div data-team-panel="join" class="hidden">
-      <button class="team-back text-btn" type="button" data-team-back>Back</button><span class="team-onboarding-kicker">JOIN TEAM</span><h1>Join your team</h1><p>Enter the private code supplied by your team owner.</p>
-      <label>Team code<input id="teamCodeInput" type="text" autocapitalize="characters" autocomplete="off" maxlength="10" placeholder="ABCD1234"></label><button id="joinTeamCode" class="primary" type="button">Join team</button>
+    <div class="team-panel hidden" data-team-panel="join">
+      <button class="team-back" type="button" data-team-back aria-label="Back to account setup"><span aria-hidden="true">‹</span> Back</button>
+      <div class="team-onboarding-heading"><span class="team-onboarding-kicker">JOIN TEAM</span><h1 id="teamJoinTitle">Join your team</h1><p>Enter the private invite code supplied by your team owner.</p></div>
+      <label class="team-field"><span>Team code</span><input id="teamCodeInput" type="text" inputmode="text" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="10" placeholder="ABCD123456"></label>
+      <div class="team-privacy-note"><span aria-hidden="true">✓</span><p><strong>Your data stays with you</strong><small>Joining only adds your accountability results to the team leaderboard.</small></p></div>
+      <button id="joinTeamCode" class="primary team-submit" type="button" data-idle-label="Join team">Join team</button>
     </div>
-    <small id="teamSetupMessage"></small>
+    <p id="teamSetupMessage" role="status" aria-live="polite"></p>
   </section>
 </div>
 
@@ -727,15 +736,13 @@ Andrew Tour | McGrath</textarea></label>
           <article><span>Work days</span><strong id="profileWorkDays">4</strong></article>
         </div>
         <fieldset id="teamAccountCard" class="team-account-settings">
-          <legend>Account</legend>
+          <legend>Team</legend>
           <div class="team-account-summary">
-            <span id="teamAccountMode">Not assigned</span>
-            <strong id="teamAccountName">Set up Solo or Team</strong>
-            <small id="teamAccountRole"></small>
-            <small id="teamAccountCode"></small>
-            <small id="teamAccountStatus"></small>
+            <div class="team-account-heading"><div><span id="teamAccountMode">Not assigned</span><strong id="teamAccountName">Set up Solo or Team</strong></div><span id="teamAccountRole" class="team-role-badge"></span></div>
+            <div id="teamJoinCodePanel" class="team-code-panel hidden"><div><span>INVITE CODE</span><strong id="teamAccountCode"></strong></div><button id="copyTeamCode" type="button">Copy</button></div>
+            <p id="teamAccountStatus" class="team-account-status"></p>
           </div>
-          <button id="openTeamSetup" class="secondary" type="button">Set up account</button>
+          <button id="openTeamSetup" class="secondary" type="button">Choose setup</button>
         </fieldset>
         <label>Agent name<input id="agentName" type="text" maxlength="40" placeholder="Your name"></label>
         <label>Calls target<input id="callsTarget" type="number" min="1"></label>
@@ -916,6 +923,6 @@ Andrew Tour | McGrath</textarea></label>
 })();
 </script>
 
-<script type="module" src="app.js?v=1.32.7-staging-team-sync"></script>
+<script type="module" src="app.js?v=1.32.8-staging-team-refinement"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-# AGNT v1.32.7 Team Sync Stability — Staging Validation Record
+# AGNT v1.32.8 Team Refinement — Staging Validation Record
 
 ## Status
 
@@ -8,67 +8,78 @@ This build must remain in staging until the runtime checks below pass.
 
 ## Static safeguards confirmed
 
-- Built directly from the verified v1.32.5 staging ZIP.
+- Built directly from the verified v1.32.7 staging release.
 - No passkey backend, Firebase Function or Cloudflare Worker files are included.
-- Firebase project configuration is unchanged.
-- `firestore.rules` is byte-for-byte unchanged.
+- Firebase project configuration and Firestore rules are byte-for-byte unchanged.
 - Manifest and PWA icons are byte-for-byte unchanged.
-- Core Firestore paths and document formats are unchanged.
+- Core Firestore paths, security boundaries and document formats are unchanged.
 - `persistDayToCloud()`, `saveDay()`, `saveTargets()` and `saveProspecting()` remain unchanged.
-- Legacy `leaderboard/{uid}` writes remain present.
-- Secure `teams/{teamId}/leaderboard/{uid}` reads/writes remain present.
 - Create Team and Join Team remain atomic Firestore batches.
-- Verified team identity cache is UID-specific and contains no credentials or detailed statistics.
-- Remembered membership is re-verified against Firestore on every launch.
-- Membership and team document checks run in parallel.
-- Stale async team initialisation is rejected after a user/session change.
-- Leaderboard status has one state controller.
-- Metadata-only snapshots do not rebuild unchanged leaderboard statistics.
-- Unrelated profile renders do not rebuild identical leaderboard rows.
-- JavaScript syntax validation passes.
+- Team accounts can publish only to their secure team leaderboard through the active publisher.
+- Solo accounts can publish only to their personal legacy row through the active publisher.
+- Team-only publication errors remain separate from core personal-data Sync Error state.
+- JavaScript and service-worker syntax validation passes.
 
 ## Automated local scenarios passed
 
-- Existing cached-team launch restored the team listener before profile verification completed.
-- Fresh team launch verified membership and loaded the correct secure leaderboard.
-- Both membership documents were requested concurrently.
-- Both scenarios progressed from `TEAM SYNCING` to `TEAM LIVE` without generic `LIVE` or legacy transition labels.
-- Cached and server snapshots with identical statistics preserved the existing leaderboard row nodes.
-- Both scenarios rendered the expected Andrew and George team rows.
+- Cached-team launch restored the secure listener before background profile verification.
+- Fresh-team launch verified membership and loaded the correct secure leaderboard.
+- Membership and team documents were requested concurrently.
+- Solo launch stayed private and performed no team verification reads.
+- Team scenarios wrote only `teams/{teamId}/leaderboard/{uid}`.
+- Solo scenarios wrote only `leaderboard/{uid}`.
+- No tested account issued both leaderboard writes.
+- Status progressed from `TEAM SYNCING` to `TEAM LIVE` without generic `LIVE` or legacy labels.
+- Offline and reconnect status changes preserved the existing leaderboard rows.
+- Metadata-only cache/server snapshots preserved unchanged leaderboard row nodes.
+- Create Team committed its four records once despite a simulated double tap.
+- Join Team committed its two records once despite a simulated double tap.
+- Create and Join both completed verification, secure publication and UID-specific caching.
+- Owner invite code displayed and copied successfully; member view kept it hidden.
+- Choice, Create and Join panels maintained correct accessible dialog labels.
+- Team codes normalised to uppercase alphanumeric characters.
 
 ## Runtime test matrix
 
+### Cross-device speed and reliability
+
+- [ ] Change Calls on device A and time the update appearing on device B.
+- [ ] Change Connects on device B and time the update appearing on device A.
+- [ ] Confirm the team account creates no new `leaderboard/{uid}` write.
+- [ ] Confirm only `teams/{teamId}/leaderboard/{uid}` changes for team activity.
+- [ ] Repeat changes quickly and confirm the final value reaches both devices.
+- [ ] Confirm the main badge progresses through Saving to Live.
+- [ ] Confirm a team-only error appears on the leaderboard without changing core sync to Sync Error.
+
 ### Startup and status stability
 
-- [ ] Existing team user signs in normally.
-- [ ] First launch verifies the correct team and displays its members.
-- [ ] Second launch restores the correct team immediately from cache.
-- [ ] Cached statistics remain visible while Firebase confirms the server snapshot.
-- [ ] Status progresses from `TEAM SYNCING` to `TEAM LIVE` without reverting or flashing generic `LIVE`.
-- [ ] Unchanged cache/server metadata does not visibly redraw the leaderboard.
+- [ ] Existing team user signs in and sees the correct team.
+- [ ] Second launch displays cached team statistics immediately.
+- [ ] Status progresses from `TEAM SYNCING` to `TEAM LIVE` without flicker.
 - [ ] Going offline shows `TEAM OFFLINE` without removing cached statistics.
-- [ ] Reconnecting returns to `TEAM LIVE` and publishes current statistics.
+- [ ] Reconnecting returns to `TEAM LIVE` and publishes the latest statistics.
 
-### Membership safety
+### Team setup UI
 
-- [ ] A changed team profile stops the old listener and loads the new verified team.
-- [ ] A removed membership cannot continue reading the team leaderboard.
-- [ ] Invalid membership clears the remembered team state.
-- [ ] Logging out and into another UID never displays the previous UID's team.
-- [ ] Solo accounts restore as Solo and display only their own row.
-- [ ] Unconfigured accounts remain private and can still enter onboarding.
+- [ ] Solo, Create Team and Join Team choices match AGNT in light mode.
+- [ ] The same screens match AGNT in dark mode.
+- [ ] Team name submits from the keyboard and primary button.
+- [ ] Team code uppercases automatically and submits from the keyboard and primary button.
+- [ ] Slow submission shows a clear loading state and cannot be submitted twice.
+- [ ] Invalid or offline setup shows a readable inline error.
+- [ ] Owner Settings shows the invite code and Copy works.
+- [ ] Member Settings shows the team name and Member badge without exposing the invite-code panel.
+- [ ] The sheet remains usable with the iPhone keyboard open and on a short viewport.
 
 ### Core regression
 
 - [ ] Existing days, targets and appointments load.
 - [ ] Calls, connects, data and knocking save and sync.
-- [ ] Prospecting data saves and syncs.
-- [ ] Offline activity remains locally available.
-- [ ] Reconnect flushes normal core writes.
-- [ ] Legacy `leaderboard/{uid}` still publishes.
-- [ ] Team leaderboard publication updates only the signed-in member's row.
-- [ ] Team errors do not set the main accountability Sync Error.
-- [ ] Core personal-data permission errors still set the main Sync Error.
+- [ ] Prospecting saves and syncs.
+- [ ] Offline activity remains locally available and reconnect flushes core writes.
+- [ ] Solo accounts publish only `leaderboard/{uid}`.
+- [ ] Team accounts publish only `teams/{teamId}/leaderboard/{uid}`.
+- [ ] Create Team and Join Team each commit once.
 
 ### Team isolation
 
@@ -79,11 +90,11 @@ This build must remain in staging until the runtime checks below pass.
 
 ### PWA update
 
-- [ ] GitHub Pages serves v1.32.7 files.
-- [ ] Browser refresh loads v1.32.7.
-- [ ] Installed iPhone PWA replaces the v1.32.5/v1.32.6 cache.
-- [ ] Closing and reopening the PWA retains the correct team.
+- [ ] GitHub Pages serves v1.32.8 files.
+- [ ] Browser refresh loads the v1.32.8 build marker.
+- [ ] Installed iPhone PWA replaces the v1.32.7 cache.
+- [ ] Closing and reopening retains the correct team.
 
 ## Promotion gate
 
-Do not promote to BETA until the runtime matrix passes with at least one team owner, one team member, one Solo user and a logout/login test between two UIDs.
+Do not promote to BETA until the runtime matrix passes with a team owner, a team member, a Solo user and a logout/login test between two different UIDs.

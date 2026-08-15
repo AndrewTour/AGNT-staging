@@ -1,21 +1,27 @@
-# AGNT v1.32.7 STAGING — Team Sync Stability
+# AGNT v1.32.8 STAGING — Team Refinement
 
-STAGING ONLY. Built incrementally from the verified clean `AGNT-v1.32.5-STAGING-Teams-v2-MultiTab-Team-State-Fix.zip` package. No passkey backend, Firebase Function or Cloudflare Worker code is included.
+STAGING ONLY. Built incrementally from the verified v1.32.7 Team Sync Stability release, which was built from the clean v1.32.5 Teams v2 staging package. No passkey backend, Firebase Function or Cloudflare Worker code is included.
 
-## Stability improvements
+## Sync refinement
 
-- Restores the last verified Solo/Team identity from UID-specific local storage on launch.
-- Starts the secure team leaderboard listener immediately for a remembered team.
-- Re-verifies the profile, membership and team records against Firestore in the background.
-- Reads the membership and team documents in parallel.
-- Uses one controller for `TEAM SYNCING`, `TEAM LIVE`, `TEAM OFFLINE` and `TEAM ERROR`.
-- Prevents the legacy leaderboard publisher from overwriting the team connection label.
-- Keeps cached team statistics visible while Firebase confirms the live snapshot.
-- Avoids rebuilding identical leaderboard rows during metadata-only cache/server transitions and unrelated profile renders.
-- Invalid or changed membership clears the remembered team safely.
-- Async team initialisation from an older login cannot apply to a newer user session.
+- Uses exactly one active leaderboard publication path per account.
+- Team accounts publish only to `teams/{teamId}/leaderboard/{uid}`.
+- Solo accounts publish only to `leaderboard/{uid}`.
+- Removes the redundant legacy leaderboard write from team activity updates.
+- Tracks secure team publication in the visible saving state without turning a team-only error into a core-data Sync Error.
+- Retains the v1.32.7 cached-team launch, parallel membership verification, stable connection state and unchanged-row rendering improvements.
 
-The remembered state contains only account mode, team ID, role, name and the owner's join code. It is namespaced to the Firebase UID. Firestore security rules remain the authority and every launch re-verifies membership.
+Personal days remain the source of truth at `users/{uid}/days/{date}`. Leaderboard publishing remains a derived summary and does not change personal data persistence.
+
+## Team UI refinement
+
+- Rebuilt Solo/Create/Join setup as a native AGNT bottom sheet on mobile and modal on larger screens.
+- Matched existing AGNT typography, black primary actions, soft fields, spacing, borders and dark mode.
+- Added clearer private-team explanations and account-state language.
+- Added normalised uppercase invite-code entry and Enter-key submission.
+- Added loading states, accessible status messages and duplicate-submission protection.
+- Added owner invite-code presentation and one-tap copy in Settings.
+- Added live, updating, offline, error and Solo states to the Team settings summary.
 
 ## Protected systems unchanged
 
@@ -24,28 +30,23 @@ The remembered state contains only account mode, team ID, role, name and the own
 - Firestore collection and document paths
 - Firestore security rules
 - User UID separation
-- Personal day/target/appointment data formats
+- Personal day, target and appointment formats
 - Prospecting data format and sync path
-- Legacy `leaderboard/{uid}` publication path and payload
-- Secure `teams/{teamId}/leaderboard/{uid}` path and payload
+- Leaderboard payload format
 - Atomic Create Team and Join Team batches
 - Offline Firestore cache
 - Manifest and icons
 - Service-worker behaviour, apart from the required release cache identifier
 
-## Firestore paths
+## Active publication paths
 
-- `users/{uid}`
-- `users/{uid}/days/{date}`
-- `users/{uid}/prospecting/state`
-- `leaderboard/{uid}`
-- `teams/{teamId}`
-- `teams/{teamId}/members/{uid}`
-- `teams/{teamId}/leaderboard/{uid}`
-- `teamCodes/{code}`
+- Team account: `teams/{teamId}/leaderboard/{uid}` only
+- Solo account: `leaderboard/{uid}` only
+
+All existing Firestore paths remain available; this release only prevents team accounts from making the redundant legacy leaderboard write.
 
 ## Firebase configuration
 
-No Firebase Console, Authentication, Firestore schema, index or billing change is required for this release. The included `firestore.rules` file is byte-for-byte unchanged from v1.32.5.
+No Firebase Console, Authentication, Firestore rules, schema, index or billing change is required. The included `firebase-config.js` and `firestore.rules` files are byte-for-byte unchanged from v1.32.7 and v1.32.5.
 
-Deploy the frontend files only to the separate `AGNT-staging` GitHub Pages repository. Do not upload this build to BETA.
+Deploy the frontend files only to the separate `AGNT-staging` GitHub Pages repository. Do not upload this build to BETA until the physical-device validation passes.
