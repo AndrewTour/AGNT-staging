@@ -1,7 +1,7 @@
-# AGNT Teams v2 — Staging Validation Record
+# AGNT v1.32.6 Teams v2 + Passkey — Staging Validation Record
 
 ## Status
-Code preparation complete. Runtime Firebase validation NOT YET STARTED because a separate staging Firebase project/config has not yet been supplied.
+Code preparation complete. The separate staging Firebase config is present. Runtime Teams v2 and passkey validation has NOT YET BEEN COMPLETED.
 
 This build must not be promoted to production until every runtime test below passes against the staging project.
 
@@ -21,6 +21,10 @@ This build must not be promoted to production until every runtime test below pas
 - Production Firebase project ID is absent from staging `firebase-config.js`.
 - Manifest and PWA icons are unchanged.
 - JavaScript syntax check passes.
+- Passkey UI is additive to the v1.32.5 STAGING baseline.
+- Passkey authentication returns the same Firebase UID through a staging custom token.
+- Passkey server collections are accessed only by the staging Function; `firestore.rules` is unchanged.
+- The passkey Function target and `.firebaserc` reference `agnt-staging-cb6ce` only.
 
 ## Runtime test matrix
 ### Core regression
@@ -80,6 +84,20 @@ This build must not be promoted to production until every runtime test below pas
 - [ ] App closed during onboarding resumes core app safely
 - [ ] Logout/login between two UIDs keeps local cache separated
 - [ ] Installed iPhone PWA cache updates correctly
+
+### Passkey / Face ID
+- [ ] Existing staging email/password user can add a passkey
+- [ ] Passkey appears as Active in Settings
+- [ ] iPhone Safari Face ID sign-in succeeds
+- [ ] Installed iPhone PWA Face ID sign-in succeeds
+- [ ] Android Chrome passkey sign-in succeeds
+- [ ] Passkey sign-in returns the original Firebase UID
+- [ ] Solo account state remains unchanged after passkey sign-in
+- [ ] Team membership and secure leaderboard remain unchanged after passkey sign-in
+- [ ] Existing days, targets, appointments and prospecting data load normally
+- [ ] Removing a passkey disables that credential
+- [ ] Email/password recovery remains available
+- [ ] Passkey service failure does not set the main AGNT Sync Error
 
 ## Promotion gate
 Production changes are prohibited until all boxes above are passed and the exact tested staging rules/configuration are reviewed separately.

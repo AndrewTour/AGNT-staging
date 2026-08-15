@@ -1,6 +1,16 @@
-# AGNT v1.32.5-staging — Teams v2
+# AGNT v1.32.6-staging — Teams v2 + Passkey POC
 
-STAGING ONLY. Built from the stable pre-Teams v1.30.21 source. This package deliberately contains no production Firebase credentials.
+STAGING ONLY. Built incrementally from the confirmed v1.32.5 STAGING Teams v2 MultiTab Team State Fix package. This package targets Firebase project `agnt-staging-cb6ce` and deliberately contains no production Firebase credentials.
+
+## Passkey proof-of-concept
+
+- Optional Apple/Android WebAuthn passkey sign-in
+- Passkey registration, status and removal in Settings
+- Existing Firebase UID preserved through a staging custom token
+- Email/password, account creation, device-only mode and Teams v2 preserved
+- Separate deployable staging Firebase Function included
+
+The Function must be deployed before passkey registration or sign-in can work. Follow `PASSKEY-STAGING-SETUP.md` and do not deploy it to the OG/BETA project.
 
 ## Core paths preserved
 - `users/{uid}`
@@ -29,12 +39,11 @@ STAGING ONLY. Built from the stable pre-Teams v1.30.21 source. This package deli
 Create Team and Join Team use atomic Firestore write batches. User profile team metadata is committed in the same atomic operation as the required team/membership records, preventing partial profile-first migration states.
 
 ## Staging setup required
-1. Create a separate Firebase project for AGNT staging.
-2. Enable Email/Password Authentication.
-3. Create Firestore.
-4. Replace the placeholders in `firebase-config.js` with the staging Web App config only.
-5. Deploy the included `firestore.rules` to the staging project only.
-6. Host this build on a staging-only GitHub Pages target. Do not point production Pages at this branch.
+1. Confirm the Firebase CLI is using `agnt-staging-cb6ce`.
+2. Enable Email/Password Authentication and Firestore in staging.
+3. Deploy the included `firestore.rules` to the staging project only if the Teams v2 rules are not already active.
+4. Upgrade the staging project to Blaze and deploy only `functions:passkeyApi` for the passkey test.
+5. Host this build on a staging-only HTTPS target. Do not point production Pages at this branch.
 
 ## Test accounts required
 - Team Pana owner analogue

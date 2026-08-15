@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="AGNT">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css?v=1.32.5-staging">
+<link rel="stylesheet" href="styles.css?v=1.32.6-staging-passkey">
 <title>AGNT</title>
 </head>
 <body>
@@ -18,12 +18,18 @@
     <div class="brand-mark">AGNT</div>
     <h1>AGNT</h1>
     <p>Sign in once and your data stays live across your devices.</p>
-    <input id="email" type="email" autocomplete="email" placeholder="Email" required>
+    <button id="passkeySignIn" class="passkey-sign-in" type="button" disabled>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M15 8l2 2M17 6l2 2"/></svg>
+      <span>Continue with passkey</span>
+    </button>
+    <small id="passkeySupportNote" class="passkey-support-note">Use Face ID, fingerprint or your device passcode.</small>
+    <div class="auth-divider"><span>or use email</span></div>
+    <input id="email" type="email" autocomplete="username webauthn" placeholder="Email" required>
     <input id="password" type="password" autocomplete="current-password" placeholder="Password" minlength="6" required>
     <button class="primary" type="submit">Sign in</button>
     <button id="createAccount" class="secondary" type="button">Create account</button>
     <button id="localMode" class="text-btn" type="button">Continue on this device only</button>
-    <small id="authMessage"></small><small id="stagingBuildMarker" style="display:block;margin-top:8px;opacity:.65">STAGING v1.32.5 · booting…</small>
+    <small id="authMessage"></small><small id="stagingBuildMarker" style="display:block;margin-top:8px;opacity:.65">STAGING v1.32.6 PASSKEY POC · booting…</small>
   </form>
 </div>
 
@@ -737,6 +743,16 @@ Andrew Tour | McGrath</textarea></label>
           </div>
           <button id="openTeamSetup" class="secondary" type="button">Set up account</button>
         </fieldset>
+        <fieldset class="passkey-settings" aria-labelledby="passkeySettingsTitle">
+          <legend>Passkey</legend>
+          <div class="passkey-settings-head">
+            <div><strong id="passkeySettingsTitle">Face ID and device sign-in</strong><small id="passkeySettingsCopy">Use Face ID, fingerprint or your device passcode when signing in.</small></div>
+            <span id="passkeyStatusBadge" class="passkey-status-badge">Checking</span>
+          </div>
+          <div id="passkeyCredentialList" class="passkey-credential-list" aria-live="polite"></div>
+          <button id="addPasskey" class="secondary passkey-add" type="button">Set up a passkey</button>
+          <small id="passkeySettingsMessage" class="passkey-settings-message"></small>
+        </fieldset>
         <label>Agent name<input id="agentName" type="text" maxlength="40" placeholder="Your name"></label>
         <label>Calls target<input id="callsTarget" type="number" min="1"></label>
         <label>Connects target<input id="connectsTarget" type="number" min="1"></label>
@@ -916,6 +932,6 @@ Andrew Tour | McGrath</textarea></label>
 })();
 </script>
 
-<script type="module" src="app.js?v=1.32.5-staging"></script>
+<script type="module" src="app.js?v=1.32.6-staging-passkey"></script>
 </body>
 </html>
