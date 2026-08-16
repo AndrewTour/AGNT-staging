@@ -151,3 +151,10 @@ No Firebase configuration, Firestore rule, index, Function, billing or schema mi
 ## v1.34.7 — Expanded Returning Daily Snapshot
 
 Incremental snapshot-only refinement built from v1.34.6. The returning PWA snapshot now uses the available iPhone viewport more deliberately with live Day Pulse and Leaderboard cards plus a full-width Next Block recommendation. Existing snapshot timing, auth restore, first-use flow, off-day flow and all application logic remain unchanged.
+
+
+## v1.34.8 — Consumer Login + 4 Second Snapshot
+
+- Returning daily snapshot handoff changed from 2.8 seconds to 4 seconds; tap-to-dismiss remains unchanged.
+- Removed staging/debug/troubleshooting text from the login surface and replaced raw authentication errors with concise consumer-facing messages.
+- No other application functionality or UI was changed.

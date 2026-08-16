@@ -135,3 +135,10 @@ Do not port this release to BETA until Create, Share, Join confirmation, manual 
 - Confirm Next Block prioritises an appointment within 60 minutes, then an active Pipeline Session, then knocking after 2:00pm, then remaining core activity.
 - Confirm light and dark mode preserve the established AGNT visual language.
 - Confirm no changes to auth, Firebase, Firestore, team workflow, pipeline eligibility, leaderboard sync or Broadcast behaviour.
+
+
+## v1.34.8 — Consumer Login + 4 Second Snapshot
+
+- Returning daily snapshot handoff changed from 2.8 seconds to 4 seconds; tap-to-dismiss remains unchanged.
+- Removed staging/debug/troubleshooting text from the login surface and replaced raw authentication errors with concise consumer-facing messages.
+- No other application functionality or UI was changed.

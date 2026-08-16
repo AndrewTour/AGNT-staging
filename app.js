@@ -3,10 +3,6 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/fireba
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, writeBatch, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
-const stagingBuildMarker=document.getElementById('stagingBuildMarker');
-if(stagingBuildMarker)stagingBuildMarker.textContent='STAGING v1.34.1 · UI polish + weekly sync + appointment restore';
-
-
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const DEFAULT_WORK_DAYS=[1,2,4,5];
 let workDays=[...DEFAULT_WORK_DAYS];
@@ -272,7 +268,7 @@ function dismissReturningSnapshot(){
   clearTimeout(returningSnapshotTimer);returningSnapshotTimer=null;const screen=$('#returningSnapshotScreen');if(!screen)return;screen.classList.add('is-leaving');screen.setAttribute('aria-hidden','true');setTimeout(()=>screen.classList.add('hidden'),260);
 }
 function showReturningSnapshot(){
-  const screen=$('#returningSnapshotScreen');if(!screen)return false;renderReturningSnapshot();markReturningSnapshotReady();screen.classList.remove('hidden','is-leaving');screen.setAttribute('aria-hidden','false');clearTimeout(returningSnapshotTimer);returningSnapshotTimer=setTimeout(dismissReturningSnapshot,2800);return true;
+  const screen=$('#returningSnapshotScreen');if(!screen)return false;renderReturningSnapshot();markReturningSnapshotReady();screen.classList.remove('hidden','is-leaving');screen.setAttribute('aria-hidden','false');clearTimeout(returningSnapshotTimer);returningSnapshotTimer=setTimeout(dismissReturningSnapshot,4000);return true;
 }
 function welcomeProfileName(){return (agentName||currentUser?.displayName||'Agent').trim()||'Agent'}
 function welcomeStorageKey(){return `${storagePrefix(uid)}welcome:${todayKey()}`}
@@ -3075,7 +3071,17 @@ function bindViewport(){
   window.visualViewport?.addEventListener('scroll',updateAppViewport,{passive:true});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){updateAppViewport();finaliseExpiredTimers().then(()=>renderAll())}});
 }
-async function init(){bindViewport();loadLocal('local');await finaliseExpiredTimers();if(!configured()){$('#bootGate')?.classList.add('hidden');setAuthScreenActive(true);$('#authGate').classList.remove('hidden');showAuthMessage('Staging Firebase is not configured. Add the staging project config before testing cloud features.');return}try{const fb=initializeApp(firebaseConfig);auth=getAuth(fb);await setPersistence(auth,browserLocalPersistence);db=initializeFirestore(fb,{experimentalAutoDetectLongPolling:true,localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})});onAuthStateChanged(auth,u=>{if(u){if(creatingAccount){currentUser=u;return}startCloud(u)}else{clearActiveSession();$('#bootGate')?.classList.add('hidden');setAuthScreenActive(true);$('#app').classList.add('hidden');$('#authGate').classList.remove('hidden')}})}catch(err){console.error(err);$('#bootGate')?.classList.add('hidden');setAuthScreenActive(true);$('#authGate').classList.remove('hidden');showAuthMessage(err.message)}}
+function consumerAuthError(error,action='sign in'){
+  const code=String(error?.code||'');
+  if(code==='auth/invalid-credential'||code==='auth/user-not-found'||code==='auth/wrong-password')return 'Email or password is incorrect.';
+  if(code==='auth/invalid-email')return 'Enter a valid email address.';
+  if(code==='auth/email-already-in-use')return 'An account already exists for this email. Sign in instead.';
+  if(code==='auth/weak-password')return 'Choose a password with at least 6 characters.';
+  if(code==='auth/too-many-requests')return 'Too many attempts. Please try again shortly.';
+  if(code==='auth/network-request-failed')return 'You appear to be offline. Check your connection and try again.';
+  return action==='create'?'We couldn’t create your account. Please try again.':'We couldn’t sign you in. Please try again.';
+}
+async function init(){bindViewport();loadLocal('local');await finaliseExpiredTimers();if(!configured()){$('#bootGate')?.classList.add('hidden');setAuthScreenActive(true);$('#authGate').classList.remove('hidden');showAuthMessage('AGNT is temporarily unavailable. Please try again shortly.');return}try{const fb=initializeApp(firebaseConfig);auth=getAuth(fb);await setPersistence(auth,browserLocalPersistence);db=initializeFirestore(fb,{experimentalAutoDetectLongPolling:true,localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})});onAuthStateChanged(auth,u=>{if(u){if(creatingAccount){currentUser=u;return}startCloud(u)}else{clearActiveSession();$('#bootGate')?.classList.add('hidden');setAuthScreenActive(true);$('#app').classList.add('hidden');$('#authGate').classList.remove('hidden')}})}catch(err){console.error(err);$('#bootGate')?.classList.add('hidden');setAuthScreenActive(true);$('#authGate').classList.remove('hidden');showAuthMessage('AGNT is temporarily unavailable. Please try again shortly.')}}
 function showAuthMessage(msg){$('#authMessage').textContent=msg}
 function switchView(id){if(id!=='appointmentsView'&&appointmentHistoryMode)setAppointmentHistoryScreen(null);$$('.tabbar button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));$$('.view').forEach(v=>v.classList.toggle('active',v.id===id));updateTopbar(id);if(id==='scheduleView'){renderTimeline();setTodayPage(todayPage);}if(id==='appointmentsView')renderAppointments();if(id==='prospectingView')renderProspecting();if(id==='insightsView')renderInsights()}
 
@@ -3093,8 +3099,8 @@ function shiftHeaderDate(delta){
 
 function openCalendar(){$('#calendarModal').classList.add('open');renderCalendar()}
 
-$('#authForm').addEventListener('submit',async e=>{e.preventDefault();showAuthMessage('Signing in…');try{await signInWithEmailAndPassword(auth,$('#email').value,$('#password').value)}catch(err){console.error('Sign in failed',err);showAuthMessage(`SIGN IN ERROR: ${err.code||''} ${err.message||err}`.trim())}});
-$('#createAccount').onclick=async()=>{showAuthMessage('Creating account…');creatingAccount=true;try{const credential=await createUserWithEmailAndPassword(auth,$('#email').value,$('#password').value);newAccountUidPending=credential.user.uid;try{await setDoc(doc(db,'users',credential.user.uid),{teamOnboardingSuggested:true,teamSchemaVersion:TEAM_SCHEMA_VERSION,email:credential.user.email||'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true})}catch(err){console.error('Team onboarding marker failed',err)}creatingAccount=false;await startCloud(credential.user,{promptTeamSetup:true})}catch(err){creatingAccount=false;showAuthMessage(err.message)}};
+$('#authForm').addEventListener('submit',async e=>{e.preventDefault();showAuthMessage('Signing in…');try{await signInWithEmailAndPassword(auth,$('#email').value,$('#password').value)}catch(err){console.error('Sign in failed',err);showAuthMessage(consumerAuthError(err,'sign in'))}});
+$('#createAccount').onclick=async()=>{showAuthMessage('Creating account…');creatingAccount=true;try{const credential=await createUserWithEmailAndPassword(auth,$('#email').value,$('#password').value);newAccountUidPending=credential.user.uid;try{await setDoc(doc(db,'users',credential.user.uid),{teamOnboardingSuggested:true,teamSchemaVersion:TEAM_SCHEMA_VERSION,email:credential.user.email||'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true})}catch(err){console.error('Team onboarding marker failed',err)}creatingAccount=false;await startCloud(credential.user,{promptTeamSetup:true})}catch(err){creatingAccount=false;showAuthMessage(consumerAuthError(err,'create'))}};
 
 $('#teamChoiceSolo')?.addEventListener('click',()=>completeSoloSetup());
 $('#teamChoiceCreate')?.addEventListener('click',()=>showTeamSetupPanel('create'));

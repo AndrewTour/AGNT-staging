@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="AGNT">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css?v=1.34.7-expanded-daily-snapshot">
+<link rel="stylesheet" href="styles.css?v=1.34.8-consumer-login">
 <title>AGNT</title>
 </head>
 <body>
@@ -24,7 +24,7 @@
     <button class="primary" type="submit">Sign in</button>
     <button id="createAccount" class="secondary" type="button">Create account</button>
     <button id="localMode" class="text-btn" type="button">Continue on this device only</button>
-    <small id="authMessage"></small><small id="stagingBuildMarker" style="display:block;margin-top:8px;opacity:.65">STAGING v1.34.7 · booting…</small>
+    <small id="authMessage"></small>
   </form>
 </div>
 
@@ -1002,24 +1002,8 @@ Andrew Tour | McGrath</textarea></label>
 
 <div id="toast" class="toast"></div>
 
-<script>
-(function(){
-  const show=function(prefix,value){
-    const el=document.getElementById('authMessage');
-    if(!el)return;
-    const message=value && value.message ? value.message : String(value||'Unknown error');
-    el.textContent=prefix+message;
-  };
-  window.addEventListener('error',function(event){
-    show('BOOT ERROR: ', event.error || event.message);
-  });
-  window.addEventListener('unhandledrejection',function(event){
-    show('ASYNC ERROR: ', event.reason);
-  });
-  window.__AGNT_STAGING_BOOT_DIAGNOSTICS__=true;
-})();
-</script>
 
-<script type="module" src="app.js?v=1.34.7-expanded-daily-snapshot"></script>
+
+<script type="module" src="app.js?v=1.34.8-consumer-login"></script>
 </body>
 </html>
