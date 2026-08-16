@@ -1,5 +1,5 @@
-const CACHE='agnt-staging-v1.34.5-pipeline-refresh';
-const ASSETS=['./','./index.html','./styles.css?v=1.34.5-staging-pipeline-refresh','./app.js?v=1.34.5-staging-pipeline-refresh','./firebase-config.js','./manifest.json','./icons/icon-192.png','./icons/icon-512.png'];
+const CACHE='agnt-staging-v1.34.6-returning-daily-snapshot';
+const ASSETS=['./','./index.html','./styles.css?v=1.34.6-returning-daily-snapshot','./app.js?v=1.34.6-returning-daily-snapshot','./firebase-config.js','./manifest.json','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{

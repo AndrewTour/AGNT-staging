@@ -9,11 +9,12 @@
 <meta name="apple-mobile-web-app-title" content="AGNT">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css?v=1.34.5-staging-pipeline-refresh">
+<link rel="stylesheet" href="styles.css?v=1.34.6-returning-daily-snapshot">
 <title>AGNT</title>
 </head>
 <body>
-<div id="authGate" class="auth-gate">
+<div id="bootGate" class="boot-gate" aria-live="polite"><div class="boot-mark">AGNT<span aria-hidden="true">.</span></div><small>Loading your day…</small></div>
+<div id="authGate" class="auth-gate hidden">
   <form id="authForm" class="auth-card glass" onsubmit="return false;">
     <div class="brand-mark">AGNT</div>
     <h1>AGNT</h1>
@@ -23,7 +24,7 @@
     <button class="primary" type="submit">Sign in</button>
     <button id="createAccount" class="secondary" type="button">Create account</button>
     <button id="localMode" class="text-btn" type="button">Continue on this device only</button>
-    <small id="authMessage"></small><small id="stagingBuildMarker" style="display:block;margin-top:8px;opacity:.65">STAGING v1.34.2 · booting…</small>
+    <small id="authMessage"></small><small id="stagingBuildMarker" style="display:block;margin-top:8px;opacity:.65">STAGING v1.34.6 · booting…</small>
   </form>
 </div>
 
@@ -116,6 +117,32 @@
     <div class="team-code-refresh-note"><span aria-hidden="true">✓</span><p><strong>Current members stay connected</strong><small>This only changes how new members join your team.</small></p></div>
     <div class="team-code-refresh-actions"><button id="cancelTeamCodeRefresh" class="secondary" type="button">Cancel</button><button id="confirmTeamCodeRefresh" class="primary" type="button">Refresh code</button></div>
     <small id="teamCodeRefreshStatus" role="status" aria-live="polite"></small>
+  </section>
+</div>
+
+<div id="returningSnapshotScreen" class="returning-snapshot-screen hidden" aria-hidden="true">
+  <section class="returning-snapshot-shell" aria-labelledby="returningSnapshotTitle">
+    <div class="returning-snapshot-top">
+      <span class="returning-snapshot-brand">AGNT<span aria-hidden="true">.</span></span>
+      <span id="returningSnapshotDate" class="returning-snapshot-date"></span>
+    </div>
+    <div class="returning-snapshot-hero">
+      <span id="returningSnapshotKicker" class="returning-snapshot-kicker">RIGHT NOW</span>
+      <div class="returning-snapshot-score-row"><strong id="returningSnapshotScore">0%</strong><span>today</span></div>
+      <h1 id="returningSnapshotTitle">Keep the day moving.</h1>
+      <p id="returningSnapshotPriority">Loading your current priorities…</p>
+      <div class="returning-snapshot-progress" aria-hidden="true"><i id="returningSnapshotProgress"></i></div>
+    </div>
+    <div class="returning-snapshot-grid">
+      <article><span>ACTIVITY LEFT</span><strong id="returningSnapshotActivity">—</strong><small>Calls · Connects · Data</small></article>
+      <article><span>APPOINTMENTS</span><strong id="returningSnapshotAppointments">—</strong><small id="returningSnapshotAppointmentMeta">Today</small></article>
+      <article><span>PIPELINE</span><strong id="returningSnapshotPipeline">—</strong><small id="returningSnapshotPipelineMeta">Ready to work</small></article>
+      <article><span>KNOCKING</span><strong id="returningSnapshotKnocking">—</strong><small id="returningSnapshotKnockingMeta">Today</small></article>
+    </div>
+    <div class="returning-snapshot-footer">
+      <span id="returningSnapshotRank">Live sync</span>
+      <span class="returning-snapshot-opening">Opening AGNT<span class="returning-snapshot-dots" aria-hidden="true">…</span></span>
+    </div>
   </section>
 </div>
 
@@ -986,6 +1013,6 @@ Andrew Tour | McGrath</textarea></label>
 })();
 </script>
 
-<script type="module" src="app.js?v=1.34.5-staging-pipeline-refresh"></script>
+<script type="module" src="app.js?v=1.34.6-returning-daily-snapshot"></script>
 </body>
 </html>

@@ -117,3 +117,11 @@ Do not port this release to BETA until Create, Share, Join confirmation, manual 
 - Dark mode: enabled controls retain full opacity and original pre-polish fills/text contrast.
 - Disabled controls alone use reduced opacity/saturation.
 - Weekly leaderboard live sync remains unchanged from v1.34.1.
+
+
+## v1.34.6 — Returning Daily Snapshot
+- Returning authenticated opens no longer flash the login form while Firebase restores a persisted session.
+- Established users see a ~2.8 second time-aware snapshot using cached data first, with live values refreshed as sync arrives.
+- Snapshot shows completion, activity remaining, appointments, pipeline availability/current session, knocking status and live leaderboard position where available.
+- Signed-out users still receive the existing login screen. First-use welcome/team setup and off-day review behaviour are preserved.
+- No Firebase paths, rules, auth persistence, UID separation, prospecting logic, leaderboard logic or team workflow changed.

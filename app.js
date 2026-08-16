@@ -18,7 +18,7 @@ const AGNT_BULK_SMS_SHORTCUT='AGNT Bulk SMS';
 let targets={...DEFAULTS}, days={}, prospects=[], prospectInteractions=[], marketPulseEvents=[], prospectFilter='priority', prospectSection='today', prospectContactsMode='active', pipelineTemperature='All', pipelineSort='followup', prospectBulkMode=false, selectedProspectIds=new Set(), activeProspectId=null, prospectSessionIds=[], prospectSessionIndex=0, prospectSessionActive=false, prospectSessionStats={calls:0,connects:0,temperate:0,appointments:0,sms:0}, prospectSessionContext=null, selectedDate=dateKey(new Date()), appointmentDate=selectedDate, appointmentHistoryMode=null, agentName='', calendarPreference='outlook', appearancePreference='system', leaderboardEntries=[], leaderboardMode='day', leaderboardDayOffset=0, leaderboardWeekOffset=0, scorecardWeekOffset=0, prospectInsightPeriod='week', campaignHistory=[], bulkSmsTestLaunches=[], selectedBroadcastType='', selectedBroadcastSuburb='', selectedBroadcastStreet='', selectedBroadcastRecipientIds=new Set(), broadcastStep=1, broadcastReviewMode='live', broadcastLastLaunch=null;
 let knockingSessionActive=false,knockingSessionVisible=false,knockingSessionEnding=false,knockingSessionStats={knocks:0,clients:0,data:0,MAP:0,LAP:0},knockingSessionLog=[],knockingSessionStartSeconds=0,knockingCaptureType='',knockingEditingLogId='';
 let year=new Date().getFullYear(), monthCursor=new Date(), uid='local', currentUser=null, cloud=false, db=null, auth=null;
-let unsubDays=null, unsubProfile=null, unsubLeaderboard=null, unsubProspecting=null, unsubTeamMembership=null, unsubTeamMembers=null, timerTick=null, syncTimer=null, leaderboardPublishTimer=null, prospectingSaveTimer=null;
+let unsubDays=null, unsubProfile=null, unsubLeaderboard=null, unsubProspecting=null, unsubTeamMembership=null, unsubTeamMembers=null, timerTick=null, syncTimer=null, leaderboardPublishTimer=null, prospectingSaveTimer=null, returningSnapshotTimer=null;
 let accountMode='unconfigured',teamId=null,teamRole=null,teamName='',teamJoinCode='',teamLayerStatus='idle',teamLayerError='',creatingAccount=false,newAccountUidPending='',teamOnboardingActive=false;
 let teamSetupBusy=false,teamSetupReturnFocus=null,pendingTeamJoin=null;
 let teamMembers=[],teamMembersStatus='idle',teamMembersError='',teamMembersDataSignature='',subscribedMembershipTeamId='',subscribedMembersTeamId='',teamManagerOpen=false,teamManagerReturnFocus=null,pendingTeamMemberRemoval=null,teamMemberActionBusy=false;
@@ -176,8 +176,80 @@ function saveDirtyDays(){try{localStorage.setItem(storagePrefix(uid)+'dirty-days
 function markDayDirty(k){dirtyDayKeys.add(k);saveDirtyDays()}
 function clearDayDirty(k,clientUpdatedAt){if(Number(days[k]?.clientUpdatedAt)===Number(clientUpdatedAt)){dirtyDayKeys.delete(k);saveDirtyDays()}}
 function saveLocal(){const prefix=storagePrefix(uid);try{const serialised=JSON.stringify(normaliseDaysMap(days));const previous=localStorage.getItem(prefix+'days');if(previous)localStorage.setItem(prefix+'days-backup',previous);localStorage.setItem(prefix+'days',serialised);localStorage.setItem(prefix+'targets',JSON.stringify(targets));localStorage.setItem(prefix+'agent-name',agentName);localStorage.setItem(prefix+'work-days',JSON.stringify(workDays));localStorage.setItem(prefix+'calendar-preference',calendarPreference);localStorage.setItem(prefix+'prospects',JSON.stringify(prospects));localStorage.setItem(prefix+'prospect-interactions',JSON.stringify(prospectInteractions));localStorage.setItem(prefix+'market-pulse-events',JSON.stringify(marketPulseEvents));localStorage.setItem(prefix+'campaign-history',JSON.stringify(campaignHistory.slice(0,20)));localStorage.setItem(prefix+'bulk-sms-test-launches',JSON.stringify(bulkSmsTestLaunches.slice(0,10)));return true}catch(err){console.error('Local save failed',err);return false}}
-function clearActiveSession(){teamInitialisationToken++;unsubDays?.();unsubProfile?.();unsubLeaderboard?.();unsubProspecting?.();unsubTeamMembership?.();unsubTeamMembers?.();unsubDays=unsubProfile=unsubLeaderboard=unsubProspecting=unsubTeamMembership=unsubTeamMembers=null;hideTeamManager({restoreFocus:false});closeTeamMemberRemoval({force:true});hideTeamLeaveConfirmation({force:true,restoreFocus:false});hideTeamCodeRefreshConfirmation({force:true,restoreFocus:false});clearInterval(timerTick);clearTimeout(syncTimer);clearTimeout(leaderboardPublishTimer);clearTimeout(prospectingSaveTimer);prospectingSaveTimer=null;pendingProspectingPayload=null;pendingProspectingSignature='';prospectingWriteInFlight=false;prospectingSaveWaiters.splice(0).forEach(({resolve})=>resolve());currentUser=null;uid='local';cloud=false;pendingSyncOperations=0;syncHasError=false;lastLeaderboardSignature='';lastTeamLeaderboardSignature='';lastProspectingSignature='';dirtyDayKeys=new Set();resetState()}
+function clearActiveSession(){teamInitialisationToken++;unsubDays?.();unsubProfile?.();unsubLeaderboard?.();unsubProspecting?.();unsubTeamMembership?.();unsubTeamMembers?.();unsubDays=unsubProfile=unsubLeaderboard=unsubProspecting=unsubTeamMembership=unsubTeamMembers=null;hideTeamManager({restoreFocus:false});closeTeamMemberRemoval({force:true});hideTeamLeaveConfirmation({force:true,restoreFocus:false});hideTeamCodeRefreshConfirmation({force:true,restoreFocus:false});clearInterval(timerTick);clearTimeout(syncTimer);clearTimeout(leaderboardPublishTimer);clearTimeout(prospectingSaveTimer);clearTimeout(returningSnapshotTimer);returningSnapshotTimer=null;prospectingSaveTimer=null;pendingProspectingPayload=null;pendingProspectingSignature='';prospectingWriteInFlight=false;prospectingSaveWaiters.splice(0).forEach(({resolve})=>resolve());currentUser=null;uid='local';cloud=false;pendingSyncOperations=0;syncHasError=false;lastLeaderboardSignature='';lastTeamLeaderboardSignature='';lastProspectingSignature='';dirtyDayKeys=new Set();resetState()}
 function displayAgentName(){return (agentName||currentUser?.displayName||currentUser?.email?.split('@')[0]||'Agent').trim()}
+function returningSnapshotReadyKey(){return `${storagePrefix(uid)}returning-snapshot-ready`}
+function returningSnapshotHasHistory(){
+  try{
+    if(localStorage.getItem(returningSnapshotReadyKey())==='1')return true;
+    const prefix=storagePrefix(uid),keys=Object.keys(localStorage);
+    return Boolean(localStorage.getItem(prefix+'days')||localStorage.getItem(prefix+'prospects')||localStorage.getItem(prefix+'agent-name')||keys.some(key=>key.startsWith(prefix+'welcome:')));
+  }catch{return false}
+}
+function markReturningSnapshotReady(){try{localStorage.setItem(returningSnapshotReadyKey(),'1')}catch{}}
+function returningSnapshotPipelineCount(){
+  const standardSession=prospectSessionActive&&!cleanText(prospectSessionContext?.eventId,160);
+  if(standardSession)return Math.max(0,prospectSessionIds.length-prospectSessionIndex);
+  try{
+    const raw=safeJsonParse(localStorage.getItem(dailyProspectPipelineKey())||'[]',[]);
+    if(Array.isArray(raw)&&raw.length)return raw.filter(id=>{const p=prospectById(id);return p&&!p.archived&&!prospectContactedToday(id)}).length;
+  }catch{}
+  return sortedEligibleProspectPipeline().filter(p=>!prospectContactedToday(p.id)).slice(0,50).length;
+}
+function returningSnapshotUpcomingAppointment(now=new Date()){
+  const current=now.getHours()*60+now.getMinutes();
+  return appointmentEntriesForDate(todayKey()).map(entry=>({entry,minutes:timelineMinutes(entry.appointment.time)})).filter(item=>Number.isFinite(item.minutes)&&item.minutes>=current-15).sort((a,b)=>a.minutes-b.minutes)[0]||null;
+}
+function returningSnapshotLeaderboardText(){
+  if(!cloud)return 'This device';
+  const rows=sortedTodayLeaderboard(),index=rows.findIndex(row=>row.uid===uid);
+  if(index>=0)return `#${index+1} of ${rows.length} today`;
+  return rows.length?`${rows.length} ranked today`:'Live sync';
+}
+function returningSnapshotSmartCopy(now,data){
+  const hour=now.getHours(),next=data.nextAppointment,untilNext=next?next.minutes-(now.getHours()*60+now.getMinutes()):9999;
+  if(data.score>=100)return{title:'Targets complete.',priority:'Use the remaining time to strengthen tomorrow’s pipeline and protect any appointments still ahead.'};
+  if(next&&untilNext>=0&&untilNext<=60){const a=next.entry.appointment;return{title:'Protect the next hour.',priority:`${appointmentTimeLabel(a,next.entry.sourceDate)} · ${a.contactName||a.name||appointmentType(a)} is next. Finish the current task and leave a clean prep window.`}}
+  if(prospectSessionActive&&!cleanText(prospectSessionContext?.eventId,160)&&data.pipeline>0)return{title:'Pick up where you left off.',priority:`${data.pipeline} clients remain in your current pipeline session · about ${formatEstimatedTime(estimatedMinutes(data.pipeline))}.`};
+  if(hour<12){
+    if(data.callsRemaining+data.connectsRemaining+data.dataRemaining===0)return{title:'Core activity is banked.',priority:data.knockRemaining>0?'Knocking is the next major block. Use the gap to work follow-ups and appointments.':'Keep building tomorrow’s pipeline.'};
+    return{title:'Build the lead early.',priority:`${data.callsRemaining} calls · ${data.connectsRemaining} connects · ${data.dataRemaining} data remaining. Keep the first block moving.`};
+  }
+  if(hour<14){
+    if(data.pipeline>0)return{title:'Keep the middle of the day productive.',priority:`${data.pipeline} pipeline clients are ready. Clear the strongest conversations before the field block.`};
+    return{title:'Keep the day moving.',priority:`${data.callsRemaining} calls · ${data.connectsRemaining} connects · ${data.dataRemaining} data remaining before the afternoon field block.`};
+  }
+  if(hour<18){
+    if(data.knockRemaining>0)return{title:'The field block matters now.',priority:`${data.knockRemaining} knocking minutes remain today. Protect that block, then close any remaining activity gaps.`};
+    return{title:'Finish with intent.',priority:`Knocking is complete. ${data.callsRemaining+data.connectsRemaining+data.dataRemaining?`${data.callsRemaining} calls · ${data.connectsRemaining} connects · ${data.dataRemaining} data remain.`:'Use the finish to strengthen tomorrow’s pipeline.'}`};
+  }
+  return{title:'Close the loop.',priority:data.callsRemaining+data.connectsRemaining+data.dataRemaining+data.knockRemaining?'Finish the remaining controllables, then set up tomorrow before you switch off.':'Today is complete. Protect tomorrow by leaving the pipeline and calendar clean.'};
+}
+function renderReturningSnapshot(){
+  const screen=$('#returningSnapshotScreen');if(!screen)return;
+  const now=new Date(),k=todayKey(),d=dayData(k),knockTarget=rollingKnockTarget(k),knockMinutes=Math.floor(liveKnockSeconds(d)/60),appointments=appointmentEntriesForDate(k),next=returningSnapshotUpcomingAppointment(now),pipeline=returningSnapshotPipelineCount();
+  const data={score:completion(k),callsRemaining:Math.max(0,targets.calls-d.calls),connectsRemaining:Math.max(0,targets.connects-d.connects),dataRemaining:Math.max(0,targets.data-d.data),knockRemaining:Math.max(0,knockTarget-knockMinutes),appointments,nextAppointment:next,pipeline};
+  const copy=returningSnapshotSmartCopy(now,data),hour=now.getHours();
+  $('#returningSnapshotDate').textContent=now.toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'short'});
+  $('#returningSnapshotKicker').textContent=hour<12?'THIS MORNING':hour<14?'MIDDAY':hour<18?'THIS AFTERNOON':'THIS EVENING';
+  $('#returningSnapshotScore').textContent=`${data.score}%`;$('#returningSnapshotProgress').style.width=`${Math.max(0,Math.min(100,data.score))}%`;
+  $('#returningSnapshotTitle').textContent=copy.title;$('#returningSnapshotPriority').textContent=copy.priority;
+  $('#returningSnapshotActivity').textContent=`${data.callsRemaining} · ${data.connectsRemaining} · ${data.dataRemaining}`;
+  if(next){const a=next.entry.appointment;$('#returningSnapshotAppointments').textContent=appointmentTimeLabel(a,next.entry.sourceDate);$('#returningSnapshotAppointmentMeta').textContent=a.contactName||a.name||appointmentType(a)}
+  else{$('#returningSnapshotAppointments').textContent=appointments.length?`${appointments.length} today`:'Clear';$('#returningSnapshotAppointmentMeta').textContent=appointments.length?'No upcoming appointment':'No appointments today'}
+  $('#returningSnapshotPipeline').textContent=prospectSessionActive&&!cleanText(prospectSessionContext?.eventId,160)?`${pipeline} left`:`${pipeline} ready`;$('#returningSnapshotPipelineMeta').textContent=prospectSessionActive&&!cleanText(prospectSessionContext?.eventId,160)?'Current session':'Eligible today';
+  if(data.knockRemaining<=0){$('#returningSnapshotKnocking').textContent='Complete';$('#returningSnapshotKnockingMeta').textContent=`${knockMinutes} min logged`}
+  else if(hour<14){$('#returningSnapshotKnocking').textContent='2:00pm';$('#returningSnapshotKnockingMeta').textContent=`${data.knockRemaining} min planned`}
+  else{$('#returningSnapshotKnocking').textContent=`${data.knockRemaining} min`;$('#returningSnapshotKnockingMeta').textContent='Remaining today'}
+  $('#returningSnapshotRank').textContent=returningSnapshotLeaderboardText();
+}
+function refreshReturningSnapshotIfVisible(){const screen=$('#returningSnapshotScreen');if(screen&&!screen.classList.contains('hidden'))renderReturningSnapshot()}
+function dismissReturningSnapshot(){
+  clearTimeout(returningSnapshotTimer);returningSnapshotTimer=null;const screen=$('#returningSnapshotScreen');if(!screen)return;screen.classList.add('is-leaving');screen.setAttribute('aria-hidden','true');setTimeout(()=>screen.classList.add('hidden'),260);
+}
+function showReturningSnapshot(){
+  const screen=$('#returningSnapshotScreen');if(!screen)return false;renderReturningSnapshot();markReturningSnapshotReady();screen.classList.remove('hidden','is-leaving');screen.setAttribute('aria-hidden','false');clearTimeout(returningSnapshotTimer);returningSnapshotTimer=setTimeout(dismissReturningSnapshot,2800);return true;
+}
 function welcomeProfileName(){return (agentName||currentUser?.displayName||'Agent').trim()||'Agent'}
 function welcomeStorageKey(){return `${storagePrefix(uid)}welcome:${todayKey()}`}
 function dayPlanStorageKey(k=todayKey()){return `${storagePrefix(uid)}day-plan:${k}`}
@@ -224,7 +296,7 @@ function showDailyWelcome(){
 }
 function dismissDailyWelcome(){
   const screen=$('#welcomeScreen');if(!screen)return;
-  captureDayPlan();
+  captureDayPlan();markReturningSnapshotReady();
   try{localStorage.setItem(welcomeStorageKey(),'1')}catch{}
   screen.classList.add('is-leaving');screen.setAttribute('aria-hidden','true');setTimeout(()=>screen.classList.add('hidden'),320);
 }
@@ -267,7 +339,7 @@ function showOffDayReview(){
 function dismissOffDayReview(){
   const screen=$('#offDayReviewScreen');if(!screen)return;offDayReviewDismissedThisSession=true;screen.classList.add('is-leaving');screen.setAttribute('aria-hidden','true');setTimeout(()=>screen.classList.add('hidden'),320);
 }
-function showLaunchExperience(){if(!showOffDayReview())showDailyWelcome()}
+function showLaunchExperience(){if(showOffDayReview())return;if(returningSnapshotHasHistory())showReturningSnapshot();else showDailyWelcome()}
 function currentDayPlan(k=todayKey()){
   const saved=readDayPlan(k);if(saved)return saved;
   const appointments=appointmentEntriesForDate(k).map(({appointment:a,sourceDate})=>({id:a.id||calendarExportId(a,sourceDate),sourceDate,name:a.contactName||a.name||'Appointment',type:appointmentType(a),address:a.address||''}));
@@ -2776,7 +2848,7 @@ function subscribeSecureLeaderboard(){
     const documents=snap.docs.map(d=>({uid:d.id,...d.data()})),next=documents.length?documents:[leaderboardPayload()],signature=teamLeaderboardEntriesSignature(next),dataChanged=signature!==teamLeaderboardDataSignature;
     if(dataChanged){leaderboardEntries=next;teamLeaderboardDataSignature=signature}
     const own=documents.find(entry=>entry.uid===uid);if(own)lastTeamLeaderboardSignature=leaderboardSignature(own);
-    setTeamLayerStatus(snap.metadata.fromCache?'cached':'live');if(dataChanged){renderLeaderboard();renderTeamManager()}
+    setTeamLayerStatus(snap.metadata.fromCache?'cached':'live');if(dataChanged){renderLeaderboard();renderTeamManager();refreshReturningSnapshotIfVisible()}
   },err=>{if(teamId!==listeningTeamId)return;console.error('Team leaderboard read failed',err);unsubLeaderboard=null;subscribedTeamId='';teamLeaderboardDataSignature='';leaderboardEntries=[leaderboardPayload()];setTeamLayerStatus('error',err.message||'Team leaderboard unavailable');renderLeaderboard()});
 }
 async function initialiseTeamLayer(profile={}, {promptNew=false}={}){
@@ -2934,7 +3006,7 @@ async function startCloud(user,{promptTeamSetup=false}={}){
       if(JSON.stringify(local)!==JSON.stringify(next)){days[ch.doc.id]=next;dataChanged=true}
       if(!useLocal&&incoming.clientUpdatedAt>=local.clientUpdatedAt)dirtyDayKeys.delete(ch.doc.id);
     });
-    if(dataChanged){saveLocal();renderDayViews();ensureTick()}else saveDirtyDays();
+    if(dataChanged){saveLocal();renderDayViews();ensureTick();refreshReturningSnapshotIfVisible()}else saveDirtyDays();
     clearTimeout(syncTimer);if(!snap.metadata.hasPendingWrites&&!snap.metadata.fromCache)syncHasError=false;refreshSyncStatus();
   },err=>{console.error(err);syncHasError=true;refreshSyncStatus();toast('Firestore access failed. Check rules and login.');showAuthMessage(err.message)});
   let observedTeamProfileSignature=null,teamProfileBootstrapComplete=false;
@@ -2950,13 +3022,13 @@ async function startCloud(user,{promptTeamSetup=false}={}){
       const firstTeamProfile=!teamProfileBootstrapComplete;teamProfileBootstrapComplete=true;observedTeamProfileSignature=profileTeamSignature;
       initialiseTeamLayer(profile,{promptNew:promptTeamSetup&&firstTeamProfile}).catch(err=>console.error('Team profile update failed',err));
     }
-    if(changed){saveLocal();renderAll();scheduleLeaderboardPublish()}
+    if(changed){saveLocal();renderAll();scheduleLeaderboardPublish();refreshReturningSnapshotIfVisible()}
   },err=>{console.error('Profile sync failed',err);if(isTransientTeamError(err)&&accountMode==='team'&&teamId)setTeamLayerStatus('cached','Team confirmation is waiting for a stable connection. Core sync is unaffected.');else setTeamLayerStatus('error','Team setup could not load. Core sync is unaffected.')});
-  unsubProspecting=onSnapshot(doc(db,'users',uid,'prospecting','state'),{includeMetadataChanges:true},snap=>{if(snap.exists()){const data=snap.data(),nextProspects=normaliseProspects(data.prospects),nextInteractions=normaliseProspectInteractions(data.interactions),hasMarketEvents=Object.prototype.hasOwnProperty.call(data,'marketPulseEvents'),cloudMarketEvents=hasMarketEvents?normaliseMarketPulseEvents(data.marketPulseEvents):[],cloudSignature=prospectingSignature(nextProspects,nextInteractions,cloudMarketEvents);if(!snap.metadata.hasPendingWrites)lastProspectingSignature=cloudSignature;const nextMarketEvents=hasMarketEvents?cloudMarketEvents:normaliseMarketPulseEvents(marketPulseEvents),nextSignature=prospectingSignature(nextProspects,nextInteractions,nextMarketEvents);if(nextSignature!==prospectingSignature()){prospects=nextProspects;prospectInteractions=nextInteractions;marketPulseEvents=nextMarketEvents;saveLocal();renderProspecting();renderMarketPulse()}if(!hasMarketEvents&&nextMarketEvents.length&&!snap.metadata.hasPendingWrites&&!snap.metadata.fromCache){queueProspectingSave().catch(err=>console.error('Hot Spotting migration failed',err))}}},err=>{console.error('Prospecting sync failed',err);toast('Prospecting data is saved locally. Cloud sync needs attention.')});
+  unsubProspecting=onSnapshot(doc(db,'users',uid,'prospecting','state'),{includeMetadataChanges:true},snap=>{if(snap.exists()){const data=snap.data(),nextProspects=normaliseProspects(data.prospects),nextInteractions=normaliseProspectInteractions(data.interactions),hasMarketEvents=Object.prototype.hasOwnProperty.call(data,'marketPulseEvents'),cloudMarketEvents=hasMarketEvents?normaliseMarketPulseEvents(data.marketPulseEvents):[],cloudSignature=prospectingSignature(nextProspects,nextInteractions,cloudMarketEvents);if(!snap.metadata.hasPendingWrites)lastProspectingSignature=cloudSignature;const nextMarketEvents=hasMarketEvents?cloudMarketEvents:normaliseMarketPulseEvents(marketPulseEvents),nextSignature=prospectingSignature(nextProspects,nextInteractions,nextMarketEvents);if(nextSignature!==prospectingSignature()){prospects=nextProspects;prospectInteractions=nextInteractions;marketPulseEvents=nextMarketEvents;saveLocal();renderProspecting();renderMarketPulse();refreshReturningSnapshotIfVisible()}if(!hasMarketEvents&&nextMarketEvents.length&&!snap.metadata.hasPendingWrites&&!snap.metadata.fromCache){queueProspectingSave().catch(err=>console.error('Hot Spotting migration failed',err))}}},err=>{console.error('Prospecting sync failed',err);toast('Prospecting data is saved locally. Cloud sync needs attention.')});
   refreshSyncStatus();showApp();scheduleLeaderboardPublish();
 }
 
-function showApp(){setAuthScreenActive(false);$('#authGate').classList.add('hidden');$('#app').classList.remove('hidden');$('#appointmentDatePicker').value=appointmentDate;restoreProspectingSessionState();restoreKnockingSessionState();renderKnockingSession();renderAll();ensureTick();showLaunchExperience()}
+function showApp(){setAuthScreenActive(false);$('#bootGate')?.classList.add('hidden');$('#authGate').classList.add('hidden');$('#app').classList.remove('hidden');$('#appointmentDatePicker').value=appointmentDate;restoreProspectingSessionState();restoreKnockingSessionState();renderKnockingSession();renderAll();ensureTick();showLaunchExperience()}
 let viewportFrame=0;
 function updateAppViewport(){
   cancelAnimationFrame(viewportFrame);
@@ -2979,7 +3051,7 @@ function bindViewport(){
   window.visualViewport?.addEventListener('scroll',updateAppViewport,{passive:true});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){updateAppViewport();finaliseExpiredTimers().then(()=>renderAll())}});
 }
-async function init(){bindViewport();loadLocal('local');await finaliseExpiredTimers();if(!configured()){showAuthMessage('Staging Firebase is not configured. Add the staging project config before testing cloud features.');return}try{const fb=initializeApp(firebaseConfig);auth=getAuth(fb);await setPersistence(auth,browserLocalPersistence);db=initializeFirestore(fb,{experimentalAutoDetectLongPolling:true,localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})});onAuthStateChanged(auth,u=>{if(u){if(creatingAccount){currentUser=u;return}startCloud(u)}else{clearActiveSession();setAuthScreenActive(true);$('#app').classList.add('hidden');$('#authGate').classList.remove('hidden')}})}catch(err){console.error(err);showAuthMessage(err.message)}}
+async function init(){bindViewport();loadLocal('local');await finaliseExpiredTimers();if(!configured()){$('#bootGate')?.classList.add('hidden');setAuthScreenActive(true);$('#authGate').classList.remove('hidden');showAuthMessage('Staging Firebase is not configured. Add the staging project config before testing cloud features.');return}try{const fb=initializeApp(firebaseConfig);auth=getAuth(fb);await setPersistence(auth,browserLocalPersistence);db=initializeFirestore(fb,{experimentalAutoDetectLongPolling:true,localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})});onAuthStateChanged(auth,u=>{if(u){if(creatingAccount){currentUser=u;return}startCloud(u)}else{clearActiveSession();$('#bootGate')?.classList.add('hidden');setAuthScreenActive(true);$('#app').classList.add('hidden');$('#authGate').classList.remove('hidden')}})}catch(err){console.error(err);$('#bootGate')?.classList.add('hidden');setAuthScreenActive(true);$('#authGate').classList.remove('hidden');showAuthMessage(err.message)}}
 function showAuthMessage(msg){$('#authMessage').textContent=msg}
 function switchView(id){if(id!=='appointmentsView'&&appointmentHistoryMode)setAppointmentHistoryScreen(null);$$('.tabbar button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));$$('.view').forEach(v=>v.classList.toggle('active',v.id===id));updateTopbar(id);if(id==='scheduleView'){renderTimeline();setTodayPage(todayPage);}if(id==='appointmentsView')renderAppointments();if(id==='prospectingView')renderProspecting();if(id==='insightsView')renderInsights()}
 
@@ -3032,6 +3104,7 @@ $('#newTeamName')?.addEventListener('input',()=>teamSetupMessage(''));
 $('#newTeamName')?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();completeCreateTeam()}});
 document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;if(!$('#teamRemoveConfirm')?.classList.contains('hidden')){closeTeamMemberRemoval();return}if(!$('#teamLeaveConfirm')?.classList.contains('hidden')){hideTeamLeaveConfirmation();return}if(!$('#teamCodeRefreshConfirm')?.classList.contains('hidden')){hideTeamCodeRefreshConfirmation();return}if(teamManagerOpen){hideTeamManager();return}if(teamOnboardingActive)hideTeamOnboarding()});
 
+$('#returningSnapshotScreen')?.addEventListener('click',dismissReturningSnapshot);
 $('#startDayButton').onclick=dismissDailyWelcome;
 $('#openAgntButton').onclick=dismissOffDayReview;
 $('#localMode').onclick=()=>{clearActiveSession();uid='local';loadLocal('local');setSync('offline','This device');showApp()};

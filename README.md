@@ -138,3 +138,11 @@ No Firebase configuration, Firestore rule, index, Function, billing or schema mi
 - Join-code confirmation and post-creation handoff are UI workflow layers over the same existing writes
 - Manifest and icons
 - Service-worker behaviour apart from the required cache version
+
+
+## v1.34.6 — Returning Daily Snapshot
+- Returning authenticated opens no longer flash the login form while Firebase restores a persisted session.
+- Established users see a ~2.8 second time-aware snapshot using cached data first, with live values refreshed as sync arrives.
+- Snapshot shows completion, activity remaining, appointments, pipeline availability/current session, knocking status and live leaderboard position where available.
+- Signed-out users still receive the existing login screen. First-use welcome/team setup and off-day review behaviour are preserved.
+- No Firebase paths, rules, auth persistence, UID separation, prospecting logic, leaderboard logic or team workflow changed.
