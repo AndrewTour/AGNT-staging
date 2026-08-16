@@ -9977,11 +9977,6 @@ html[data-theme="dark"] #broadcastMenu .broadcast-type-icon{background:#1b1f26!i
 
 /* Pipeline session queue refresh: intentionally small and secondary to the call workflow. */
 .prospect-session-head-status{align-items:center!important}
-.prospect-session-refresh{
-  display:grid!important;place-items:center!important;width:28px!important;height:28px!important;min-width:28px!important;min-height:28px!important;padding:0!important;margin-left:2px!important;
-  border:1px solid rgba(11,99,243,.16)!important;border-radius:999px!important;background:rgba(11,99,243,.07)!important;color:var(--blue)!important;
-  font-size:17px!important;font-weight:700!important;line-height:1!important
-}
 .prospect-session-refresh:active{transform:rotate(18deg);background:rgba(11,99,243,.13)!important}
 .pipeline-refresh-overlay{position:fixed;inset:0;z-index:1200;display:grid;place-items:center;padding:20px;background:rgba(8,11,16,.46);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .pipeline-refresh-card{width:min(100%,430px);padding:22px;border-radius:24px;background:#fff;border:1px solid rgba(18,26,40,.1);box-shadow:0 24px 70px rgba(13,18,28,.2)}
@@ -9990,8 +9985,13 @@ html[data-theme="dark"] #broadcastMenu .broadcast-type-icon{background:#1b1f26!i
 .pipeline-refresh-card p{margin:0;color:#68717e;font-size:13px;line-height:1.5}
 .pipeline-refresh-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:20px}
 .pipeline-refresh-actions button{min-height:48px;border-radius:15px}
-html[data-theme="dark"] .prospect-session-refresh{background:rgba(65,139,255,.1)!important;border-color:rgba(65,139,255,.22)!important;color:#78aaff!important}
 html[data-theme="dark"] .pipeline-refresh-card{background:#13161b!important;border-color:#2b3038!important;box-shadow:0 24px 70px rgba(0,0,0,.48)!important}
 html[data-theme="dark"] .pipeline-refresh-card h2{color:#f5f6f7!important}
 html[data-theme="dark"] .pipeline-refresh-card p{color:#a0a7b2!important}
 html[data-theme="dark"] .pipeline-refresh-actions .secondary{background:#191d23!important;border-color:#303640!important;color:#f5f6f7!important}
+
+
+/* v1.34.5 — Pipeline session refresh, bottom placement only */
+.prospect-session-refresh-bottom{display:inline-flex;align-items:center;justify-content:center;gap:7px;align-self:center;margin:18px auto 0;padding:8px 12px;min-height:38px;border:1px solid rgba(41,118,255,.22);border-radius:13px;background:rgba(41,118,255,.08);color:#2976ff;font:inherit;font-size:12px;font-weight:800;letter-spacing:.01em}
+.prospect-session-refresh-bottom span{font-size:17px;line-height:1}
+html[data-theme="dark"] .prospect-session-refresh-bottom{background:rgba(71,137,255,.1);border-color:rgba(95,153,255,.28);color:#69a2ff}

@@ -1,3 +1,15 @@
+# v1.34.5 targeted validation
+
+1. Start a standard Pipeline Session and note the first few contacts in batch A.
+2. Tap **Refresh Session** at the bottom of the card and cancel; confirm the current queue is unchanged.
+3. Refresh again and confirm; verify batch B contains none of batch A.
+4. Refresh a second time; verify batch C contains none of batch A or B.
+5. Close/reopen the installed PWA during the same day and verify previously served contacts still do not return.
+6. Confirm Hot Spotting sessions show no refresh control.
+7. Confirm calls, SMS, outcomes, appointments, skips, session stats, Daily/Weekly leaderboard, Broadcast and team flows behave unchanged.
+
+---
+
 # v1.34.3 targeted validation
 
 - Broadcast menu: in dark mode, campaign titles/descriptions/icons are readable against a dark list surface.

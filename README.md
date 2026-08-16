@@ -1,3 +1,16 @@
+# AGNT v1.34.5 STAGING — Persistent Pipeline Refresh
+
+## v1.34.5 changes
+
+- Pipeline Session refresh returns as a small control at the bottom of the session card.
+- Refresh uses the existing eligibility and sorting logic unchanged.
+- A per-user, per-day local served list excludes every contact already loaded in a Pipeline Session that day, so repeated refreshes advance A → B → C rather than cycling A → B → A.
+- Refresh remains unavailable in Hot Spotting sessions.
+- Confirmation is required before the queue changes. Existing logged activity and session statistics are retained.
+- No Firebase, Firestore, authentication, leaderboard, Broadcast, team or other workflow changes.
+
+---
+
 # AGNT v1.34.3 STAGING — Broadcast + Pipeline Session Refinement
 
 ## v1.34.3 changes
