@@ -125,3 +125,13 @@ Do not port this release to BETA until Create, Share, Join confirmation, manual 
 - Snapshot shows completion, activity remaining, appointments, pipeline availability/current session, knocking status and live leaderboard position where available.
 - Signed-out users still receive the existing login screen. First-use welcome/team setup and off-day review behaviour are preserved.
 - No Firebase paths, rules, auth persistence, UID separation, prospecting logic, leaderboard logic or team workflow changed.
+
+
+## v1.34.7 — Expanded Returning Daily Snapshot
+
+- Confirm the returning snapshot still auto-dismisses after the existing 2.8-second window and can be tapped to open immediately.
+- Confirm Day Pulse reflects current on-track/risk/off-track state and comparison with the previous scheduled workday.
+- Confirm Leaderboard shows the current live daily rank when team/cloud data is available.
+- Confirm Next Block prioritises an appointment within 60 minutes, then an active Pipeline Session, then knocking after 2:00pm, then remaining core activity.
+- Confirm light and dark mode preserve the established AGNT visual language.
+- Confirm no changes to auth, Firebase, Firestore, team workflow, pipeline eligibility, leaderboard sync or Broadcast behaviour.

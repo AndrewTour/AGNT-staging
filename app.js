@@ -206,6 +206,27 @@ function returningSnapshotLeaderboardText(){
   if(index>=0)return `#${index+1} of ${rows.length} today`;
   return rows.length?`${rows.length} ranked today`:'Live sync';
 }
+function returningSnapshotPulse(k=todayKey()){
+  if(!isWorkDayKey(k))return{value:'Recovery',meta:'No targets scheduled today'};
+  if(completion(k)>=100)return{value:'Complete',meta:'Core targets are banked'};
+  const state=dayTrackState(k),previous=previousScheduledKey(k),change=previous?completion(k)-completion(previous):0;
+  const value=state==='on'?'On track':state==='risk'?'Watch pace':'Needs focus';
+  if(!previous)return{value,meta:completion(k)>0?'Momentum building today':'First action sets the pace'};
+  if(change>0)return{value,meta:`${change}% ahead of last workday`};
+  if(change<0)return{value,meta:`${Math.abs(change)}% below last workday`};
+  return{value,meta:'Level with last workday'};
+}
+function returningSnapshotNextBlock(now,data){
+  const current=now.getHours()*60+now.getMinutes(),next=data.nextAppointment,untilNext=next?next.minutes-current:9999,hour=now.getHours();
+  if(next&&untilNext>=0&&untilNext<=60){const a=next.entry.appointment;return{title:'Prepare for the next appointment',meta:`${appointmentTimeLabel(a,next.entry.sourceDate)} · ${a.contactName||a.name||appointmentType(a)}`}}
+  if(prospectSessionActive&&!cleanText(prospectSessionContext?.eventId,160)&&data.pipeline>0)return{title:'Resume your pipeline session',meta:`${data.pipeline} clients · about ${formatEstimatedTime(estimatedMinutes(data.pipeline))}`};
+  if(hour>=14&&data.knockRemaining>0)return{title:'Protect the knocking block',meta:`${data.knockRemaining} min remaining today`};
+  const core=data.callsRemaining+data.connectsRemaining+data.dataRemaining;
+  if(core>0)return{title:'Close the core activity gap',meta:`${data.callsRemaining} calls · ${data.connectsRemaining} connects · ${data.dataRemaining} data`};
+  if(data.knockRemaining>0)return{title:hour<14?'Set up the field block':'Finish the field block',meta:`${data.knockRemaining} knocking min remaining`};
+  if(next){const a=next.entry.appointment;return{title:'Stay clean for the next appointment',meta:`${appointmentTimeLabel(a,next.entry.sourceDate)} · ${a.contactName||a.name||appointmentType(a)}`}}
+  return{title:'Strengthen tomorrow',meta:'Use the clear space for follow-ups, appointments and pipeline'};
+}
 function returningSnapshotSmartCopy(now,data){
   const hour=now.getHours(),next=data.nextAppointment,untilNext=next?next.minutes-(now.getHours()*60+now.getMinutes()):9999;
   if(data.score>=100)return{title:'Targets complete.',priority:'Use the remaining time to strengthen tomorrow’s pipeline and protect any appointments still ahead.'};
@@ -241,7 +262,10 @@ function renderReturningSnapshot(){
   if(data.knockRemaining<=0){$('#returningSnapshotKnocking').textContent='Complete';$('#returningSnapshotKnockingMeta').textContent=`${knockMinutes} min logged`}
   else if(hour<14){$('#returningSnapshotKnocking').textContent='2:00pm';$('#returningSnapshotKnockingMeta').textContent=`${data.knockRemaining} min planned`}
   else{$('#returningSnapshotKnocking').textContent=`${data.knockRemaining} min`;$('#returningSnapshotKnockingMeta').textContent='Remaining today'}
-  $('#returningSnapshotRank').textContent=returningSnapshotLeaderboardText();
+  const pulse=returningSnapshotPulse(k),rank=returningSnapshotLeaderboardText(),nextBlock=returningSnapshotNextBlock(now,data);
+  $('#returningSnapshotPulse').textContent=pulse.value;$('#returningSnapshotPulseMeta').textContent=pulse.meta;
+  $('#returningSnapshotRank').textContent=rank;$('#returningSnapshotRankMeta').textContent=cloud?'Today · live team':'Local only';
+  $('#returningSnapshotNextBlock').textContent=nextBlock.title;$('#returningSnapshotNextBlockMeta').textContent=nextBlock.meta;
 }
 function refreshReturningSnapshotIfVisible(){const screen=$('#returningSnapshotScreen');if(screen&&!screen.classList.contains('hidden'))renderReturningSnapshot()}
 function dismissReturningSnapshot(){

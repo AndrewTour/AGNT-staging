@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="AGNT">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css?v=1.34.6-returning-daily-snapshot">
+<link rel="stylesheet" href="styles.css?v=1.34.7-expanded-daily-snapshot">
 <title>AGNT</title>
 </head>
 <body>
@@ -24,7 +24,7 @@
     <button class="primary" type="submit">Sign in</button>
     <button id="createAccount" class="secondary" type="button">Create account</button>
     <button id="localMode" class="text-btn" type="button">Continue on this device only</button>
-    <small id="authMessage"></small><small id="stagingBuildMarker" style="display:block;margin-top:8px;opacity:.65">STAGING v1.34.6 · booting…</small>
+    <small id="authMessage"></small><small id="stagingBuildMarker" style="display:block;margin-top:8px;opacity:.65">STAGING v1.34.7 · booting…</small>
   </form>
 </div>
 
@@ -138,9 +138,16 @@
       <article><span>APPOINTMENTS</span><strong id="returningSnapshotAppointments">—</strong><small id="returningSnapshotAppointmentMeta">Today</small></article>
       <article><span>PIPELINE</span><strong id="returningSnapshotPipeline">—</strong><small id="returningSnapshotPipelineMeta">Ready to work</small></article>
       <article><span>KNOCKING</span><strong id="returningSnapshotKnocking">—</strong><small id="returningSnapshotKnockingMeta">Today</small></article>
+      <article><span>DAY PULSE</span><strong id="returningSnapshotPulse">—</strong><small id="returningSnapshotPulseMeta">Current pace</small></article>
+      <article><span>LEADERBOARD</span><strong id="returningSnapshotRank">—</strong><small id="returningSnapshotRankMeta">Today</small></article>
+    </div>
+    <div class="returning-snapshot-next">
+      <span>NEXT BLOCK</span>
+      <strong id="returningSnapshotNextBlock">Keep moving.</strong>
+      <small id="returningSnapshotNextBlockMeta">AGNT is lining up the next priority.</small>
     </div>
     <div class="returning-snapshot-footer">
-      <span id="returningSnapshotRank">Live sync</span>
+      <span>Tap anywhere to open now</span>
       <span class="returning-snapshot-opening">Opening AGNT<span class="returning-snapshot-dots" aria-hidden="true">…</span></span>
     </div>
   </section>
@@ -1013,6 +1020,6 @@ Andrew Tour | McGrath</textarea></label>
 })();
 </script>
 
-<script type="module" src="app.js?v=1.34.6-returning-daily-snapshot"></script>
+<script type="module" src="app.js?v=1.34.7-expanded-daily-snapshot"></script>
 </body>
 </html>

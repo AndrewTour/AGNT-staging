@@ -146,3 +146,8 @@ No Firebase configuration, Firestore rule, index, Function, billing or schema mi
 - Snapshot shows completion, activity remaining, appointments, pipeline availability/current session, knocking status and live leaderboard position where available.
 - Signed-out users still receive the existing login screen. First-use welcome/team setup and off-day review behaviour are preserved.
 - No Firebase paths, rules, auth persistence, UID separation, prospecting logic, leaderboard logic or team workflow changed.
+
+
+## v1.34.7 — Expanded Returning Daily Snapshot
+
+Incremental snapshot-only refinement built from v1.34.6. The returning PWA snapshot now uses the available iPhone viewport more deliberately with live Day Pulse and Leaderboard cards plus a full-width Next Block recommendation. Existing snapshot timing, auth restore, first-use flow, off-day flow and all application logic remain unchanged.
