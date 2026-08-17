@@ -83,9 +83,10 @@ After the new PWA is live, create the Team from the owner account and have each 
 - No Firebase path/rule changes from v1.36.0.
 
 
-## v1.36.2 targeted fixes
-- Fixed recipient Got it acknowledgement/close behaviour.
-- Assignment confirmation buttons now use standard AGNT button sizing.
-- Setter appointment cards show Booked for [First name] when assigned to a teammate.
-- Assignment names prioritise the same live profile/leaderboard name source, first name only.
-- No Firebase rule/path changes from v1.36.1.
+## v1.36.2 targeted confirmation cleanup
+- Recipient booking confirmation uses plain-English appointment terminology.
+- Got it and Add to Calendar restore the exact underlying AGNT screen; calendar handoff happens after the overlay closes.
+- Setter appointment records show a subtle Booked for [First name] line when assigned to a teammate.
+- Leaderboard appointment summaries carry the same Booked for [First name] context.
+- Setter remains the sole appointment-stat owner; recipient statistics are unchanged.
+- No Firebase rules, paths or data ownership changes.
