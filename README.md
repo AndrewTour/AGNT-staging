@@ -90,3 +90,13 @@ After the new PWA is live, create the Team from the owner account and have each 
 - Leaderboard appointment summaries carry the same Booked for [First name] context.
 - Setter remains the sole appointment-stat owner; recipient statistics are unchanged.
 - No Firebase rules, paths or data ownership changes.
+
+
+## v1.36.3 targeted booking polish
+- Assignment dropdown now mirrors the live leaderboard display name exactly.
+- Existing Booked for [first name] attribution remains unchanged.
+- Recipient confirmation uses title-case appointment terminology.
+- Assignment popup contrast, sizing and buttons now align with the rest of AGNT in light and dark mode.
+- Got it and Add to Calendar now close the overlay directly without changing app navigation.
+- A per-open dismissal guard prevents the same notification immediately reopening while Firestore acknowledgement settles.
+- No Firebase config, rules, paths, stats attribution or other feature changes.

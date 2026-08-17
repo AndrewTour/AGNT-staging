@@ -10045,3 +10045,85 @@ html[data-theme="dark"] .appointment-assignment-card select{background:#171a20;b
 .appointment-booked-for-teammate{display:block;margin-top:4px;color:#3776f6;font-size:10px;font-weight:760}
 .leaderboard-agent-appointment .leaderboard-booked-for{display:block;margin-top:3px;color:#3776f6;font-size:10px;font-style:normal;font-weight:760}
 html[data-theme="dark"] .appointment-booked-for-teammate,html[data-theme="dark"] .leaderboard-agent-appointment .leaderboard-booked-for{color:#7ca6ff}
+
+
+/* v1.36.3 — assignment modal visual alignment */
+.appointment-assignment-card{
+  width:min(calc(100vw - 40px),360px);
+  padding:20px;
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--ink);
+  box-shadow:0 22px 58px rgba(0,0,0,.20);
+}
+.appointment-assignment-card h2{
+  color:var(--ink)!important;
+  font-size:22px;
+  line-height:1.12;
+  margin:8px 0 6px;
+}
+.appointment-assignment-card>p{
+  color:var(--muted)!important;
+  font-size:12px;
+  margin-bottom:15px;
+}
+.appointment-assignment-card label{
+  color:var(--muted)!important;
+  font-size:10px;
+  letter-spacing:.02em;
+}
+.appointment-assignment-card select{
+  min-height:44px;
+  border-radius:14px;
+  border:1px solid var(--line);
+  background:var(--soft);
+  color:var(--ink);
+  font-size:14px;
+  font-weight:750;
+  padding:0 12px;
+}
+.appointment-assignment-actions{
+  gap:9px;
+  margin-top:14px;
+}
+.appointment-assignment-actions button{
+  min-height:44px!important;
+  height:44px;
+  border-radius:14px!important;
+  margin:0!important;
+  padding:0 13px!important;
+  font-size:12px!important;
+  font-weight:850!important;
+}
+.appointment-assignment-actions .secondary{
+  background:var(--soft)!important;
+  color:var(--ink)!important;
+  border:1px solid var(--line)!important;
+}
+.appointment-assignment-actions .primary{
+  background:#397dff!important;
+  color:#fff!important;
+  border:1px solid transparent!important;
+}
+html[data-theme="dark"] .appointment-assignment-card{
+  background:#12151a!important;
+  border-color:#2a2f38!important;
+  color:#f5f6f7!important;
+}
+html[data-theme="dark"] .appointment-assignment-card h2{
+  color:#f5f6f7!important;
+}
+html[data-theme="dark"] .appointment-assignment-card>p,
+html[data-theme="dark"] .appointment-assignment-card label{
+  color:#969daa!important;
+}
+html[data-theme="dark"] .appointment-assignment-card select{
+  background:#191d23!important;
+  border-color:#343a44!important;
+  color:#f5f6f7!important;
+}
+html[data-theme="dark"] .appointment-assignment-actions .secondary{
+  background:#191d23!important;
+  color:#f5f6f7!important;
+  border-color:#343a44!important;
+}
