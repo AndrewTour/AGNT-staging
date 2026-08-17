@@ -1,0 +1,1 @@
+Deploy firestore.rules, then test A books for B; A stat increments, B gets alert/calendar/display, B stat does not increment, edit/delete syncs.

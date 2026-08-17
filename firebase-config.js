@@ -1,10 +1,8 @@
-// AGNT STAGING Firebase configuration.
-// STAGING ONLY — do not use this file in production.
 export const firebaseConfig = {
-  apiKey: "AIzaSyANgHpxc_B6EjpJ0woAaeIK90B31_ANVuY",
-  authDomain: "agnt-staging-cb6ce.firebaseapp.com",
-  projectId: "agnt-staging-cb6ce",
-  storageBucket: "agnt-staging-cb6ce.firebasestorage.app",
-  messagingSenderId: "359375504502",
-  appId: "1:359375504502:web:040ba98cb9eeca5c15cb57"
+  apiKey: "AIzaSyDwa_eMrRRLgQhJwGx3qrRpS-hI3CbctxQ",
+  authDomain: "daily-accountability-be0ac.firebaseapp.com",
+  projectId: "daily-accountability-be0ac",
+  storageBucket: "daily-accountability-be0ac.firebasestorage.app",
+  messagingSenderId: "948051142195",
+  appId: "1:948051142195:web:7dbe6fb935d3fc6b6d6546"
 };

@@ -1,7 +1,7 @@
 import { firebaseConfig } from './firebase-config.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut as firebaseSignOut } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, writeBatch, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, getDocs, query, where, writeBatch, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const DEFAULT_WORK_DAYS=[1,2,4,5];
@@ -14,12 +14,14 @@ const AGNT_BULK_SMS_SHORTCUT='AGNT Bulk SMS';
 let targets={...DEFAULTS}, days={}, prospects=[], prospectInteractions=[], marketPulseEvents=[], prospectFilter='priority', prospectSection='today', prospectContactsMode='active', pipelineTemperature='All', pipelineSort='followup', prospectBulkMode=false, selectedProspectIds=new Set(), activeProspectId=null, prospectSessionIds=[], prospectSessionIndex=0, prospectSessionActive=false, prospectSessionStats={calls:0,connects:0,temperate:0,appointments:0,sms:0}, prospectSessionContext=null, selectedDate=dateKey(new Date()), appointmentDate=selectedDate, appointmentHistoryMode=null, agentName='', calendarPreference='outlook', appearancePreference='system', leaderboardEntries=[], leaderboardMode='day', leaderboardDayOffset=0, leaderboardWeekOffset=0, scorecardWeekOffset=0, prospectInsightPeriod='week', campaignHistory=[], bulkSmsTestLaunches=[], selectedBroadcastType='', selectedBroadcastSuburb='', selectedBroadcastStreet='', selectedBroadcastRecipientIds=new Set(), broadcastStep=1, broadcastReviewMode='live', broadcastLastLaunch=null;
 let knockingSessionActive=false,knockingSessionVisible=false,knockingSessionEnding=false,knockingSessionStats={knocks:0,clients:0,data:0,MAP:0,LAP:0},knockingSessionLog=[],knockingSessionStartSeconds=0,knockingCaptureType='',knockingEditingLogId='';
 let year=new Date().getFullYear(), monthCursor=new Date(), uid='local', currentUser=null, cloud=false, db=null, auth=null;
-let unsubDays=null, unsubProfile=null, unsubLeaderboard=null, unsubProspecting=null, unsubTeamMembership=null, unsubTeamMembers=null, timerTick=null, syncTimer=null, leaderboardPublishTimer=null, prospectingSaveTimer=null, returningSnapshotTimer=null;
+let unsubDays=null, unsubProfile=null, unsubLeaderboard=null, unsubProspecting=null, unsubTeamMembership=null, unsubTeamMembers=null, unsubAppointmentAssignees=null, unsubAssignedTeamAppointments=null, timerTick=null, syncTimer=null, leaderboardPublishTimer=null, prospectingSaveTimer=null, returningSnapshotTimer=null;
 let accountMode='unconfigured',teamId=null,teamRole=null,teamName='',teamJoinCode='',teamLayerStatus='idle',teamLayerError='',creatingAccount=false,newAccountUidPending='',teamOnboardingActive=false;
 let teamSetupBusy=false,teamSetupReturnFocus=null,pendingTeamJoin=null;
 let teamMembers=[],teamMembersStatus='idle',teamMembersError='',teamMembersDataSignature='',subscribedMembershipTeamId='',subscribedMembersTeamId='',teamManagerOpen=false,teamManagerReturnFocus=null,pendingTeamMemberRemoval=null,teamMemberActionBusy=false;
+let appointmentAssignees=[],assignedTeamAppointments=[],pendingTeamAppointmentNotice=null,teamAppointmentNoticeOpen=false,subscribedAppointmentTeamId='';
 let teamLeaveBusy=false,teamLeaveReturnFocus=null;
 let teamInviteRefreshBusy=false,teamInviteRefreshReturnFocus=null;
+let teamDeleteBusy=false,teamDeleteReturnFocus=null;
 let pendingSyncOperations=0, syncHasError=false, lastLeaderboardSignature='', lastTeamLeaderboardSignature='', lastProspectingSignature='';
 let subscribedTeamId='',teamLeaderboardDataSignature='',teamInitialisationToken=0;
 let leaderboardListRenderMarkup='';
@@ -165,14 +167,14 @@ function cacheVerifiedTeamState(){
   try{localStorage.setItem(teamStateCacheKey(uid),JSON.stringify(value))}catch(err){console.warn('Verified team state could not be cached',err)}
 }
 function forgetCachedTeamState(userId=uid){try{localStorage.removeItem(teamStateCacheKey(userId))}catch{}}
-function resetState(){days={};targets={...DEFAULTS};workDays=[...DEFAULT_WORK_DAYS];agentName='';calendarPreference='outlook';appearancePreference=normaliseAppearance(localStorage.getItem('agnt:appearance')||'system');applyAppearance(appearancePreference,{persist:false});leaderboardEntries=[];marketPulseEvents=[];accountMode='unconfigured';teamId=null;teamRole=null;teamName='';teamJoinCode='';teamLayerStatus='idle';teamLayerError='';teamOnboardingActive=false;teamSetupBusy=false;teamSetupReturnFocus=null;pendingTeamJoin=null;teamMembers=[];teamMembersStatus='idle';teamMembersError='';teamMembersDataSignature='';subscribedMembershipTeamId='';subscribedMembersTeamId='';teamManagerOpen=false;teamManagerReturnFocus=null;pendingTeamMemberRemoval=null;teamMemberActionBusy=false;teamLeaveBusy=false;teamLeaveReturnFocus=null;teamInviteRefreshBusy=false;teamInviteRefreshReturnFocus=null;subscribedTeamId='';teamLeaderboardDataSignature='';leaderboardListRenderMarkup='';selectedDate=todayKey();appointmentDate=selectedDate}
+function resetState(){days={};targets={...DEFAULTS};workDays=[...DEFAULT_WORK_DAYS];agentName='';calendarPreference='outlook';appearancePreference=normaliseAppearance(localStorage.getItem('agnt:appearance')||'system');applyAppearance(appearancePreference,{persist:false});leaderboardEntries=[];marketPulseEvents=[];accountMode='unconfigured';teamId=null;teamRole=null;teamName='';teamJoinCode='';teamLayerStatus='idle';teamLayerError='';teamOnboardingActive=false;teamSetupBusy=false;teamSetupReturnFocus=null;pendingTeamJoin=null;teamMembers=[];teamMembersStatus='idle';teamMembersError='';teamMembersDataSignature='';subscribedMembershipTeamId='';subscribedMembersTeamId='';appointmentAssignees=[];assignedTeamAppointments=[];pendingTeamAppointmentNotice=null;teamAppointmentNoticeOpen=false;subscribedAppointmentTeamId='';teamManagerOpen=false;teamManagerReturnFocus=null;pendingTeamMemberRemoval=null;teamMemberActionBusy=false;teamLeaveBusy=false;teamLeaveReturnFocus=null;teamInviteRefreshBusy=false;teamInviteRefreshReturnFocus=null;teamDeleteBusy=false;teamDeleteReturnFocus=null;subscribedTeamId='';teamLeaderboardDataSignature='';leaderboardListRenderMarkup='';selectedDate=todayKey();appointmentDate=selectedDate}
 function safeJsonParse(value,fallback){try{return JSON.parse(value)}catch{return fallback}}
 function loadLocal(userId=uid){resetState();const prefix=storagePrefix(userId);try{days=normaliseDaysMap(safeJsonParse(localStorage.getItem(prefix+'days')||localStorage.getItem(prefix+'days-backup')||'{}',{}));targets={...DEFAULTS,...safeJsonParse(localStorage.getItem(prefix+'targets')||'{}',{})};agentName=localStorage.getItem(prefix+'agent-name')||'';const savedWorkDays=safeJsonParse(localStorage.getItem(prefix+'work-days')||'null',null);if(Array.isArray(savedWorkDays)&&savedWorkDays.length)workDays=normaliseWorkDays(savedWorkDays);const savedCalendarPreference=localStorage.getItem(prefix+'calendar-preference');calendarPreference=savedCalendarPreference==='apple'?'apple':'outlook';prospects=normaliseProspects(safeJsonParse(localStorage.getItem(prefix+'prospects')||'[]',[]));prospectInteractions=normaliseProspectInteractions(safeJsonParse(localStorage.getItem(prefix+'prospect-interactions')||'[]',[]));marketPulseEvents=normaliseMarketPulseEvents(safeJsonParse(localStorage.getItem(prefix+'market-pulse-events')||'[]',[]));campaignHistory=safeJsonParse(localStorage.getItem(prefix+'campaign-history')||'[]',[]);bulkSmsTestLaunches=safeJsonParse(localStorage.getItem(prefix+'bulk-sms-test-launches')||'[]',[]);dirtyDayKeys=new Set(safeJsonParse(localStorage.getItem(prefix+'dirty-days')||'[]',[]).filter(validDateKey))}catch(err){console.error('Local data recovery failed',err);resetState();dirtyDayKeys=new Set()}}
 function saveDirtyDays(){try{localStorage.setItem(storagePrefix(uid)+'dirty-days',JSON.stringify([...dirtyDayKeys]))}catch(err){console.error('Dirty-day queue save failed',err)}}
 function markDayDirty(k){dirtyDayKeys.add(k);saveDirtyDays()}
 function clearDayDirty(k,clientUpdatedAt){if(Number(days[k]?.clientUpdatedAt)===Number(clientUpdatedAt)){dirtyDayKeys.delete(k);saveDirtyDays()}}
 function saveLocal(){const prefix=storagePrefix(uid);try{const serialised=JSON.stringify(normaliseDaysMap(days));const previous=localStorage.getItem(prefix+'days');if(previous)localStorage.setItem(prefix+'days-backup',previous);localStorage.setItem(prefix+'days',serialised);localStorage.setItem(prefix+'targets',JSON.stringify(targets));localStorage.setItem(prefix+'agent-name',agentName);localStorage.setItem(prefix+'work-days',JSON.stringify(workDays));localStorage.setItem(prefix+'calendar-preference',calendarPreference);localStorage.setItem(prefix+'prospects',JSON.stringify(prospects));localStorage.setItem(prefix+'prospect-interactions',JSON.stringify(prospectInteractions));localStorage.setItem(prefix+'market-pulse-events',JSON.stringify(marketPulseEvents));localStorage.setItem(prefix+'campaign-history',JSON.stringify(campaignHistory.slice(0,20)));localStorage.setItem(prefix+'bulk-sms-test-launches',JSON.stringify(bulkSmsTestLaunches.slice(0,10)));return true}catch(err){console.error('Local save failed',err);return false}}
-function clearActiveSession(){teamInitialisationToken++;unsubDays?.();unsubProfile?.();unsubLeaderboard?.();unsubProspecting?.();unsubTeamMembership?.();unsubTeamMembers?.();unsubDays=unsubProfile=unsubLeaderboard=unsubProspecting=unsubTeamMembership=unsubTeamMembers=null;hideTeamManager({restoreFocus:false});closeTeamMemberRemoval({force:true});hideTeamLeaveConfirmation({force:true,restoreFocus:false});hideTeamCodeRefreshConfirmation({force:true,restoreFocus:false});clearInterval(timerTick);clearTimeout(syncTimer);clearTimeout(leaderboardPublishTimer);clearTimeout(prospectingSaveTimer);clearTimeout(returningSnapshotTimer);returningSnapshotTimer=null;prospectingSaveTimer=null;pendingProspectingPayload=null;pendingProspectingSignature='';prospectingWriteInFlight=false;prospectingSaveWaiters.splice(0).forEach(({resolve})=>resolve());currentUser=null;uid='local';cloud=false;pendingSyncOperations=0;syncHasError=false;lastLeaderboardSignature='';lastTeamLeaderboardSignature='';lastProspectingSignature='';dirtyDayKeys=new Set();resetState()}
+function clearActiveSession(){teamInitialisationToken++;unsubDays?.();unsubProfile?.();unsubLeaderboard?.();unsubProspecting?.();unsubTeamMembership?.();unsubTeamMembers?.();unsubAppointmentAssignees?.();unsubAssignedTeamAppointments?.();unsubDays=unsubProfile=unsubLeaderboard=unsubProspecting=unsubTeamMembership=unsubTeamMembers=unsubAppointmentAssignees=unsubAssignedTeamAppointments=null;hideTeamAppointmentNotice({acknowledge:false});hideTeamManager({restoreFocus:false});closeTeamMemberRemoval({force:true});hideTeamLeaveConfirmation({force:true,restoreFocus:false});hideTeamCodeRefreshConfirmation({force:true,restoreFocus:false});clearInterval(timerTick);clearTimeout(syncTimer);clearTimeout(leaderboardPublishTimer);clearTimeout(prospectingSaveTimer);clearTimeout(returningSnapshotTimer);returningSnapshotTimer=null;prospectingSaveTimer=null;pendingProspectingPayload=null;pendingProspectingSignature='';prospectingWriteInFlight=false;prospectingSaveWaiters.splice(0).forEach(({resolve})=>resolve());currentUser=null;uid='local';cloud=false;pendingSyncOperations=0;syncHasError=false;lastLeaderboardSignature='';lastTeamLeaderboardSignature='';lastProspectingSignature='';dirtyDayKeys=new Set();resetState()}
 function displayAgentName(){return (agentName||currentUser?.displayName||currentUser?.email?.split('@')[0]||'Agent').trim()}
 function returningSnapshotReadyKey(){return `${storagePrefix(uid)}returning-snapshot-ready`}
 function returningSnapshotHasHistory(){
@@ -1013,13 +1015,9 @@ function appointmentCalendarButton(a,sourceDate=''){
   return `<button class="appointment-calendar ${added?'is-added':''}" data-calendar-appointment="${id}" data-source-date="${source}" aria-label="${added?'Added to calendar':'Add appointment to calendar'}" title="${added?'Added to calendar':'Add to calendar'}">${icon}</button>`;
 }
 function appointmentEntriesForDate(viewDate){
-  const entries=dayData(viewDate).appointments.map(a=>({appointment:a,sourceDate:viewDate,isReminder:false}));
-  Object.entries(days).forEach(([sourceDate,day])=>{
-    if(sourceDate===viewDate)return;
-    (day?.appointments||[]).forEach(a=>{
-      if(appointmentScheduledDate(a,sourceDate)===viewDate)entries.push({appointment:a,sourceDate,isReminder:true});
-    });
-  });
+  const entries=dayData(viewDate).appointments.map(a=>({appointment:a,sourceDate:viewDate,isReminder:false,isTeamAssigned:false}));
+  Object.entries(days).forEach(([sourceDate,day])=>{if(sourceDate===viewDate)return;(day?.appointments||[]).forEach(a=>{if(appointmentScheduledDate(a,sourceDate)===viewDate)entries.push({appointment:a,sourceDate,isReminder:true,isTeamAssigned:false});});});
+  assignedTeamAppointments.forEach(a=>{const sourceDate=appointmentCreatedDate(a,a.createdDate||viewDate)||a.createdDate||viewDate;if(appointmentScheduledDate(a,sourceDate)===viewDate)entries.push({appointment:a,sourceDate,isReminder:true,isTeamAssigned:true});});
   return entries.sort((x,y)=>appointmentTimestamp(x.appointment,x.sourceDate)-appointmentTimestamp(y.appointment,y.sourceDate));
 }
 function timelineMinutes(value){
@@ -1369,13 +1367,8 @@ function sortAppointmentEntries(entries){
   return [...entries].sort((x,y)=>appointmentSortPriority(x)-appointmentSortPriority(y)||appointmentTimestamp(x.appointment,x.sourceDate)-appointmentTimestamp(y.appointment,y.sourceDate));
 }
 function appointmentHistoryEntries(mode){
-  const now=Date.now();
-  const entries=allAppointmentEntries().filter(({appointment:a,sourceDate})=>{
-    if(mode==='past'&&isOfiAppointment(a))return false;
-    const scheduledAt=appointmentTimestamp(a,sourceDate);
-    if(!scheduledAt)return mode==='past';
-    return mode==='past'?scheduledAt<=now:scheduledAt>now;
-  });
+  const now=Date.now(),shared=assignedTeamAppointments.map(a=>({appointment:a,sourceDate:appointmentCreatedDate(a,a.createdDate||todayKey())||a.createdDate||todayKey(),scheduled:appointmentScheduledDate(a,a.createdDate||todayKey()),isTeamAssigned:true}));
+  const entries=[...allAppointmentEntries().map(entry=>({...entry,isTeamAssigned:false})),...shared].filter(({appointment:a,sourceDate})=>{if(mode==='past'&&isOfiAppointment(a))return false;const scheduledAt=appointmentTimestamp(a,sourceDate);if(!scheduledAt)return mode==='past';return mode==='past'?scheduledAt<=now:scheduledAt>now;});
   return sortAppointmentEntries(entries);
 }
 function appointmentReminderText(){
@@ -1394,13 +1387,14 @@ function setAppointmentHistoryScreen(mode){
 }
 
 function appointmentCardMarkup(entry,{dailyLog=false,history=false}={}){
-  const {appointment:a,sourceDate,scheduled}=entry;
+  const {appointment:a,sourceDate,scheduled}=entry,isTeamAssigned=Boolean(entry.isTeamAssigned||a.isTeamAssigned);
   const contact=escapeHtml(a.contactName||a.name||'Contact not recorded'),rawPhone=String(a.contactNumber||a.phone||'').trim(),phone=escapeHtml(rawPhone),dial=rawPhone.replace(/[^+\d]/g,''),address=escapeHtml(a.address||'Address not recorded'),type=escapeHtml(appointmentType(a)),time=escapeHtml(appointmentTimeLabel(a,sourceDate)),lifecycle=appointmentLifecycle(a,sourceDate);
   const statusText=lifecycle==='upcoming'?'Upcoming':lifecycle==='completed'?'Completed':followUpDueLabel(a);
   const note=a.outcomeNote?`<small class="appointment-outcome-note">${escapeHtml(a.outcomeNote)}</small>`:'';
   const callAction=dial?`<a class="appointment-call appointment-action-wide" href="tel:${dial}">Call</a>`:'';
   let actions;
-  if(isOfiAppointment(a)){const added=appointmentAddedToCalendar(a,sourceDate),calendarLabel=added?'Added to Calendar':'Add to Calendar';actions=`${callAction}<button class="appointment-secondary-action appointment-calendar-action ${added?'is-added':''}" data-calendar-appointment="${escapeHtml(calendarExportId(a,sourceDate))}" data-source-date="${escapeHtml(sourceDate)}">${added?'✓ ':''}${calendarLabel}</button>`;}
+  if(isTeamAssigned){const added=appointmentAddedToCalendar(a,sourceDate),calendarLabel=added?'Added to Calendar':'Add to Calendar';actions=`${callAction}<button class="appointment-secondary-action appointment-calendar-action ${added?'is-added':''}" data-calendar-team-appointment="${escapeHtml(a.teamAppointmentId||a.id)}" data-source-date="${escapeHtml(sourceDate)}">${added?'✓ ':''}${calendarLabel}</button>`;}
+  else if(isOfiAppointment(a)){const added=appointmentAddedToCalendar(a,sourceDate),calendarLabel=added?'Added to Calendar':'Add to Calendar';actions=`${callAction}<button class="appointment-secondary-action appointment-calendar-action ${added?'is-added':''}" data-calendar-appointment="${escapeHtml(calendarExportId(a,sourceDate))}" data-source-date="${escapeHtml(sourceDate)}">${added?'✓ ':''}${calendarLabel}</button>`;}
   else if(dailyLog){
     const added=appointmentAddedToCalendar(a,sourceDate),calendarLabel=added?'Added to Calendar':'Add to Calendar';
     actions=`${callAction}<button class="appointment-secondary-action appointment-calendar-action ${added?'is-added':''}" data-calendar-appointment="${escapeHtml(calendarExportId(a,sourceDate))}" data-source-date="${escapeHtml(sourceDate)}">${added?'✓ ':''}${calendarLabel}</button>`;
@@ -1419,10 +1413,12 @@ function appointmentCardMarkup(entry,{dailyLog=false,history=false}={}){
   const ofiSchedule=isOfiAppointment(a)?`<div class="appointment-ofi-schedule ${appointmentHasAuction(a)?'has-auction':''}"><div><span>OPEN FOR INSPECTION</span><strong>${escapeHtml(time)}–${escapeHtml(timelineTimeLabel(appointmentEndMinutes(a)))}</strong><small>${appointmentDurationMinutes(a)} minute booking</small></div>${appointmentHasAuction(a)?`<div><span>AUCTION</span><strong>${escapeHtml(timelineTimeLabel(appointmentAuctionMinutes(a)))}</strong><small>Commences immediately after</small></div>`:''}</div>`:'';
   const loggedMeta=dailyLog&&a.scheduledDate&&a.scheduledDate!==sourceDate?`<small class="appointment-log-scheduled">Scheduled for ${escapeHtml(shortAppointmentDate(scheduled))} at ${time}</small>`:`<small class="appointment-booked-for">${escapeHtml(shortAppointmentDate(scheduled))} at ${time}</small>`;
   const bookedMeta=history&&booked?`<small class="appointment-created-meta">Booked ${escapeHtml(booked)}</small>`:'';
-  const dueMeta=history&&a.followUpDate?`<small class="appointment-followup-timestamp ${a.followUpDate<todayKey()?'overdue':''}">Follow-up due ${escapeHtml(shortAppointmentDate(a.followUpDate))}</small>`:'';
-  return `<article class="appointment-card appointment-card-premium appointment-followup-card ${lifecycle}" data-appointment-card-edit="${escapeHtml(a.id)}" data-source-date="${escapeHtml(sourceDate)}" role="button" tabindex="0" aria-label="Edit ${type} appointment at ${address}">
-    <button class="appointment-delete" data-delete-appointment="${escapeHtml(a.id)}" data-source-date="${escapeHtml(sourceDate)}" aria-label="Delete appointment" title="Delete appointment">×</button>
-    <div class="appointment-card-copy"><div class="appointment-card-top"><span class="appointment-type-badge">${type}</span><span class="appointment-status-badge ${lifecycle}">${escapeHtml(statusText)}</span></div><strong>${address}</strong><small>${contact}${phone?` · ${phone}`:''}</small>${ofiSchedule}${loggedMeta}${bookedMeta}${dueMeta}${note}</div>
+  const assignmentMeta=isTeamAssigned?`<small class="appointment-team-assigned-meta">Booked for you by ${escapeHtml(a.setterName||'a teammate')}</small>`:'';
+  const dueMeta=history&&!isTeamAssigned&&a.followUpDate?`<small class="appointment-followup-timestamp ${a.followUpDate<todayKey()?'overdue':''}">Follow-up due ${escapeHtml(shortAppointmentDate(a.followUpDate))}</small>`:'';
+  const cardAttrs=isTeamAssigned?'':`data-appointment-card-edit="${escapeHtml(a.id)}" role="button" tabindex="0" aria-label="Edit ${type} appointment at ${address}"`;
+  return `<article class="appointment-card appointment-card-premium appointment-followup-card ${lifecycle} ${isTeamAssigned?'team-assigned':''}" ${cardAttrs} data-source-date="${escapeHtml(sourceDate)}">
+    ${isTeamAssigned?'':`<button class="appointment-delete" data-delete-appointment="${escapeHtml(a.id)}" data-source-date="${escapeHtml(sourceDate)}" aria-label="Delete appointment" title="Delete appointment">×</button>`}
+    <div class="appointment-card-copy"><div class="appointment-card-top"><span class="appointment-type-badge">${type}</span><span class="appointment-status-badge ${lifecycle}">${escapeHtml(statusText)}</span></div><strong>${address}</strong><small>${contact}${phone?` · ${phone}`:''}</small>${ofiSchedule}${loggedMeta}${bookedMeta}${assignmentMeta}${dueMeta}${note}</div>
     <div class="appointment-followup-actions">${actions}</div>
   </article>`;
 }
@@ -1464,7 +1460,9 @@ function renderAppointments(){
     $('#appointmentHistoryList').innerHTML=history.length?history.map(entry=>appointmentCardMarkup(entry,{history:true})).join(''):emptyStateMarkup(getEmptyState('appointments-history',{mode:appointmentHistoryMode}));
   }
 
-  const daily=sortAppointmentEntries(all.filter(({appointment:a,sourceDate})=>appointmentCreatedDate(a,sourceDate)===appointmentDate));
+  const personalDaily=all.filter(({appointment:a,sourceDate})=>appointmentCreatedDate(a,sourceDate)===appointmentDate).map(entry=>({...entry,isTeamAssigned:false}));
+  const assignedDaily=assignedTeamAppointments.filter(a=>appointmentScheduledDate(a,a.createdDate||appointmentDate)===appointmentDate).map(a=>({appointment:a,sourceDate:appointmentCreatedDate(a,a.createdDate||appointmentDate)||a.createdDate||appointmentDate,scheduled:appointmentDate,isTeamAssigned:true}));
+  const daily=sortAppointmentEntries([...personalDaily,...assignedDaily]);
   $('#appointmentsList').innerHTML=daily.length?daily.map(entry=>appointmentCardMarkup(entry,{dailyLog:true})).join(''):emptyStateMarkup(getEmptyState('appointments-daily',{date:appointmentDate}));
   if(activeViewId()==='appointmentsView')updateTopbar('appointmentsView');
 }
@@ -1529,7 +1527,18 @@ async function completePendingProspectAppointmentFlow(){
   if(flow.fromSession&&prospectSessionActive){toast('Appointment booked');showProspectingSession();requestAnimationFrame(()=>showProspectingSession())}else{toast('Appointment booked');renderProspectDetail(p.id)}
 }
 
-async function addAppointment({contactName,contactNumber,address,date,time,type,auction=false,prospectId=''}){
+function teamAppointmentMemberName(member){const live=leaderboardEntries.find(entry=>String(entry.uid||'')===String(member.uid||''));return String(live?.name||member.name||member.email?.split('@')[0]||'Team member').trim()||'Team member'}
+function renderAppointmentAssigneePicker(preferredUid=''){const wrap=$('#appointmentAssigneeField'),select=$('#appointmentAssignee');if(!wrap||!select)return;const available=accountMode==='team'&&teamId&&appointmentAssignees.length>1;wrap.classList.toggle('hidden',!available);if(!available){select.innerHTML=`<option value="${escapeHtml(uid)}">Me</option>`;select.value=uid;return}const current=preferredUid||select.value||uid,sorted=[...appointmentAssignees].sort((a,b)=>String(a.uid)===uid?-1:String(b.uid)===uid?1:teamAppointmentMemberName(a).localeCompare(teamAppointmentMemberName(b)));select.innerHTML=sorted.map(member=>`<option value="${escapeHtml(member.uid)}">${escapeHtml(String(member.uid)===uid?'Me':teamAppointmentMemberName(member))}</option>`).join('');select.value=sorted.some(member=>String(member.uid)===String(current))?current:uid}
+function stopTeamAppointmentLayer(){unsubAppointmentAssignees?.();unsubAssignedTeamAppointments?.();unsubAppointmentAssignees=unsubAssignedTeamAppointments=null;subscribedAppointmentTeamId='';appointmentAssignees=[];assignedTeamAppointments=[];pendingTeamAppointmentNotice=null;hideTeamAppointmentNotice({acknowledge:false});renderAppointmentAssigneePicker();renderAppointments()}
+function normaliseAssignedTeamAppointment(data={},id=''){const source=validDateKey(data.createdDate)?data.createdDate:todayKey(),a=normaliseAppointmentRecord({...data,id:data.appointmentId||data.id||id},source);return{...a,teamAppointmentId:String(id||data.teamAppointmentId||a.id),setterUid:String(data.setterUid||''),setterName:String(data.setterName||'a teammate'),assignedToUid:String(data.assignedToUid||''),assignedToName:String(data.assignedToName||displayAgentName()),acknowledgedAt:data.acknowledgedAt||null,calendarAddedAt:data.calendarAddedAt||null,isTeamAssigned:true}}
+function maybeShowTeamAppointmentNotice(){if(teamAppointmentNoticeOpen||!cloud||accountMode!=='team'||!teamId||$('#app')?.classList.contains('hidden'))return;const next=assignedTeamAppointments.filter(a=>!a.acknowledgedAt&&a.setterUid!==uid).sort((a,b)=>(Number(a.at)||0)-(Number(b.at)||0))[0];if(!next)return;pendingTeamAppointmentNotice=next;teamAppointmentNoticeOpen=true;const modal=$('#teamAppointmentNotice');if(!modal)return;$('#teamAppointmentNoticeTitle').textContent=`${next.setterName||'A teammate'} booked this ${appointmentType(next)} appointment for you.`;$('#teamAppointmentNoticeType').textContent=appointmentType(next);$('#teamAppointmentNoticeContact').textContent=next.contactName||'Contact not recorded';$('#teamAppointmentNoticeAddress').textContent=next.address||'Address not recorded';$('#teamAppointmentNoticeWhen').textContent=`${fmtDate(appointmentScheduledDate(next,next.createdDate||todayKey()))} · ${appointmentTimeLabel(next,next.createdDate||todayKey())}`;modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');document.body.classList.add('team-appointment-notice-open');requestAnimationFrame(()=>$('#teamAppointmentAddCalendar')?.focus({preventScroll:true}))}
+async function acknowledgeTeamAppointment(a,{calendar=false}={}){if(!a?.teamAppointmentId||!cloud||!db||!teamId)return;try{await setDoc(doc(db,'teams',teamId,'appointments',a.teamAppointmentId),{acknowledgedAt:serverTimestamp(),calendarAddedAt:calendar?serverTimestamp():a.calendarAddedAt||null,updatedAt:serverTimestamp()},{merge:true})}catch(err){console.error('Appointment acknowledgement failed',err)}}
+function hideTeamAppointmentNotice({acknowledge=true,calendar=false}={}){const modal=$('#teamAppointmentNotice');if(!modal)return;const current=pendingTeamAppointmentNotice;modal.classList.add('hidden');modal.setAttribute('aria-hidden','true');document.body.classList.remove('team-appointment-notice-open');teamAppointmentNoticeOpen=false;pendingTeamAppointmentNotice=null;if(acknowledge&&current)acknowledgeTeamAppointment(current,{calendar});requestAnimationFrame(()=>maybeShowTeamAppointmentNotice())}
+function subscribeTeamAppointmentLayer(){if(!cloud||accountMode!=='team'||!teamId){stopTeamAppointmentLayer();return}if(subscribedAppointmentTeamId===teamId&&unsubAppointmentAssignees&&unsubAssignedTeamAppointments)return;stopTeamAppointmentLayer();subscribedAppointmentTeamId=teamId;const listeningTeamId=teamId;unsubAppointmentAssignees=onSnapshot(collection(db,'teams',listeningTeamId,'members'),{includeMetadataChanges:true},snap=>{if(teamId!==listeningTeamId)return;appointmentAssignees=snap.docs.map(item=>({...item.data(),uid:item.id}));const preferred=editingAppointment?dayData(editingAppointment.sourceDate).appointments.find(a=>String(a.id)===String(editingAppointment.id))?.assignedToUid||uid:uid;renderAppointmentAssigneePicker(preferred)},err=>console.error('Appointment team list failed',err));const assignedQuery=query(collection(db,'teams',listeningTeamId,'appointments'),where('assignedToUid','==',uid));unsubAssignedTeamAppointments=onSnapshot(assignedQuery,{includeMetadataChanges:true},snap=>{if(teamId!==listeningTeamId)return;assignedTeamAppointments=snap.docs.map(item=>normaliseAssignedTeamAppointment(item.data(),item.id)).sort((a,b)=>appointmentTimestamp(a,a.createdDate||todayKey())-appointmentTimestamp(b,b.createdDate||todayKey()));renderAppointments();renderTimeline();refreshReturningSnapshotIfVisible();maybeShowTeamAppointmentNotice()},err=>console.error('Assigned appointments failed',err))}
+function teamAppointmentPayload(appointment,assignedToUid){const member=appointmentAssignees.find(entry=>String(entry.uid||'')===String(assignedToUid||''));return{appointmentId:String(appointment.id),contactName:appointment.contactName||'',contactNumber:appointment.contactNumber||'',address:appointment.address||'',date:appointmentScheduledDate(appointment,appointment.createdDate),time:appointment.time||'12:00',type:appointmentType(appointment),auction:Boolean(appointment.auction),types:[appointmentType(appointment)],createdDate:appointmentCreatedDate(appointment,appointment.createdDate),logDate:appointmentCreatedDate(appointment,appointment.createdDate),scheduledDate:appointmentScheduledDate(appointment,appointment.createdDate),scheduledAt:Number(appointment.scheduledAt)||appointmentTimestamp(appointment,appointment.createdDate),at:Number(appointment.at)||Date.now(),setterUid:uid,setterName:displayAgentName(),assignedToUid:String(assignedToUid),assignedToName:teamAppointmentMemberName(member||{uid:assignedToUid}),updatedAt:serverTimestamp()}}
+async function syncTeamAppointmentAssignment(appointment,previousAssignedToUid=''){if(!cloud||!db||accountMode!=='team'||!teamId||!appointment?.id)return;const assignedToUid=String(appointment.assignedToUid||uid),previous=String(previousAssignedToUid||''),ref=doc(db,'teams',teamId,'appointments',String(appointment.id));if(assignedToUid===uid){if(previous&&previous!==uid){const batch=writeBatch(db);batch.delete(ref);await batch.commit()}return}const payload=teamAppointmentPayload(appointment,assignedToUid);if(!previous||previous!==assignedToUid)await setDoc(ref,{...payload,acknowledgedAt:null,calendarAddedAt:null,createdAt:serverTimestamp()});else await setDoc(ref,payload,{merge:true})}
+async function removeTeamAppointmentAssignment(appointment){if(!cloud||!db||accountMode!=='team'||!teamId||!appointment?.id||!appointment.assignedToUid||appointment.assignedToUid===uid)return;const batch=writeBatch(db);batch.delete(doc(db,'teams',teamId,'appointments',String(appointment.id)));await batch.commit()}
+async function addAppointment({contactName,contactNumber,address,date,time,type,auction=false,prospectId='',assignedToUid=uid}){
   const createdDate=todayKey();
   if(isPastDate(createdDate))return lockedToast();
   const signature=[createdDate,date,time,type,contactName.trim().toLowerCase(),address.trim().toLowerCase()].join('|');
@@ -1541,11 +1550,11 @@ async function addAppointment({contactName,contactNumber,address,date,time,type,
   const recentDuplicate=d.appointments.find(a=>[appointmentCreatedDate(a,createdDate),appointmentScheduledDate(a,createdDate),a.time,appointmentType(a),String(a.contactName||'').trim().toLowerCase(),String(a.address||'').trim().toLowerCase()].join('|')===signature&&Date.now()-(Number(a.at)||0)<15000);
   if(recentDuplicate){appointmentSubmitLocks.delete(signature);return recentDuplicate}
   let linkedProspect=null;if(normaliseAppointmentType(type)==='LAP')linkedProspect=await connectListingAppointmentToPipeline({contactName,contactNumber,address});
-  const appointment=normaliseAppointmentRecord({id:uuid(),contactName,contactNumber,address,date,time,type,auction:type==='OFI'&&auction,types:[type],prospectId:linkedProspect?.id||prospectId||'',createdDate,logDate:createdDate,scheduledDate:date,scheduledAt,at:Date.now()},createdDate);
+  const assignedMember=appointmentAssignees.find(entry=>String(entry.uid||'')===String(assignedToUid||''));const appointment=normaliseAppointmentRecord({id:uuid(),contactName,contactNumber,address,date,time,type,auction:type==='OFI'&&auction,types:[type],prospectId:linkedProspect?.id||prospectId||'',assignedToUid:String(assignedToUid||uid),assignedToName:String(assignedToUid||uid)===uid?displayAgentName():teamAppointmentMemberName(assignedMember||{uid:assignedToUid}),setterUid:uid,setterName:displayAgentName(),createdDate,logDate:createdDate,scheduledDate:date,scheduledAt,at:Date.now()},createdDate);
   d.appointments.push(appointment);
   addEvent(d,'appointment',`${type} · ${contactName} · ${address} · booked for ${date} ${time}`);
   days[createdDate]=d;
-  try{await saveDay(createdDate);renderAppointments();toast(date===createdDate?'Appointment logged':'Appointment logged and reminder created');return appointment}
+  try{await saveDay(createdDate);try{await syncTeamAppointmentAssignment(appointment)}catch(err){console.error('Team appointment assignment failed',err);toast('Appointment saved. Team assignment needs sync.')}renderAppointments();toast(date===createdDate?'Appointment logged':'Appointment logged and reminder created');return appointment}
   finally{appointmentSubmitLocks.delete(signature)}
 }
 function beginEditAppointment(id,sourceDate){
@@ -1555,7 +1564,7 @@ function beginEditAppointment(id,sourceDate){
   editingAppointment={id:String(id),sourceDate};appointmentLinkedProspectId=appointment.prospectId||'';pendingProspectAppointmentFlow=null;renderProspectAppointmentFlowHeader();appointmentHistoryMode=null;setAppointmentHistoryScreen(null);
   appointmentDate=appointmentCreatedDate(appointment,sourceDate)||todayKey();
   $('#appointmentContactName').value=appointment.contactName||'';$('#appointmentContactNumber').value=appointment.contactNumber||'';$('#appointmentAddress').value=appointment.address||'';$('#appointmentDatePicker').value=appointmentScheduledDate(appointment,sourceDate);$('#appointmentTime').value=appointment.time||'12:00';
-  const type=appointmentType(appointment);$$('[name=appointmentType]').forEach(el=>el.checked=el.value===type);$('#appointmentAuction').checked=appointmentHasAuction(appointment);updateOfiFormState();
+  const type=appointmentType(appointment);$$('[name=appointmentType]').forEach(el=>el.checked=el.value===type);$('#appointmentAuction').checked=appointmentHasAuction(appointment);renderAppointmentAssigneePicker(appointment.assignedToUid||uid);updateOfiFormState();
   renderAppointments();$('#appointmentContactName')?.focus({preventScroll:true});
 }
 function closeAppointmentEditor(){
@@ -1570,14 +1579,14 @@ function closeAppointmentEditor(){
   renderAppointments();
   requestAnimationFrame(()=>window.scrollTo({top:returnState?.scrollY||0,behavior:'instant'}));
 }
-async function editAppointment({contactName,contactNumber,address,date,time,type,auction=false}){
+async function editAppointment({contactName,contactNumber,address,date,time,type,auction=false,assignedToUid=uid}){
   if(!editingAppointment)return null;
   const {id,sourceDate}=editingAppointment,d=dayData(sourceDate),index=d.appointments.findIndex(a=>String(a.id)===String(id));
   if(index<0)return toast('Appointment could not be found');
   const existing=d.appointments[index],scheduledAt=new Date(`${date}T${time}`).getTime();if(!validDateKey(date)||!Number.isFinite(scheduledAt))return toast('Appointment date or time is invalid');
   let prospectId=existing.prospectId||'';if(normaliseAppointmentType(type)==='LAP'){const linked=await connectListingAppointmentToPipeline({contactName,contactNumber,address});prospectId=linked?.id||prospectId}
-  d.appointments[index]=normaliseAppointmentRecord({...existing,contactName,contactNumber,address,date,scheduledDate:date,time,type,auction:type==='OFI'&&auction,types:[type],scheduledAt,prospectId,updatedAt:Date.now()},sourceDate);
-  addEvent(d,'appointment',`${type} · ${contactName} · appointment updated for ${date} ${time}`);days[sourceDate]=d;await saveDay(sourceDate);editingAppointment=null;renderAll();toast('Appointment updated');return d.appointments[index];
+  const previousAssignedToUid=String(existing.assignedToUid||uid),assignedMember=appointmentAssignees.find(entry=>String(entry.uid||'')===String(assignedToUid||''));d.appointments[index]=normaliseAppointmentRecord({...existing,contactName,contactNumber,address,date,scheduledDate:date,time,type,auction:type==='OFI'&&auction,types:[type],scheduledAt,prospectId,assignedToUid:String(assignedToUid||uid),assignedToName:String(assignedToUid||uid)===uid?displayAgentName():teamAppointmentMemberName(assignedMember||{uid:assignedToUid}),setterUid:existing.setterUid||uid,setterName:existing.setterName||displayAgentName(),updatedAt:Date.now()},sourceDate);
+  addEvent(d,'appointment',`${type} · ${contactName} · appointment updated for ${date} ${time}`);days[sourceDate]=d;await saveDay(sourceDate);try{await syncTeamAppointmentAssignment(d.appointments[index],previousAssignedToUid)}catch(err){console.error('Team appointment update failed',err);toast('Appointment updated. Team assignment needs sync.')}editingAppointment=null;renderAll();toast('Appointment updated');return d.appointments[index];
 }
 async function deleteAppointment(id,sourceDate=appointmentDate){
   const d=dayData(sourceDate),index=d.appointments.findIndex(a=>String(a.id)===String(id));
@@ -1585,7 +1594,7 @@ async function deleteAppointment(id,sourceDate=appointmentDate){
   const appointment=d.appointments[index],exportId=calendarExportId(appointment,sourceDate);
   d.appointments.splice(index,1);days[sourceDate]=d;
   const ids=calendarExportIds();ids.delete(exportId);localStorage.setItem(calendarExportStorageKey(),JSON.stringify([...ids]));
-  await saveDay(sourceDate);renderAll();toast('Appointment deleted');
+  await saveDay(sourceDate);try{await removeTeamAppointmentAssignment(appointment)}catch(err){console.error('Team appointment delete failed',err)}renderAll();toast('Appointment deleted');
 }
 
 
@@ -2707,7 +2716,7 @@ function clearTeamMembersSubscription(){
   unsubTeamMembers?.();unsubTeamMembers=null;subscribedMembersTeamId='';teamMembers=[];teamMembersStatus='idle';teamMembersError='';teamMembersDataSignature='';renderTeamManager();renderTeamSettings();
 }
 function stopTeamMembershipSubscriptions(){
-  unsubTeamMembership?.();unsubTeamMembership=null;subscribedMembershipTeamId='';clearTeamMembersSubscription();hideTeamManager({restoreFocus:false});closeTeamMemberRemoval({force:true});hideTeamCodeRefreshConfirmation({force:true,restoreFocus:false});
+  unsubTeamMembership?.();unsubTeamMembership=null;subscribedMembershipTeamId='';stopTeamAppointmentLayer();clearTeamMembersSubscription();hideTeamManager({restoreFocus:false});closeTeamMemberRemoval({force:true});hideTeamCodeRefreshConfirmation({force:true,restoreFocus:false});hideTeamDeleteConfirmation({force:true,restoreFocus:false});
 }
 function teamMembersSignature(entries){
   return JSON.stringify((entries||[]).map(member=>[String(member.uid||''),String(member.role||''),String(member.name||''),String(member.email||''),Number(member.joinedAt?.seconds)||Number(member.joinedAt)||0]).sort((a,b)=>a[0].localeCompare(b[0])));
@@ -2795,6 +2804,34 @@ async function confirmTeamCodeRefresh(){
     teamJoinCode=nextCode;cacheVerifiedTeamState();teamInviteRefreshBusy=false;renderTeamManager();renderTeamSettings();hideTeamCodeRefreshConfirmation({force:true,restoreFocus:false});teamManagerMessage('Invite code refreshed. Existing members stay connected.','success');toast('New team invite code ready');requestAnimationFrame(()=>$('#shareTeamManagerInvite')?.focus({preventScroll:true}));
   }catch(err){console.error('Refresh team invite code failed',err);teamInviteRefreshBusy=false;$('#teamCodeRefreshStatus').textContent='The invite code was not changed. Please try again.';$('#cancelTeamCodeRefresh').disabled=false;$('#confirmTeamCodeRefresh').disabled=false;$('#confirmTeamCodeRefresh').textContent='Refresh code'}
 }
+function showTeamDeleteConfirmation(){
+  if(teamDeleteBusy||!cloud||!db||!uid||accountMode!=='team'||teamRole!=='owner'||!teamId)return;
+  teamDeleteReturnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
+  $('#teamDeleteTitle').textContent=`Delete ${teamName||'this team'}?`;
+  $('#teamDeleteDescription').textContent=`This permanently removes ${teamName||'this team'}, its invite code, memberships and team leaderboard. Everyone’s contacts, notes, appointments, activity history and personal AGNT data stay with their own accounts.`;
+  $('#teamDeleteStatus').textContent='';$('#teamDeleteConfirm').classList.remove('hidden');$('#teamDeleteConfirm').setAttribute('aria-hidden','false');document.body.classList.add('team-leave-open');requestAnimationFrame(()=>$('#cancelTeamDelete')?.focus({preventScroll:true}));
+}
+function hideTeamDeleteConfirmation({force=false,restoreFocus=true}={}){
+  if(teamDeleteBusy&&!force)return;if(force)teamDeleteBusy=false;
+  $('#teamDeleteConfirm')?.classList.add('hidden');$('#teamDeleteConfirm')?.setAttribute('aria-hidden','true');document.body.classList.remove('team-leave-open');
+  const cancel=$('#cancelTeamDelete'),confirm=$('#confirmTeamDelete'),status=$('#teamDeleteStatus');if(cancel)cancel.disabled=false;if(confirm){confirm.disabled=false;confirm.textContent='Delete team'}if(status)status.textContent='';
+  const returnFocus=teamDeleteReturnFocus;teamDeleteReturnFocus=null;if(restoreFocus&&returnFocus?.isConnected)requestAnimationFrame(()=>returnFocus.focus({preventScroll:true}));
+}
+async function confirmTeamDelete(){
+  if(teamDeleteBusy||!cloud||!db||!uid||accountMode!=='team'||teamRole!=='owner'||!teamId)return;
+  if(!navigator.onLine){$('#teamDeleteStatus').textContent='Connect to the internet before deleting this team.';return}
+  const deletingTeamId=String(teamId),deletingTeamName=String(teamName||'your team'),deletingJoinCode=String(teamJoinCode||'');teamDeleteBusy=true;$('#cancelTeamDelete').disabled=true;$('#confirmTeamDelete').disabled=true;$('#confirmTeamDelete').textContent='Deleting…';$('#teamDeleteStatus').textContent='Removing team access while keeping personal data safe…';
+  try{
+    const [membersSnap,leaderboardSnap,appointmentsSnap]=await Promise.all([getDocs(collection(db,'teams',deletingTeamId,'members')),getDocs(collection(db,'teams',deletingTeamId,'leaderboard')),getDocs(collection(db,'teams',deletingTeamId,'appointments'))]);
+    const batch=writeBatch(db),now=serverTimestamp();
+    membersSnap.docs.forEach(item=>batch.delete(item.ref));leaderboardSnap.docs.forEach(item=>batch.delete(item.ref));appointmentsSnap.docs.forEach(item=>batch.delete(item.ref));
+    if(deletingJoinCode)batch.delete(doc(db,'teamCodes',deletingJoinCode));
+    batch.delete(doc(db,'teams',deletingTeamId));
+    batch.set(doc(db,'users',uid),{accountMode:'unconfigured',teamId:null,teamRole:null,teamName:null,teamSchemaVersion:TEAM_SCHEMA_VERSION,teamOnboardingSuggested:true,updatedAt:now},{merge:true});
+    await batch.commit();
+    clearVerifiedTeamState({forgetCached:true});setTeamLayerStatus('deleted',`${deletingTeamName} was deleted. Personal AGNT data was not changed.`);hideTeamDeleteConfirmation({force:true,restoreFocus:false});hideTeamManager({restoreFocus:false});renderSettings();showTeamOnboarding();teamSetupReturnFocus=null;requestAnimationFrame(()=>teamSetupMessage(`${deletingTeamName} was deleted. Choose Solo, create a team or join another team. Everyone’s personal data is unchanged.`,'success'));toast(`${deletingTeamName} deleted`);
+  }catch(err){console.error('Delete team failed',err);teamDeleteBusy=false;$('#teamDeleteStatus').textContent='The team was not deleted. No personal data was changed.';$('#cancelTeamDelete').disabled=false;$('#confirmTeamDelete').disabled=false;$('#confirmTeamDelete').textContent='Delete team'}
+}
 function showTeamLeaveConfirmation(){
   if(!cloud||accountMode!=='team'||teamRole==='owner'||!teamId)return;
   teamLeaveReturnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
@@ -2855,7 +2892,7 @@ function subscribeTeamMembersForOwner(){
     if(changed){teamMembers=next;teamMembersDataSignature=signature}teamMembersStatus=snap.metadata.fromCache?'cached':'live';teamMembersError='';renderTeamManager();renderTeamSettings();
   },err=>{if(teamId!==listeningTeamId)return;console.error('Team member list failed',err);teamMembersStatus='error';teamMembersError=err.message||'Member list unavailable';renderTeamManager();renderTeamSettings()});
 }
-function subscribeTeamMembershipLayer(){subscribeOwnTeamMembership();subscribeTeamMembersForOwner()}
+function subscribeTeamMembershipLayer(){subscribeOwnTeamMembership();subscribeTeamMembersForOwner();subscribeTeamAppointmentLayer()}
 function subscribeSecureLeaderboard(){
   if(accountMode!=='team'||!teamId){stopTeamMembershipSubscriptions();unsubLeaderboard?.();unsubLeaderboard=null;subscribedTeamId='';teamLeaderboardDataSignature='';leaderboardEntries=[leaderboardPayload()];renderLeaderboard();return}
   subscribeTeamMembershipLayer();
@@ -3007,7 +3044,7 @@ function renderDayViews(){renderToday();renderTimeline();renderAppointments();re
 function renderAll(){renderDayViews();renderProspecting();const reviewButton=$('#openDayReview');if(reviewButton)reviewButton.classList.toggle('hidden',new Date().getHours()<17||selectedDate!==todayKey()||!isWorkDayKey(todayKey()));maybeShowDayReview()}
 
 async function startCloud(user,{promptTeamSetup=false}={}){
-  teamInitialisationToken++;unsubDays?.();unsubProfile?.();unsubLeaderboard?.();unsubProspecting?.();unsubTeamMembership?.();unsubTeamMembers?.();unsubDays=unsubProfile=unsubLeaderboard=unsubProspecting=unsubTeamMembership=unsubTeamMembers=null;currentUser=user;uid=user.uid;loadBuyerSession();cloud=true;loadLocal(uid);
+  teamInitialisationToken++;unsubDays?.();unsubProfile?.();unsubLeaderboard?.();unsubProspecting?.();unsubTeamMembership?.();unsubTeamMembers?.();unsubAppointmentAssignees?.();unsubAssignedTeamAppointments?.();unsubDays=unsubProfile=unsubLeaderboard=unsubProspecting=unsubTeamMembership=unsubTeamMembers=unsubAppointmentAssignees=unsubAssignedTeamAppointments=null;currentUser=user;uid=user.uid;loadBuyerSession();cloud=true;loadLocal(uid);
   const restoredTeamState=restoreCachedTeamState();
   leaderboardEntries=restoredTeamState&&accountMode==='team'?[]:[leaderboardPayload()];
   if(restoredTeamState&&accountMode==='team'){setTeamLayerStatus('connecting');subscribeSecureLeaderboard()}
@@ -3048,7 +3085,7 @@ async function startCloud(user,{promptTeamSetup=false}={}){
   refreshSyncStatus();showApp();scheduleLeaderboardPublish();
 }
 
-function showApp(){setAuthScreenActive(false);$('#bootGate')?.classList.add('hidden');$('#authGate').classList.add('hidden');$('#app').classList.remove('hidden');$('#appointmentDatePicker').value=appointmentDate;restoreProspectingSessionState();restoreKnockingSessionState();renderKnockingSession();renderAll();ensureTick();showLaunchExperience()}
+function showApp(){setAuthScreenActive(false);$('#bootGate')?.classList.add('hidden');$('#authGate').classList.add('hidden');$('#app').classList.remove('hidden');$('#appointmentDatePicker').value=appointmentDate;restoreProspectingSessionState();restoreKnockingSessionState();renderKnockingSession();renderAll();ensureTick();showLaunchExperience();requestAnimationFrame(()=>maybeShowTeamAppointmentNotice())}
 let viewportFrame=0;
 function updateAppViewport(){
   cancelAnimationFrame(viewportFrame);
@@ -3121,6 +3158,7 @@ $('#closeTeamManager')?.addEventListener('click',()=>hideTeamManager());
 $('#copyTeamManagerCode')?.addEventListener('click',()=>copyTeamJoinCode('#copyTeamManagerCode'));
 $('#shareTeamManagerInvite')?.addEventListener('click',()=>shareTeamInvite('#shareTeamManagerInvite'));
 $('#refreshTeamInviteCode')?.addEventListener('click',()=>showTeamCodeRefreshConfirmation());
+$('#deleteTeam')?.addEventListener('click',()=>showTeamDeleteConfirmation());
 $('#teamMemberList')?.addEventListener('click',event=>{const button=event.target.closest('[data-remove-team-member]');if(button)openTeamMemberRemoval(button.dataset.removeTeamMember)});
 $('#cancelTeamMemberRemoval')?.addEventListener('click',()=>closeTeamMemberRemoval());
 $('#confirmTeamMemberRemoval')?.addEventListener('click',()=>confirmTeamMemberRemoval());
@@ -3128,11 +3166,13 @@ $('#cancelTeamLeave')?.addEventListener('click',()=>hideTeamLeaveConfirmation())
 $('#confirmTeamLeave')?.addEventListener('click',()=>confirmTeamLeave());
 $('#cancelTeamCodeRefresh')?.addEventListener('click',()=>hideTeamCodeRefreshConfirmation());
 $('#confirmTeamCodeRefresh')?.addEventListener('click',()=>confirmTeamCodeRefresh());
+$('#cancelTeamDelete')?.addEventListener('click',()=>hideTeamDeleteConfirmation());
+$('#confirmTeamDelete')?.addEventListener('click',()=>confirmTeamDelete());
 $('#teamCodeInput')?.addEventListener('input',event=>{pendingTeamJoin=null;event.target.value=normaliseTeamCode(event.target.value);teamSetupMessage('')});
 $('#teamCodeInput')?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();completeJoinTeam()}});
 $('#newTeamName')?.addEventListener('input',()=>teamSetupMessage(''));
 $('#newTeamName')?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();completeCreateTeam()}});
-document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;if(!$('#teamRemoveConfirm')?.classList.contains('hidden')){closeTeamMemberRemoval();return}if(!$('#teamLeaveConfirm')?.classList.contains('hidden')){hideTeamLeaveConfirmation();return}if(!$('#teamCodeRefreshConfirm')?.classList.contains('hidden')){hideTeamCodeRefreshConfirmation();return}if(teamManagerOpen){hideTeamManager();return}if(teamOnboardingActive)hideTeamOnboarding()});
+document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;if(!$('#teamRemoveConfirm')?.classList.contains('hidden')){closeTeamMemberRemoval();return}if(!$('#teamDeleteConfirm')?.classList.contains('hidden')){hideTeamDeleteConfirmation();return}if(!$('#teamLeaveConfirm')?.classList.contains('hidden')){hideTeamLeaveConfirmation();return}if(!$('#teamCodeRefreshConfirm')?.classList.contains('hidden')){hideTeamCodeRefreshConfirmation();return}if(teamManagerOpen){hideTeamManager();return}if(teamOnboardingActive)hideTeamOnboarding()});
 
 $('#returningSnapshotScreen')?.addEventListener('click',dismissReturningSnapshot);
 $('#startDayButton').onclick=dismissDailyWelcome;
@@ -3172,25 +3212,28 @@ $('#closeAppointmentHistory').onclick=()=>setAppointmentHistoryScreen(null);
 $('#appointmentForm').onsubmit=async e=>{
   e.preventDefault();
   const viewedDate=appointmentDate,returnState=appointmentEditReturnState;
-  const contactName=$('#appointmentContactName').value.trim(),contactNumber=$('#appointmentContactNumber').value.trim(),address=$('#appointmentAddress').value.trim(),date=$('#appointmentDatePicker').value,time=$('#appointmentTime').value,type=$('.appointment-types input:checked')?.value||'',auction=type==='OFI'&&$('#appointmentAuction').checked,error=$('#appointmentFormError');
+  const contactName=$('#appointmentContactName').value.trim(),contactNumber=$('#appointmentContactNumber').value.trim(),address=$('#appointmentAddress').value.trim(),date=$('#appointmentDatePicker').value,time=$('#appointmentTime').value,type=$('.appointment-types input:checked')?.value||'',auction=type==='OFI'&&$('#appointmentAuction').checked,assignedToUid=$('#appointmentAssignee')?.value||uid,error=$('#appointmentFormError');
   const missing=[];if(type!=='OFI'&&!contactName)missing.push('contact name');if(type!=='OFI'&&!contactNumber)missing.push('contact number');if(!address)missing.push('property address');if(!date)missing.push('booking date');if(!time)missing.push('booking time');if(!type)missing.push('appointment type');
   if(missing.length){error.textContent=`Add ${missing.join(', ')}`;error.classList.remove('hidden');return}
   error.textContent='';error.classList.add('hidden');
   const wasEditing=Boolean(editingAppointment),wasProspectFlow=Boolean(pendingProspectAppointmentFlow);
-  const appointment=wasEditing?await editAppointment({contactName,contactNumber,address,date,time,type,auction}):await addAppointment({contactName,contactNumber,address,date,time,type,auction,prospectId:appointmentLinkedProspectId});
+  const appointment=wasEditing?await editAppointment({contactName,contactNumber,address,date,time,type,auction,assignedToUid}):await addAppointment({contactName,contactNumber,address,date,time,type,auction,assignedToUid,prospectId:appointmentLinkedProspectId});
   if(!appointment)return;
   if(wasProspectFlow){
     await completePendingProspectAppointmentFlow();
-    e.target.reset();$('#appointmentDatePicker').value=appointmentDate;$('#appointmentTime').value='12:00';$('#appointmentAuction').checked=false;updateOfiFormState();
+    e.target.reset();$('#appointmentDatePicker').value=appointmentDate;$('#appointmentTime').value='12:00';$('#appointmentAuction').checked=false;renderAppointmentAssigneePicker(uid);updateOfiFormState();
     if(confirm(`Add to ${calendarPreference==='apple'?'Apple':'Outlook'} Calendar?`))exportAppointmentToCalendar(appointment,appointment.createdDate);
     return
   }
   if(!wasEditing&&confirm(`Add to ${calendarPreference==='apple'?'Apple':'Outlook'} Calendar?`))exportAppointmentToCalendar(appointment,appointment.createdDate);
-  e.target.reset();editingAppointment=null;appointmentEditReturnState=null;appointmentLinkedProspectId='';hideAppointmentContactSuggestions();
+  e.target.reset();editingAppointment=null;appointmentEditReturnState=null;appointmentLinkedProspectId='';hideAppointmentContactSuggestions();renderAppointmentAssigneePicker(uid);
   if(wasEditing&&returnState){appointmentDate=returnState.date;appointmentHistoryMode=returnState.historyMode;$('#appointmentMainContent')?.classList.toggle('hidden',Boolean(appointmentHistoryMode));$('#appointmentHistoryScreen')?.classList.toggle('hidden',!appointmentHistoryMode);}else{appointmentDate=viewedDate;}
   $('#appointmentDatePicker').value=appointmentDate;$('#appointmentTime').value='12:00';$('#appointmentAuction').checked=false;updateOfiFormState();renderAppointments();updateTopbar('appointmentsView');if(wasEditing)requestAnimationFrame(()=>window.scrollTo({top:returnState?.scrollY||0,behavior:'instant'}));
 };
 $('#closeAppointmentEditor').onclick=closeAppointmentEditor;
+$('#teamAppointmentAddCalendar')?.addEventListener('click',()=>{const a=pendingTeamAppointmentNotice;if(!a)return;exportAppointmentToCalendar(a,a.createdDate||todayKey());hideTeamAppointmentNotice({acknowledge:true,calendar:true})});
+$('#teamAppointmentGotIt')?.addEventListener('click',()=>hideTeamAppointmentNotice({acknowledge:true}));
+$('#teamAppointmentNotice')?.addEventListener('click',e=>{if(e.target.id==='teamAppointmentNotice')hideTeamAppointmentNotice({acknowledge:true})});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&editingAppointment)closeAppointmentEditor();});
 $('#saveFollowUpDate').onclick=saveAppointmentFollowUp;
 $$('[data-close-followup]').forEach(button=>button.onclick=()=>{closeActionModal('#followUpModal');pendingFollowUpAppointment=null;});
@@ -3201,6 +3244,8 @@ $('#followUpModal').onclick=e=>{if(e.target.id==='followUpModal'){closeActionMod
 $('#outcomeModal').onclick=e=>{if(e.target.id==='outcomeModal'){closeActionModal('#outcomeModal');pendingOutcomeAppointment=null;selectedAppointmentOutcome='';}};
 
 $('#appointmentsView').onclick=e=>{
+  const teamCalendarButton=e.target.closest('[data-calendar-team-appointment]');
+  if(teamCalendarButton){const a=assignedTeamAppointments.find(item=>String(item.teamAppointmentId||item.id)===String(teamCalendarButton.dataset.calendarTeamAppointment));if(!a)return toast('Appointment could not be found');if(appointmentAddedToCalendar(a,a.createdDate||todayKey()))return toast('Already added to calendar');exportAppointmentToCalendar(a,a.createdDate||todayKey());acknowledgeTeamAppointment(a,{calendar:true});return;}
   const calendarButton=e.target.closest('[data-calendar-appointment]');
   if(calendarButton){
     const sourceDate=calendarButton.dataset.sourceDate||appointmentDate;
