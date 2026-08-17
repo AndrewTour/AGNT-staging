@@ -1530,7 +1530,7 @@ async function completePendingProspectAppointmentFlow(){
 }
 
 function teamAppointmentMemberName(member){const profileName=String(member?.name||'').trim(),liveName=String(leaderboardEntries.find(entry=>String(entry.uid||'')===String(member?.uid||''))?.name||'').trim(),name=profileName||liveName||'Team member';return name==='Team member'?name:(name.split(/\s+/).filter(Boolean)[0]||'Team member')}
-function teamAppointmentBookingDisplayName(member){const live=leaderboardEntries.find(entry=>String(entry.uid||'')===String(member?.uid||'')),name=String(live?.name||member?.name||'Team member').trim();return name||'Team member'}
+function teamAppointmentBookingDisplayName(member){const live=leaderboardEntries.find(entry=>String(entry.uid||'')===String(member?.uid||'')),liveName=String(live?.name||'').trim();if(liveName)return liveName.split(/\s+/).filter(Boolean)[0]||'Team member';const profileName=String(member?.name||'').trim();if(!profileName)return'Team member';const first=profileName.split(/\s+/).filter(Boolean)[0]||'Team member';return first.includes('.')?(first.split('.')[0]||'Team member'):first}
 function renderAppointmentAssigneePicker(preferredUid=''){const wrap=$('#appointmentAssigneeField'),select=$('#appointmentAssignee');if(!wrap||!select)return;const available=accountMode==='team'&&teamId&&appointmentAssignees.length>1;wrap.classList.toggle('hidden',!available);if(!available){select.innerHTML=`<option value="${escapeHtml(uid)}">Me</option>`;select.value=uid;return}const current=preferredUid||select.value||uid,sorted=[...appointmentAssignees].sort((a,b)=>String(a.uid)===uid?-1:String(b.uid)===uid?1:teamAppointmentMemberName(a).localeCompare(teamAppointmentMemberName(b)));select.innerHTML=sorted.map(member=>`<option value="${escapeHtml(member.uid)}">${escapeHtml(String(member.uid)===uid?'Me':teamAppointmentMemberName(member))}</option>`).join('');select.value=sorted.some(member=>String(member.uid)===String(current))?current:uid}
 function renderAppointmentAssignmentPopup(preferredUid=uid){
   const select=$('#appointmentAssignmentSelect');if(!select)return;
@@ -2925,7 +2925,7 @@ function subscribeSecureLeaderboard(){
     const documents=snap.docs.map(d=>({uid:d.id,...d.data()})),next=documents.length?documents:[leaderboardPayload()],signature=teamLeaderboardEntriesSignature(next),dataChanged=signature!==teamLeaderboardDataSignature;
     if(dataChanged){leaderboardEntries=next;teamLeaderboardDataSignature=signature}
     const own=documents.find(entry=>entry.uid===uid);if(own)lastTeamLeaderboardSignature=leaderboardSignature(own);
-    setTeamLayerStatus(snap.metadata.fromCache?'cached':'live');if(dataChanged){renderLeaderboard();renderTeamManager();refreshReturningSnapshotIfVisible()}
+    setTeamLayerStatus(snap.metadata.fromCache?'cached':'live');if(dataChanged){renderLeaderboard();renderTeamManager();if(!$('#appointmentAssignmentModal')?.classList.contains('hidden'))renderAppointmentAssignmentPopup($('#appointmentAssignmentSelect')?.value||uid);refreshReturningSnapshotIfVisible()}
   },err=>{if(teamId!==listeningTeamId)return;console.error('Team leaderboard read failed',err);unsubLeaderboard=null;subscribedTeamId='';teamLeaderboardDataSignature='';leaderboardEntries=[leaderboardPayload()];setTeamLayerStatus('error',err.message||'Team leaderboard unavailable');renderLeaderboard()});
 }
 async function initialiseTeamLayer(profile={}, {promptNew=false}={}){

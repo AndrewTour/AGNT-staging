@@ -10308,3 +10308,46 @@ html[data-theme="dark"] .team-appointment-notice-actions .primary{
   outline:3px solid rgba(23,105,255,.18);
   outline-offset:2px;
 }
+
+
+/* v1.36.6 — targeted appointment dark-mode corrections only */
+html[data-theme="dark"] .appointment-contact-suggestions{
+  background:#15181e!important;
+  border-color:#2a2e36!important;
+  box-shadow:0 16px 38px rgba(0,0,0,.42)!important;
+}
+html[data-theme="dark"] .appointment-contact-suggestions button{
+  background:transparent!important;
+  color:#f5f6f7!important;
+  border-bottom-color:#2a2e36!important;
+}
+html[data-theme="dark"] .appointment-contact-suggestions button strong{color:#f5f6f7!important}
+html[data-theme="dark"] .appointment-contact-suggestions button small{color:#969ca7!important}
+html[data-theme="dark"] .appointment-contact-suggestions button:active,
+html[data-theme="dark"] .appointment-contact-suggestions button:focus-visible{background:#20242b!important}
+
+html[data-theme="dark"] #appointmentsView.appointment-edit-mode::before{
+  background:#0b0d11!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+html[data-theme="dark"] #appointmentsView.appointment-edit-mode #appointmentForm{
+  background:#0b0d11!important;
+  color:#f5f6f7!important;
+  box-shadow:none!important;
+}
+html[data-theme="dark"] #appointmentsView.appointment-edit-mode .appointment-edit-header{
+  border-bottom-color:#2a2e36!important;
+}
+html[data-theme="dark"] #appointmentsView.appointment-edit-mode .appointment-edit-header span,
+html[data-theme="dark"] #appointmentsView.appointment-edit-mode .appointment-form label{
+  color:#969ca7!important;
+}
+html[data-theme="dark"] #appointmentsView.appointment-edit-mode .appointment-edit-header h2{
+  color:#f5f6f7!important;
+}
+html[data-theme="dark"] #appointmentsView.appointment-edit-mode .appointment-edit-header button{
+  background:#171a20!important;
+  border:1px solid #2a2e36!important;
+  color:#f5f6f7!important;
+}

@@ -106,3 +106,11 @@ After the new PWA is live, create the Team from the owner account and have each 
 - Assign Appointment and Appointment Booked For You overlays now match AGNT's established confirmation-card language.
 - Card width, radius, padding, backdrop, inset panel, button sizing, primary/secondary treatment and dark/light contrast are aligned to the existing Team confirmation overlays.
 - No appointment workflow, assignment, notification, calendar, Firebase, Team, leaderboard or stats logic changed.
+
+
+## v1.36.6 — Targeted appointment contrast fixes
+- Dark-mode appointment contact suggestions now use a dark surface with readable text and dividers.
+- Editing Appointment now stays on the dark AGNT surface with corrected header, label and close-button contrast.
+- Appointment assignment names use the live Team leaderboard name as the canonical display name and show first name only.
+- If leaderboard data arrives while the assignment popup is open, the dropdown refreshes immediately.
+- No Firebase, Firestore rules, Team membership, appointment attribution, leaderboard calculations or other UI/functionality changes.
