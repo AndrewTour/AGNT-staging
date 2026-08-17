@@ -1,6 +1,6 @@
-# AGNT BETA v1.36.0 — Team Appointment Assignment
+# AGNT STAGING v1.36.0 — Team Appointment Assignment
 
-Consumer-ready BETA promotion built from the confirmed AGNT Staging v1.34.8 application and the current functioning BETA Firebase environment.
+Consumer-ready BETA promotion built from the confirmed AGNT Staging v1.34.8 application and the current functioning STAGING Firebase environment.
 
 ## Promotion model
 
@@ -8,7 +8,7 @@ Consumer-ready BETA promotion built from the confirmed AGNT Staging v1.34.8 appl
 - Firebase configuration: preserved from the current functioning BETA (`daily-accountability-be0ac`).
 - Personal data remains under the existing `users/{uid}` paths.
 - Existing Firebase Authentication accounts and UIDs are retained.
-- New Team-capable Firestore rules are included and must be deployed to the BETA Firebase project.
+- New Team-capable Firestore rules are included and must be deployed to the STAGING Firebase project.
 - Existing legacy `/leaderboard/{uid}` documents are not migrated or deleted.
 - Once users join the new Team, the private `teams/{teamId}/leaderboard/{uid}` path becomes authoritative for team ranking.
 
@@ -26,7 +26,7 @@ Consumer-ready BETA promotion built from the confirmed AGNT Staging v1.34.8 appl
 
 ## Firebase
 
-The frontend remains connected to the existing BETA Firebase project:
+The frontend remains connected to the existing STAGING Firebase project:
 
 `daily-accountability-be0ac`
 
@@ -66,3 +66,9 @@ After the new PWA is live, create the Team from the owner account and have each 
 - Recipient appointment/timeline surfaces include the booking without changing their stats.
 - Setter edit/delete synchronises the team mirror.
 - Included Firestore rules add teams/{teamId}/appointments/{appointmentId}.
+
+
+## Staging environment correction
+- This package uses Firebase project `agnt-staging-cb6ce` for authentication and Firestore testing.
+- It contains the same v1.36.0 Team Appointment Assignment feature and rules as the BETA candidate.
+- Do not deploy this staging Firebase config to BETA/production.
