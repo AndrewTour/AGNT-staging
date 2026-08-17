@@ -100,3 +100,9 @@ After the new PWA is live, create the Team from the owner account and have each 
 - Got it and Add to Calendar now close the overlay directly without changing app navigation.
 - A per-open dismissal guard prevents the same notification immediately reopening while Firestore acknowledgement settles.
 - No Firebase config, rules, paths, stats attribution or other feature changes.
+
+
+## v1.36.4 targeted visual refinement
+- Assign Appointment and Appointment Booked For You overlays now match AGNT's established confirmation-card language.
+- Card width, radius, padding, backdrop, inset panel, button sizing, primary/secondary treatment and dark/light contrast are aligned to the existing Team confirmation overlays.
+- No appointment workflow, assignment, notification, calendar, Firebase, Team, leaderboard or stats logic changed.
