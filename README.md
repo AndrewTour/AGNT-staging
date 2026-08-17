@@ -81,3 +81,11 @@ After the new PWA is live, create the Team from the owner account and have each 
 - Recipient Got it now closes cleanly to the existing screen; Add to Calendar does the same after calendar export.
 - Returning Daily Snapshot remains 4 seconds and now appears on every second returning app open.
 - No Firebase path/rule changes from v1.36.0.
+
+
+## v1.36.2 targeted fixes
+- Fixed recipient Got it acknowledgement/close behaviour.
+- Assignment confirmation buttons now use standard AGNT button sizing.
+- Setter appointment cards show Booked for [First name] when assigned to a teammate.
+- Assignment names prioritise the same live profile/leaderboard name source, first name only.
+- No Firebase rule/path changes from v1.36.1.

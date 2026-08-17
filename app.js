@@ -944,6 +944,7 @@ function renderDayTrend(){
 function renderWeekDays(){if(!$('#weekDays'))return;$('#weekDays').innerHTML=weekKeys().map(k=>{const p=completion(k),d=parseKey(k);return `<button class="week-day ${k===selectedDate?'selected':''} ${p>=100?'complete':''}" data-date="${k}"><b>${workDayName(d.getDay()).slice(0,3).toUpperCase()}</b><small>${d.getDate()} · ${p}%</small></button>`}).join('')}
 
 function normaliseAppointmentType(value){const raw=String(value||'').trim().toLowerCase();if(raw==='bap'||raw==='buyer appointment')return'BAP';if(raw==='map'||raw==='appraisal'||raw==='market appraisal')return'MAP';if(raw==='lap'||raw==='listing appointment')return'LAP';if(raw==='ofi'||raw==='open for inspection'||raw==='pu'||raw==='price update')return'OFI';return String(value||'').trim().toUpperCase()}
+function appointmentBookedForLabel(a){if(!a||!a.assignedToUid||String(a.assignedToUid)===String(uid))return'';const first=String(a.assignedToName||'Team member').trim().split(/\s+/)[0]||'Team member';return ` · Booked for ${first}`}
 function appointmentType(a){return normaliseAppointmentType(a.type||(Array.isArray(a.types)?a.types[0]:''))||'—'}
 function isOfiAppointment(a){return appointmentType(a)==='OFI'}
 function appointmentHasAuction(a){return isOfiAppointment(a)&&Boolean(a.auction)}
@@ -1415,7 +1416,7 @@ function appointmentCardMarkup(entry,{dailyLog=false,history=false}={}){
   const ofiSchedule=isOfiAppointment(a)?`<div class="appointment-ofi-schedule ${appointmentHasAuction(a)?'has-auction':''}"><div><span>OPEN FOR INSPECTION</span><strong>${escapeHtml(time)}–${escapeHtml(timelineTimeLabel(appointmentEndMinutes(a)))}</strong><small>${appointmentDurationMinutes(a)} minute booking</small></div>${appointmentHasAuction(a)?`<div><span>AUCTION</span><strong>${escapeHtml(timelineTimeLabel(appointmentAuctionMinutes(a)))}</strong><small>Commences immediately after</small></div>`:''}</div>`:'';
   const loggedMeta=dailyLog&&a.scheduledDate&&a.scheduledDate!==sourceDate?`<small class="appointment-log-scheduled">Scheduled for ${escapeHtml(shortAppointmentDate(scheduled))} at ${time}</small>`:`<small class="appointment-booked-for">${escapeHtml(shortAppointmentDate(scheduled))} at ${time}</small>`;
   const bookedMeta=history&&booked?`<small class="appointment-created-meta">Booked ${escapeHtml(booked)}</small>`:'';
-  const assignmentMeta=isTeamAssigned?`<small class="appointment-team-assigned-meta">Booked for you by ${escapeHtml(a.setterName||'a teammate')}</small>`:'';
+  const assignmentMeta=isTeamAssigned?`<small class="appointment-team-assigned-meta">Booked for you by ${escapeHtml(a.setterName||'a teammate')}</small>`:((a.assignedToUid&&String(a.assignedToUid)!==String(uid))?`<small class="appointment-team-assigned-meta">Booked for ${escapeHtml(String(a.assignedToName||'Team member').split(/\s+/)[0]||'Team member')}</small>`:'');
   const dueMeta=history&&!isTeamAssigned&&a.followUpDate?`<small class="appointment-followup-timestamp ${a.followUpDate<todayKey()?'overdue':''}">Follow-up due ${escapeHtml(shortAppointmentDate(a.followUpDate))}</small>`:'';
   const cardAttrs=isTeamAssigned?'':`data-appointment-card-edit="${escapeHtml(a.id)}" role="button" tabindex="0" aria-label="Edit ${type} appointment at ${address}"`;
   return `<article class="appointment-card appointment-card-premium appointment-followup-card ${lifecycle} ${isTeamAssigned?'team-assigned':''}" ${cardAttrs} data-source-date="${escapeHtml(sourceDate)}">
@@ -1529,7 +1530,7 @@ async function completePendingProspectAppointmentFlow(){
   if(flow.fromSession&&prospectSessionActive){toast('Appointment booked');showProspectingSession();requestAnimationFrame(()=>showProspectingSession())}else{toast('Appointment booked');renderProspectDetail(p.id)}
 }
 
-function teamAppointmentMemberName(member){const profileName=String(member?.name||'').trim(),liveName=String(leaderboardEntries.find(entry=>String(entry.uid||'')===String(member?.uid||''))?.name||'').trim(),name=profileName||liveName||'Team member';return name==='Team member'?name:(name.split(/\s+/).filter(Boolean)[0]||'Team member')}
+function teamAppointmentMemberName(member){const liveName=String(leaderboardEntries.find(entry=>String(entry.uid||'')===String(member?.uid||''))?.name||'').trim(),profileName=String(member?.name||'').trim(),name=liveName||profileName||'Team member';return name==='Team member'?name:(name.split(/\s+/).filter(Boolean)[0]||'Team member')}
 function renderAppointmentAssigneePicker(preferredUid=''){const wrap=$('#appointmentAssigneeField'),select=$('#appointmentAssignee');if(!wrap||!select)return;const available=accountMode==='team'&&teamId&&appointmentAssignees.length>1;wrap.classList.toggle('hidden',!available);if(!available){select.innerHTML=`<option value="${escapeHtml(uid)}">Me</option>`;select.value=uid;return}const current=preferredUid||select.value||uid,sorted=[...appointmentAssignees].sort((a,b)=>String(a.uid)===uid?-1:String(b.uid)===uid?1:teamAppointmentMemberName(a).localeCompare(teamAppointmentMemberName(b)));select.innerHTML=sorted.map(member=>`<option value="${escapeHtml(member.uid)}">${escapeHtml(String(member.uid)===uid?'Me':teamAppointmentMemberName(member))}</option>`).join('');select.value=sorted.some(member=>String(member.uid)===String(current))?current:uid}
 function renderAppointmentAssignmentPopup(preferredUid=uid){
   const select=$('#appointmentAssignmentSelect');if(!select)return;
@@ -3262,7 +3263,7 @@ $('#confirmAppointmentAssignment')?.addEventListener('click',async()=>{if(!pendi
 $('#appointmentAssignmentModal')?.addEventListener('click',e=>{if(e.target.id==='appointmentAssignmentModal')hideAppointmentAssignmentPopup()});
 
 $('#teamAppointmentAddCalendar')?.addEventListener('click',()=>{const a=pendingTeamAppointmentNotice;if(!a)return;exportAppointmentToCalendar(a,a.createdDate||todayKey());hideTeamAppointmentNotice({acknowledge:true,calendar:true})});
-$('#teamAppointmentGotIt')?.addEventListener('click',()=>hideTeamAppointmentNotice({acknowledge:true}));
+$('#teamAppointmentGotIt')?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();const current=pendingTeamAppointmentNotice;if(current)current.acknowledgedAt=current.acknowledgedAt||Date.now();hideTeamAppointmentNotice({acknowledge:true})});
 $('#teamAppointmentNotice')?.addEventListener('click',e=>{if(e.target.id==='teamAppointmentNotice')hideTeamAppointmentNotice({acknowledge:true})});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&editingAppointment)closeAppointmentEditor();});
 $('#saveFollowUpDate').onclick=saveAppointmentFollowUp;

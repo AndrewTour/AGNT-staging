@@ -10035,7 +10035,7 @@ html[data-theme="dark"] .returning-snapshot-next small{color:#969ca7}
 .appointment-assignment-card>p{margin:0 0 18px;color:var(--agnt-muted,#7f858f);font-size:12px;line-height:1.45}
 .appointment-assignment-card label{display:grid;gap:7px;font-size:11px;font-weight:760}
 .appointment-assignment-card select{width:100%;min-height:48px;border:1px solid var(--agnt-line,#e2e5ea);border-radius:15px;background:var(--agnt-surface,#fff);color:var(--agnt-text,#17191d);font:inherit;padding:0 13px}
-.appointment-assignment-actions{display:grid;grid-template-columns:1fr 1.35fr;gap:10px;margin-top:18px}
-.appointment-assignment-actions button{min-height:48px;border-radius:15px}
+.appointment-assignment-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.appointment-assignment-actions .primary,.appointment-assignment-actions .secondary{width:100%}
+
 body.appointment-assignment-open{overflow:hidden}
 html[data-theme="dark"] .appointment-assignment-card select{background:#171a20;border-color:#2b3039;color:#f5f6f7}
