@@ -106,3 +106,23 @@ After the new PWA is live, create the Team from the owner account and have each 
 - Assign Appointment and Appointment Booked For You overlays now match AGNT's established confirmation-card language.
 - Card width, radius, padding, backdrop, inset panel, button sizing, primary/secondary treatment and dark/light contrast are aligned to the existing Team confirmation overlays.
 - No appointment workflow, assignment, notification, calendar, Firebase, Team, leaderboard or stats logic changed.
+
+
+## v1.36.5 — Full dark-mode contrast audit
+Visual-only hardening across the complete installed-PWA surface.
+
+Reviewed and hardened:
+- Home / daily metrics / navigation
+- Today overview, schedule, scorecard and day log
+- Welcome, returning snapshot, off-day review and day review
+- Appointments, OFI, follow-up, outcomes, assignment and booking notifications
+- Leaderboard, history controls and agent summary overlay
+- Prospector Today, Contacts, Pipeline, Market Pulse, Broadcast and Insights
+- Pipeline/session/review overlays
+- Knocking session, Hot Spotting, capture and history
+- Settings, appearance/calendar/workday controls
+- Team onboarding, management, invite/delete/leave confirmations
+- Calendar, manual dialler, call outcome sheets and generic action sheets
+
+No application logic, Firebase configuration, Firestore rules, paths, storage keys,
+UID isolation, sync, appointment attribution, Team behaviour or snapshot cadence changed.
