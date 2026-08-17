@@ -500,7 +500,6 @@
           <label>Booking date<input id="appointmentDatePicker" type="date" required></label>
           <label>Booking time<input id="appointmentTime" type="time" value="12:00" required></label>
         </div>
-        <label id="appointmentAssigneeField" class="appointment-assignee-field hidden">Assigned to<select id="appointmentAssignee"><option value="">Me</option></select><small>The person booking the appointment keeps the appointment stat.</small></label>
         <fieldset class="appointment-types" aria-label="Appointment type">
           <label><input type="radio" name="appointmentType" value="BAP"><span>BAP</span></label>
           <label><input type="radio" name="appointmentType" value="MAP"><span>MAP</span></label>
@@ -940,6 +939,16 @@ Andrew Tour | McGrath</textarea></label>
     <div id="calendarGrid" class="calendar-grid"></div>
   </div>
 </div>
+<div id="appointmentAssignmentModal" class="appointment-assignment-modal hidden" aria-hidden="true">
+  <section class="appointment-assignment-card glass" role="dialog" aria-modal="true" aria-labelledby="appointmentAssignmentTitle">
+    <span class="appointment-assignment-kicker">ASSIGN APPOINTMENT</span>
+    <h2 id="appointmentAssignmentTitle">Who is this appointment for?</h2>
+    <p>The person booking it keeps the appointment stat.</p>
+    <label>Assigned to<select id="appointmentAssignmentSelect"><option value="">Me</option></select></label>
+    <div class="appointment-assignment-actions"><button id="cancelAppointmentAssignment" class="secondary" type="button">Cancel</button><button id="confirmAppointmentAssignment" class="primary" type="button">Confirm booking</button></div>
+  </section>
+</div>
+
 <div id="teamAppointmentNotice" class="team-appointment-notice hidden" aria-hidden="true">
   <section class="team-appointment-notice-card glass" role="alertdialog" aria-modal="true" aria-labelledby="teamAppointmentNoticeTitle">
     <span class="team-appointment-notice-kicker">APPOINTMENT BOOKED FOR YOU</span><h2 id="teamAppointmentNoticeTitle">A teammate booked an appointment for you.</h2>

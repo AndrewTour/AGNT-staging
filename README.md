@@ -72,3 +72,12 @@ After the new PWA is live, create the Team from the owner account and have each 
 - This package uses Firebase project `agnt-staging-cb6ce` for authentication and Firestore testing.
 - It contains the same v1.36.0 Team Appointment Assignment feature and rules as the BETA candidate.
 - Do not deploy this staging Firebase config to BETA/production.
+
+
+## v1.36.1 targeted cleanup
+- Removed Assigned To from the booking form.
+- New bookings now show an Assign Appointment confirmation after Book Appointment, defaulting to Me.
+- Team member labels use the member's AGNT Settings profile name and display first name only.
+- Recipient Got it now closes cleanly to the existing screen; Add to Calendar does the same after calendar export.
+- Returning Daily Snapshot remains 4 seconds and now appears on every second returning app open.
+- No Firebase path/rule changes from v1.36.0.
