@@ -1,13 +1,7 @@
-AGNT STAGING — ONE INDEX.HTML EDIT
-==================================
+AGNT STAGING v1.36.7 — FULL REPLACEMENT
+========================================
 
-In the CURRENT staging index.html, find this existing line:
+No manual index.html edit is required.
 
-<link rel="stylesheet" href="styles.css?v=1.36.0-staging-team-appointments">
-
-Immediately underneath it, add:
-
-<link rel="stylesheet" href="agnt-card-language-v1.36.7.css?v=1.36.7-card-language">
-
-Do not replace or remove the existing styles.css line.
-Do not change app.js or any Firebase files.
+The v1.36.7 card-language stylesheet is already linked in index.html and included in the service-worker cache.
+Upload/replace the complete contents of this package in AGNT-staging.

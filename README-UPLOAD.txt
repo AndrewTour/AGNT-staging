@@ -1,37 +1,35 @@
-AGNT v1.36.7 — CARD LANGUAGE — STAGING DROP-IN
-===============================================
+AGNT v1.36.7 — CARD LANGUAGE — FULL STAGING REPLACEMENT
+========================================================
 
 BASELINE
-Current AGNT-staging main branch, commit:
-4aa1dbfa98b692996769fa969af50bdad31dc41c
+AndrewTour/AGNT-staging main at commit:
+947f3995271913eeb91bbfb53dcef6352fcbb524
 
-HOW TO UPLOAD
-1. Unzip this package.
-2. Upload agnt-card-language-v1.36.7.css to the ROOT of AGNT-staging.
-3. Open the CURRENT index.html already in AGNT-staging.
-4. Follow INDEX-EDIT.txt and add the single stylesheet link directly below the existing styles.css link.
-5. Commit the two changes.
+DEPLOYMENT
+This is a complete replacement package for the AGNT-staging GitHub Pages repository.
+Replace the staging repository contents with the contents of this package, preserving the folder structure.
 
-IMPORTANT
-This is a DROP-IN update for the current staging repository. Do NOT delete the rest of the repository before uploading it. The current staging build is newer than the v1.28.2 recovery ZIP, so packaging that older ZIP as a full replacement would roll back current team, appointment, Prospector and UI work.
+APPLIED UI UPDATE
+- CMPN-inspired card hierarchy while retaining AGNT identity
+- Refined Prospector contact detail profile, actions, Contact Snapshot, Next Action and history
+- Shared card language across selected Prospector, Pipeline, Appointments, Today/Insights, Leaderboard and team-management surfaces
+- Light and dark mode refinements
 
-CHANGED
-- New: agnt-card-language-v1.36.7.css
-- Existing index.html: one stylesheet reference only
-
-UNCHANGED
-- app.js and application logic
+PROTECTED SYSTEMS LEFT UNCHANGED
+- app.js application/business logic
 - Firebase configuration and authentication
 - Firestore paths and rules
 - UID separation
-- local cache/storage shapes
+- local storage/cache data shapes
 - sync behaviour
-- contacts, appointments and leaderboard data formats
-- manifest and service worker behaviour
-- GitHub Pages configuration
+- team, appointment and prospecting logic
+- existing user data formats
+- manifest behaviour and GitHub Pages settings
 
-FIREBASE CHANGES REQUIRED
+PWA PACKAGE NOTE
+The source ZIP downloaded from staging omitted the icons directory while manifest.json and service-worker.js still reference it.
+The required icon-192.png and icon-512.png files have therefore been restored from the confirmed v1.28.2 recovery package.
+Service-worker behaviour is unchanged; only its cache identifier was bumped and the new v1.36.7 stylesheet was added to precache.
+
+FIREBASE / FIRESTORE CHANGES REQUIRED
 None.
-
-ROLLBACK
-Remove the added stylesheet line from index.html and delete agnt-card-language-v1.36.7.css.
