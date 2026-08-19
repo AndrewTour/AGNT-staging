@@ -1,0 +1,13 @@
+AGNT STAGING — ONE INDEX.HTML EDIT
+==================================
+
+In the CURRENT staging index.html, find this existing line:
+
+<link rel="stylesheet" href="styles.css?v=1.36.0-staging-team-appointments">
+
+Immediately underneath it, add:
+
+<link rel="stylesheet" href="agnt-card-language-v1.36.7.css?v=1.36.7-card-language">
+
+Do not replace or remove the existing styles.css line.
+Do not change app.js or any Firebase files.
