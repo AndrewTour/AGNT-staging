@@ -1,9 +1,9 @@
-# AGNT BETA v1.36.8 — Buyer UI Containment & Simplification
+# AGNT BETA v1.36.9 — Buyer Simplicity & Sydney Suburbs
 
-Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.7 Buyer Journey package supplied on 20 August 2026.
+Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.8 Buyer UI Cleanup package supplied on 20 August 2026.
 
 ## Release baseline
-- Application/UI source: confirmed working `AGNT-beta-v1.36.7-Buyer-Journey.zip` (v1.36.7 baseline).
+- Application/UI source: confirmed working `AGNT-beta-v1.36.8-Buyer-UI-Cleanup.zip` (v1.36.8 baseline).
 - Firebase environment: existing BETA project `daily-accountability-be0ac`.
 - Existing Firebase Authentication accounts and UIDs are retained.
 - Existing personal data remains under the current `users/{uid}` paths.
@@ -46,6 +46,17 @@ Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.
 - Last-contact text now sits on its own contained line instead of competing with stage/temperature pills.
 - Buyer overview, list and filter surfaces now use the same rounded nested-card geometry as the rest of AGNT.
 - Buyer logic, data shape, filtering capability and Buyer → Owner conversion are unchanged.
+
+## Buyer simplicity refinement added in v1.36.9
+- Buyer database rows are now intentionally single-line: buyer name, maximum budget, Call and SMS.
+- Buyers are sorted A–Z by name for fast scanning.
+- Budget capture is now one maximum-budget slider; the previous minimum/maximum range UI is removed.
+- Existing buyer records remain compatible; legacy minimum-budget data is only used as a fallback display value when no maximum was previously stored.
+- New/edited buyer records save `buyerBudgetMin` as `0` and store the selected maximum in the existing `buyerBudgetMax` field, so no Firebase schema or migration is introduced.
+- Buyer filtering now uses one `Buyer budget at least` slider, designed to find buyers whose maximum budget can meet a property price.
+- The buyer suburb field now includes a preloaded searchable Sydney suburb list while still allowing manual suburb entry when required.
+- Quick filters are reduced to All / Hot / Filters; stage, temperature, configuration, property type and requirements remain in advanced Filters.
+- Buyer detail, call/SMS actions, call-result logging and Buyer → Owner conversion remain unchanged.
 
 ## Firebase
 The frontend is connected to the existing BETA Firebase project `daily-accountability-be0ac`.
