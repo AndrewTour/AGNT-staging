@@ -1,9 +1,9 @@
-# AGNT BETA v1.36.10 — Buyer UI Balance
+# AGNT BETA v1.36.11 — Buyer Context + Follow-Ups
 
-Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.9 Buyer Simplicity & Sydney Suburbs package supplied on 20 August 2026.
+Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.10 Buyer UI Balance package supplied on 20 August 2026.
 
 ## Release baseline
-- Application/UI source: confirmed working `AGNT-beta-v1.36.9-Buyer-Simplicity-Sydney-Suburbs.zip` (v1.36.9 baseline).
+- Application/UI source: confirmed working `AGNT-beta-v1.36.10-Buyer-UI-Balance.zip` (v1.36.10 baseline).
 - Firebase environment: existing BETA project `daily-accountability-be0ac`.
 - Existing Firebase Authentication accounts and UIDs are retained.
 - Existing personal data remains under the current `users/{uid}` paths.
@@ -66,6 +66,15 @@ Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.
 - Buyer suburb capture now reads `Add suburb`; its type size, weight and control height match the surrounding buyer form.
 - The Sydney suburb autocomplete dataset and manual suburb fallback remain unchanged.
 - No buyer data shape, Firebase path, rules, sync or Buyer → Owner behaviour changed.
+
+## Buyer context + follow-ups added in v1.36.11
+- Buyer list rows now surface maximum budget and the saved bedroom / bathroom / car configuration without using `+` suffixes.
+- Buyer rows retain compact Call and SMS actions and add a third equal-weight `Follow Up` action.
+- `Buyer Seller` is an optional buyer attribute indicating that the buyer has a property to sell if they purchase; it is editable on the buyer brief and displayed as a compact tag.
+- Buyer follow-ups use the existing Prospector `nextFollowUp` and interaction sync channel rather than a new task collection or Firestore path.
+- Follow-up creation captures a date and notes. Buyer follow-ups then appear on the existing Today timeline alongside Pipeline/appointment follow-ups.
+- Completing a buyer follow-up from the Today timeline uses the existing Prospector follow-up completion pattern and clears the due task.
+- No new Firebase collection, Firestore rule, local-storage key or backend service is introduced.
 
 ## Firebase
 The frontend is connected to the existing BETA Firebase project `daily-accountability-be0ac`.
