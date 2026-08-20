@@ -1,9 +1,9 @@
-# AGNT BETA v1.36.9 — Buyer Simplicity & Sydney Suburbs
+# AGNT BETA v1.36.10 — Buyer UI Balance
 
-Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.8 Buyer UI Cleanup package supplied on 20 August 2026.
+Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.9 Buyer Simplicity & Sydney Suburbs package supplied on 20 August 2026.
 
 ## Release baseline
-- Application/UI source: confirmed working `AGNT-beta-v1.36.8-Buyer-UI-Cleanup.zip` (v1.36.8 baseline).
+- Application/UI source: confirmed working `AGNT-beta-v1.36.9-Buyer-Simplicity-Sydney-Suburbs.zip` (v1.36.9 baseline).
 - Firebase environment: existing BETA project `daily-accountability-be0ac`.
 - Existing Firebase Authentication accounts and UIDs are retained.
 - Existing personal data remains under the current `users/{uid}` paths.
@@ -57,6 +57,15 @@ Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.
 - The buyer suburb field now includes a preloaded searchable Sydney suburb list while still allowing manual suburb entry when required.
 - Quick filters are reduced to All / Hot / Filters; stage, temperature, configuration, property type and requirements remain in advanced Filters.
 - Buyer detail, call/SMS actions, call-result logging and Buyer → Owner conversion remain unchanged.
+
+## Buyer UI balance refinement added in v1.36.10
+- All / Hot / Warm / Filters now share the same width, height, font weight, border treatment and sit on one row.
+- Warm is restored as a working quick filter while deeper stage, temperature and property matching remain in Filters.
+- Buyer rows are shorter and more balanced: name and maximum budget share one clear hierarchy with smaller equal Call/SMS actions.
+- Buyer list metadata and card spacing are tightened to reduce visual weight without removing information.
+- Buyer suburb capture now reads `Add suburb`; its type size, weight and control height match the surrounding buyer form.
+- The Sydney suburb autocomplete dataset and manual suburb fallback remain unchanged.
+- No buyer data shape, Firebase path, rules, sync or Buyer → Owner behaviour changed.
 
 ## Firebase
 The frontend is connected to the existing BETA Firebase project `daily-accountability-be0ac`.

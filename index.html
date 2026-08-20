@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="AGNT">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css?v=1.36.8-beta-buyers-ui">
+<link rel="stylesheet" href="styles.css?v=1.36.10-beta-buyers-balance">
 <title>AGNT</title>
 </head>
 <body>
@@ -625,23 +625,21 @@
           <div id="prospectContactList" class="prospect-list contacts-list"></div>
         </section>
         <section id="prospectorBuyersPanel" class="prospector-buyers-panel hidden" aria-live="polite">
-          <section class="buyer-overview glass">
-            <div class="buyer-overview-head"><div><span>BUYERS</span><h3>Buyer database</h3><small id="buyerProfileCount">0 active buyers</small></div></div>
+          <section class="buyer-overview">
             <div class="buyer-browse-controls">
               <div class="buyer-quick-filters" aria-label="Quick buyer filters">
                 <button class="active" type="button" data-buyer-quick-filter="All">All</button>
                 <button type="button" data-buyer-quick-filter="Hot">Hot</button>
                 <button type="button" data-buyer-quick-filter="Warm">Warm</button>
+                <button id="toggleBuyerFilters" class="buyer-filter-toggle" type="button" aria-expanded="false" aria-controls="buyerAdvancedFilters">Filters <span id="buyerFilterCount">0</span></button>
               </div>
-              <div class="buyer-filter-toolbar"><button id="toggleBuyerFilters" class="secondary buyer-filter-toggle" type="button" aria-expanded="false" aria-controls="buyerAdvancedFilters">Filters <span id="buyerFilterCount">0</span></button><button id="clearBuyerFilters" class="text-btn hidden" type="button">Clear</button></div>
             </div>
           </section>
           <section id="buyerAdvancedFilters" class="buyer-advanced-filters glass hidden">
-            <div class="buyer-filter-heading"><div><span>REFINE BUYERS</span><h3>Match the brief</h3></div><button id="closeBuyerFilters" class="text-btn" type="button">Done</button></div>
-            <label>Suburb<input id="buyerFilterSuburb" type="search" placeholder="Toongabbie, Pendle Hill" autocomplete="off"></label>
-            <div class="buyer-filter-budget">
-              <div><span>Budget from</span><strong id="buyerFilterBudgetMinLabel">Any</strong><input id="buyerFilterBudgetMin" type="range" min="0" max="5000000" step="50000" value="0"></div>
-              <div><span>Budget to</span><strong id="buyerFilterBudgetMaxLabel">No max</strong><input id="buyerFilterBudgetMax" type="range" min="0" max="5000000" step="50000" value="5000000"></div>
+            <div class="buyer-filter-heading"><div><span>REFINE BUYERS</span><h3>Match the property</h3></div><div class="buyer-filter-heading-actions"><button id="clearBuyerFilters" class="text-btn hidden" type="button">Clear</button><button id="closeBuyerFilters" class="text-btn" type="button">Done</button></div></div>
+            <label>Suburb<input id="buyerFilterSuburb" type="search" list="buyerSydneySuburbs" placeholder="Suburb" autocomplete="off"></label>
+            <div class="buyer-filter-budget buyer-filter-budget-single">
+              <div><span>Buyer budget at least</span><strong id="buyerFilterBudgetMinLabel">Any</strong><input id="buyerFilterBudgetMin" type="range" min="0" max="5000000" step="50000" value="0"></div>
             </div>
             <div class="buyer-filter-grid">
               <label>Bedrooms<select id="buyerFilterBedrooms"><option value="0">Any</option><option value="1">1+</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option><option value="5">5+</option></select></label>
@@ -654,9 +652,10 @@
             <div class="buyer-filter-features"><span>Requirements</span><div><button type="button" data-buyer-filter-feature="Granny Flat">Granny Flat</button><button type="button" data-buyer-filter-feature="Pool">Pool</button><button type="button" data-buyer-filter-feature="Ensuite">Ensuite</button><button type="button" data-buyer-filter-feature="Study">Study</button><button type="button" data-buyer-filter-feature="Single Level">Single Level</button><button type="button" data-buyer-filter-feature="Renovated">Renovated</button><button type="button" data-buyer-filter-feature="Development">Development</button><button type="button" data-buyer-filter-feature="Large Yard">Large Yard</button></div></div>
           </section>
           <section class="buyer-list-shell glass">
-            <div class="buyer-results-head"><span id="buyerListMeta">Search or filter to narrow the database.</span></div>
+            <div class="buyer-results-head"><span id="buyerListMeta">0 buyers · A–Z</span></div>
             <div id="buyerProfileList" class="buyer-profile-list"></div>
           </section>
+          <datalist id="buyerSydneySuburbs"></datalist>
         </section>
         <section id="prospectorPipelinePanel" class="prospector-pipeline-panel hidden">
           <section class="pipeline-overview glass">
@@ -1071,6 +1070,6 @@ Andrew Tour | McGrath</textarea></label>
 
 
 
-<script type="module" src="app.js?v=1.36.8-beta-buyers-ui"></script>
+<script type="module" src="app.js?v=1.36.10-beta-buyers-balance"></script>
 </body>
 </html>
