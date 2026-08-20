@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="AGNT">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css?v=1.36.7-beta-buyers">
+<link rel="stylesheet" href="styles.css?v=1.36.8-beta-buyers-ui">
 <title>AGNT</title>
 </head>
 <body>
@@ -626,16 +626,15 @@
         </section>
         <section id="prospectorBuyersPanel" class="prospector-buyers-panel hidden" aria-live="polite">
           <section class="buyer-overview glass">
-            <div class="buyer-overview-head"><div><span>BUYERS</span><h3>Active buyer database</h3><small id="buyerProfileCount">0 active buyers</small></div><button id="addBuyerFromTab" class="primary buyer-add-button" type="button">+ Buyer</button></div>
-            <div class="buyer-quick-filters" aria-label="Quick buyer filters">
-              <button class="active" type="button" data-buyer-quick-filter="All">All</button>
-              <button type="button" data-buyer-quick-filter="Hot">Hot</button>
-              <button type="button" data-buyer-quick-filter="Warm">Warm</button>
-              <button type="button" data-buyer-quick-filter="Looking">Looking</button>
-              <button type="button" data-buyer-quick-filter="Inspecting">Inspecting</button>
-              <button type="button" data-buyer-quick-filter="Negotiating">Negotiating</button>
+            <div class="buyer-overview-head"><div><span>BUYERS</span><h3>Buyer database</h3><small id="buyerProfileCount">0 active buyers</small></div></div>
+            <div class="buyer-browse-controls">
+              <div class="buyer-quick-filters" aria-label="Quick buyer filters">
+                <button class="active" type="button" data-buyer-quick-filter="All">All</button>
+                <button type="button" data-buyer-quick-filter="Hot">Hot</button>
+                <button type="button" data-buyer-quick-filter="Warm">Warm</button>
+              </div>
+              <div class="buyer-filter-toolbar"><button id="toggleBuyerFilters" class="secondary buyer-filter-toggle" type="button" aria-expanded="false" aria-controls="buyerAdvancedFilters">Filters <span id="buyerFilterCount">0</span></button><button id="clearBuyerFilters" class="text-btn hidden" type="button">Clear</button></div>
             </div>
-            <div class="buyer-filter-toolbar"><button id="toggleBuyerFilters" class="secondary buyer-filter-toggle" type="button" aria-expanded="false" aria-controls="buyerAdvancedFilters">Filters <span id="buyerFilterCount">0</span></button><button id="clearBuyerFilters" class="text-btn hidden" type="button">Clear filters</button></div>
           </section>
           <section id="buyerAdvancedFilters" class="buyer-advanced-filters glass hidden">
             <div class="buyer-filter-heading"><div><span>REFINE BUYERS</span><h3>Match the brief</h3></div><button id="closeBuyerFilters" class="text-btn" type="button">Done</button></div>
@@ -655,7 +654,7 @@
             <div class="buyer-filter-features"><span>Requirements</span><div><button type="button" data-buyer-filter-feature="Granny Flat">Granny Flat</button><button type="button" data-buyer-filter-feature="Pool">Pool</button><button type="button" data-buyer-filter-feature="Ensuite">Ensuite</button><button type="button" data-buyer-filter-feature="Study">Study</button><button type="button" data-buyer-filter-feature="Single Level">Single Level</button><button type="button" data-buyer-filter-feature="Renovated">Renovated</button><button type="button" data-buyer-filter-feature="Development">Development</button><button type="button" data-buyer-filter-feature="Large Yard">Large Yard</button></div></div>
           </section>
           <section class="buyer-list-shell glass">
-            <div class="prospecting-section-head buyer-list-head"><div><span>MATCHING BUYERS</span><h3>Buyer list</h3><small id="buyerListMeta">Search or filter to narrow the database.</small></div></div>
+            <div class="buyer-results-head"><span id="buyerListMeta">Search or filter to narrow the database.</span></div>
             <div id="buyerProfileList" class="buyer-profile-list"></div>
           </section>
         </section>
@@ -1072,6 +1071,6 @@ Andrew Tour | McGrath</textarea></label>
 
 
 
-<script type="module" src="app.js?v=1.36.7-beta-buyers"></script>
+<script type="module" src="app.js?v=1.36.8-beta-buyers-ui"></script>
 </body>
 </html>

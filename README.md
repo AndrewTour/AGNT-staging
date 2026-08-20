@@ -1,9 +1,9 @@
-# AGNT BETA v1.36.7 — Buyer Journey Foundation
+# AGNT BETA v1.36.8 — Buyer UI Containment & Simplification
 
-Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.6 package supplied on 20 August 2026.
+Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.7 Buyer Journey package supplied on 20 August 2026.
 
 ## Release baseline
-- Application/UI source: confirmed working `AGNT-beta-main 3.zip` (v1.36.6 baseline).
+- Application/UI source: confirmed working `AGNT-beta-v1.36.7-Buyer-Journey.zip` (v1.36.7 baseline).
 - Firebase environment: existing BETA project `daily-accountability-be0ac`.
 - Existing Firebase Authentication accounts and UIDs are retained.
 - Existing personal data remains under the current `users/{uid}` paths.
@@ -36,6 +36,16 @@ Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.
 - Buyer journey stages: Looking, Inspecting and Negotiating, followed by Purchased/Owner conversion.
 - Mark as Purchased converts the same record into an Owner contact while retaining buyer history and purchase details.
 - Buyer records use the existing UID-scoped Prospector sync document; no new Firestore collection or rule is introduced.
+
+## Buyer UI refinement added in v1.36.8
+- Fixed Buyers-tab horizontal overflow and clipped content on iPhone-width viewports.
+- Simplified the buyer database controls to All / Hot / Warm plus the existing advanced Filters control.
+- Removed the duplicate in-panel + Buyer action; the existing Prospector + button remains the single add action.
+- Shortened the buyer search placeholder so it remains readable beside the keypad and add controls.
+- Buyer cards now use a containment-safe grid with compact Call/SMS actions beside the buyer name.
+- Last-contact text now sits on its own contained line instead of competing with stage/temperature pills.
+- Buyer overview, list and filter surfaces now use the same rounded nested-card geometry as the rest of AGNT.
+- Buyer logic, data shape, filtering capability and Buyer → Owner conversion are unchanged.
 
 ## Firebase
 The frontend is connected to the existing BETA Firebase project `daily-accountability-be0ac`.
