@@ -1,5 +1,5 @@
-const CACHE='agnt-staging-v1.36.6-targeted-appointment-contrast';
-const ASSETS=['./','./index.html','./styles.css?v=1.36.0-staging-team-appointments','./app.js?v=1.36.0-staging-team-appointments','./firebase-config.js','./manifest.json','./icons/icon-192.png','./icons/icon-512.png'];
+const CACHE='agnt-beta-v1.36.7-buyers-foundation';
+const ASSETS=['./','./index.html','./styles.css?v=1.36.7-beta-buyers','./app.js?v=1.36.7-beta-buyers','./firebase-config.js','./manifest.json','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
