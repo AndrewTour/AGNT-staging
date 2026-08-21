@@ -1,9 +1,22 @@
-# AGNT BETA v1.36.21 — Daily Run Sheet
+# AGNT STAGING v1.36.20-map.1 — Prospector Map Foundation
 
-Incremental BETA update built directly on the verified AGNT BETA v1.36.20 Buyer Save Performance package.
+Staging-only map prototype built directly on the supplied `AGNT Beta - 21:8 - Buyer Support 7.zip` package. The supplied buyer and contact workflows remain the functional baseline.
+
+## Prospector Map added in this staging build
+- Contacts and Buyers include a Map action without adding another permanent Prospector navigation tab.
+- The interactive Mapbox view supports client search, Contacts/Buyers/Hot/Follow-up filters, temperature-coloured pins, overdue/review rings and automatic clustering.
+- Tapping a pin opens an AGNT client sheet with tags, next action, the latest two conversations and the existing Call, SMS, Follow-up/Log Contact and full-profile actions.
+- Multiple clients at the same address are grouped behind one pin and presented as a selection list.
+- Missing, failed and approximate address results are surfaced instead of being presented as confirmed locations.
+- A pin can be manually placed or dragged, then confirmed against the current client address.
+- Geocoding runs only when requested, in batches of up to 100 addresses, and only for records whose address is not already mapped.
+- Map coordinates are cached separately at `users/{uid}/prospectingMap/{prospectId}` and locally per UID. The existing combined Prospector save document is not enlarged or delayed.
+- Mapbox receives only the formatted address. Names, notes, tags and conversation history remain in the existing private AGNT data layer.
+- The public Mapbox token is stored on the testing device and is not written into Firebase or the ZIP.
+- Existing Firebase Authentication, UIDs, Contacts, Buyers, prospecting history, appointments, Teams, leaderboards and buyer-save performance remain unchanged.
 
 ## Release baseline
-- Application/UI source: verified `AGNT-BETA-v1.36.20-Buyer-Save-Performance-FULL-GITHUB-READY.zip`.
+- Application/UI source: verified `AGNT-BETA-v1.36.19-Buyer-Card-Hierarchy-FULL-GITHUB-READY.zip`.
 - Firebase environment: existing BETA project `daily-accountability-be0ac`.
 - Existing Firebase Authentication accounts and UIDs are retained.
 - Existing personal data remains under the current `users/{uid}` paths.
@@ -26,17 +39,6 @@ Incremental BETA update built directly on the verified AGNT BETA v1.36.20 Buyer 
 - Live/next-open appointment notification with Got it and Add to Calendar.
 - Setter-facing appointment/log/leaderboard context shows `Booked for [First name]` where applicable.
 - Targeted dark-mode contrast fixes for appointment contact suggestions and Editing Appointment.
-
-## Daily Run Sheet added in v1.36.21
-- The existing Home Focus control is now a Daily Run Sheet with one dominant Now action and up to two quieter queued priorities.
-- Priorities are calculated from existing AGNT data only: current and upcoming appointments, overdue contact and buyer follow-ups, outstanding appointment outcomes, active prospecting sessions, Hot Spotting opportunities, the daily pipeline, time-based knocking and remaining accountability work.
-- Each action includes the workload or timing context, a realistic estimate where applicable and a direct Start, Resume, Open, Plan or Review control.
-- Run Sheet actions deep-link into the existing Today, Appointments, Prospector, Hot Spotting and Knocking workflows; no duplicate task system or new data entry has been introduced.
-- The priority order updates after activity changes and refreshes once per minute while AGNT is open, with the existing one-second refresh retained during an active knocking timer.
-- Returning Daily Snapshot now uses the same top Run Sheet priority for its Next Move, keeping the launch experience and Home direction aligned.
-- Historical days show Review and future days show Plan rather than offering live-session actions.
-- Light and dark modes use the existing AGNT blue coaching language with compact, accessible action rows.
-- Firebase configuration, Authentication, Firestore paths/rules, UID separation, Team, appointments, Buyers, Prospector, leaderboards and existing sync behaviour remain unchanged.
 
 ## Buyer save performance added in v1.36.20
 - Editing an existing buyer now saves to the device once, returns to the updated buyer profile immediately and completes Firestore sync in the background.

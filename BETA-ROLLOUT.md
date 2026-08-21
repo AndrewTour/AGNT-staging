@@ -1,4 +1,18 @@
-# AGNT BETA v1.36.21 — Rollout Check
+# AGNT STAGING v1.36.20-map.1 — Prospector Map Check
+
+## Prospector Map staging acceptance
+1. Create a Mapbox public token, enable billing/permanent geocoding and restrict the token to the staging URL.
+2. Open Prospector → Contacts → Map, enter the public token and confirm the map loads in light and dark mode.
+3. Tap Map addresses and confirm progress is visible, the main contact/buyer save indicator is not blocked and no names or notes are sent in geocoding requests.
+4. Confirm Hot, Warm and Cold pins use distinct AGNT states; overdue contacts use a red ring and approximate results use a review ring.
+5. Zoom out and confirm nearby pins cluster. Zoom in and confirm individual pins return.
+6. Tap a contact and a buyer pin. Confirm tags, next action, recent conversation history and the existing actions are available.
+7. Confirm two clients at the same address open a shared-address list rather than overlapping silently.
+8. Correct a pin by tapping Correct pin location, placing or dragging it and saving. Reopen the map and confirm the correction remains.
+9. Change a client address, reopen the map and confirm the old coordinate is not shown as current and the address returns to the mapping queue.
+10. Confirm records without addresses are counted but not given approximate suburb pins.
+11. Sign into a second account and confirm the first account's coordinate cache and pins are not visible.
+12. Save an edited buyer and contact after using the map and confirm the existing near-instant local save remains unchanged.
 
 ## Before release verification
 1. Deploy the bundled `firestore.rules` to Firebase project `daily-accountability-be0ac`.
@@ -13,18 +27,6 @@
 3. Confirm personal Contacts/Prospecting data remains private to each UID.
 4. Confirm existing appointments/history remain present.
 5. Confirm Team owner management and ordinary member leave workflow still work.
-
-## Daily Run Sheet acceptance
-1. Open Home on a current workday and confirm the Daily Run Sheet shows one dominant Now action and no more than two queued priorities.
-2. Confirm overdue contact or buyer follow-ups rank ahead of new pipeline work and open the unified Today follow-up flow.
-3. Confirm an outstanding appointment outcome opens Past Appointments and an imminent appointment opens the selected day in Appointments.
-4. Start a Pipeline or Hot Spotting session, return Home and confirm the dominant action changes to Resume with the correct remaining count and estimate.
-5. With a current Market Pulse match and no active session, confirm the highest-priority opportunity opens directly into its Hot Spotting session.
-6. Before 2:00pm, confirm knocking is presented as a scheduled later item. From 2:00pm to 5:00pm, confirm it becomes a Start or Resume action using the remaining minutes.
-7. Complete or reschedule the current priority and confirm the Run Sheet recalculates without creating another task record.
-8. Open a historical date and confirm the card changes to Review. Open a future date and confirm it changes to Plan.
-9. Check light and dark mode at narrow iPhone width and confirm the primary action, queued rows, estimates and blue coaching states remain legible with no horizontal overflow.
-10. On the returning snapshot, confirm Next Move matches the dominant Home Run Sheet action.
 
 ## Buyer UI acceptance
 1. Open Prospector → Buyers on a narrow iPhone-sized viewport and confirm the search, add action, four quick filters, buyer cards and action controls remain contained with no horizontal overflow.

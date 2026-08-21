@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="AGNT">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css?v=1.36.21-beta-daily-run-sheet">
+<link rel="stylesheet" href="styles.css?v=1.36.20-map-staging-1">
 <title>AGNT</title>
 </head>
 <body>
@@ -314,18 +314,11 @@
           <div><span>LEADERBOARD POSITION</span><small id="leaderboardPositionMeta">Waiting for today’s rankings</small></div>
           <strong id="leaderboardPosition">—</strong>
         </div>
-        <section id="dailyRunSheet" class="daily-run-sheet" aria-label="Daily run sheet">
-          <div class="run-sheet-head">
-            <span>DAILY RUN SHEET</span>
-            <small><i aria-hidden="true"></i>Live priority</small>
-          </div>
-          <button id="openTodayTimeline" class="now-card run-sheet-primary" type="button" aria-label="Open current priority">
-            <span id="nowCardLabel" class="now-card-label">NOW</span>
-            <span class="now-card-copy"><strong id="nowCardTitle">Loading today…</strong><small id="nowCardMeta">Your next priority will appear here</small></span>
-            <span class="run-sheet-primary-action"><b id="nowCardAction">Open</b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span>
-          </button>
-          <div id="runSheetQueue" class="run-sheet-queue" aria-label="Next priorities"></div>
-        </section>
+        <button id="openTodayTimeline" class="now-card" type="button" aria-label="Open today timeline">
+          <span class="now-card-label">FOCUS</span>
+          <span class="now-card-copy"><strong id="nowCardTitle">Loading today…</strong><small id="nowCardMeta">Your next priority will appear here</small></span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+        </button>
       </section>
 
       <section class="metrics glass">
@@ -627,7 +620,7 @@
         </section>
         </div>
         <section id="prospectorContactsPanel" class="prospecting-section prospector-contacts-panel glass hidden">
-          <div class="prospecting-section-head contacts-head"><div><span id="prospectContactsEyebrow">CONTACTS</span><h3 id="prospectContactsHeading">Your database</h3><small id="prospectContactCount">0 contacts · Sorted A–Z</small></div><div class="contacts-head-actions"><label class="prospect-import-button">Import CSV<input id="prospectCsvImport" type="file" accept=".csv,text/csv"></label><button id="toggleProspectBulk" class="text-btn manage-contacts-btn" type="button">Manage Contacts</button><button id="toggleArchivedContacts" class="text-btn manage-contacts-btn" type="button">Archived</button></div></div>
+          <div class="prospecting-section-head contacts-head"><div><span id="prospectContactsEyebrow">CONTACTS</span><h3 id="prospectContactsHeading">Your database</h3><small id="prospectContactCount">0 contacts · Sorted A–Z</small></div><div class="contacts-head-actions"><button class="text-btn manage-contacts-btn prospector-map-launch" type="button" data-open-prospector-map="contacts" aria-label="Open contacts map">Map</button><label class="prospect-import-button">Import CSV<input id="prospectCsvImport" type="file" accept=".csv,text/csv"></label><button id="toggleProspectBulk" class="text-btn manage-contacts-btn" type="button">Manage Contacts</button><button id="toggleArchivedContacts" class="text-btn manage-contacts-btn" type="button">Archived</button></div></div>
           <div class="prospect-bulk-bar"><span id="prospectSelectedCount">0 selected</span><button id="selectAllProspects" class="text-btn" type="button">Select All</button><button id="restoreSelectedProspects" class="primary hidden" type="button" disabled>Restore</button><button id="deleteSelectedProspects" class="danger-btn" type="button" disabled>Delete</button></div>
           <div id="prospectContactList" class="prospect-list contacts-list"></div>
         </section>
@@ -661,10 +654,52 @@
             <div class="buyer-filter-features"><span>Requirements</span><div><button type="button" data-buyer-filter-feature="Granny Flat">Granny Flat</button><button type="button" data-buyer-filter-feature="Pool">Pool</button><button type="button" data-buyer-filter-feature="Ensuite">Ensuite</button><button type="button" data-buyer-filter-feature="Study">Study</button><button type="button" data-buyer-filter-feature="Single Level">Single Level</button><button type="button" data-buyer-filter-feature="Renovated">Renovated</button><button type="button" data-buyer-filter-feature="Development">Development</button><button type="button" data-buyer-filter-feature="Large Yard">Large Yard</button></div></div>
           </section>
           <section class="buyer-list-shell glass">
-            <div class="buyer-results-head"><span id="buyerListMeta">0 buyers · A–Z</span><button id="toggleArchivedBuyers" class="text-btn" type="button" aria-pressed="false">Archived</button></div>
+            <div class="buyer-results-head"><span id="buyerListMeta">0 buyers · A–Z</span><div class="buyer-results-actions"><button class="text-btn prospector-map-launch" type="button" data-open-prospector-map="buyers" aria-label="Open buyers map">Map</button><button id="toggleArchivedBuyers" class="text-btn" type="button" aria-pressed="false">Archived</button></div></div>
             <div id="buyerProfileList" class="buyer-profile-list"></div>
           </section>
           <datalist id="buyerSydneySuburbs"></datalist>
+        </section>
+        <section id="prospectorMapPanel" class="prospector-map-panel hidden" aria-live="polite">
+          <header class="prospector-map-head">
+            <button id="closeProspectorMap" class="text-btn" type="button">‹ Contacts</button>
+            <div><span>PROSPECTOR MAP</span><h3>Your database, by area</h3><small id="prospectorMapSummary">Addresses are mapped privately to your account.</small></div>
+            <button id="locateProspectorMap" class="prospector-map-locate" type="button" aria-label="Centre map on my location" title="My location">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="8"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2"></path></svg>
+            </button>
+          </header>
+          <div class="prospector-map-filters" role="group" aria-label="Map filters">
+            <button type="button" data-prospector-map-filter="all">All</button>
+            <button type="button" data-prospector-map-filter="contacts">Contacts</button>
+            <button type="button" data-prospector-map-filter="buyers">Buyers</button>
+            <button type="button" data-prospector-map-filter="hot">Hot</button>
+            <button type="button" data-prospector-map-filter="followup">Follow-up</button>
+          </div>
+          <div class="prospector-map-stage">
+            <div id="prospectorMapCanvas" class="prospector-map-canvas" aria-label="Interactive client map"></div>
+            <section id="prospectorMapSetup" class="prospector-map-setup hidden">
+              <span>MAP SETUP</span>
+              <h3>Connect Mapbox for staging</h3>
+              <p>Paste a public Mapbox token restricted to your staging URL. AGNT sends addresses only—never names, notes or conversation history.</p>
+              <form id="prospectorMapTokenForm">
+                <label>Public token<input id="prospectorMapToken" name="token" type="password" inputmode="text" autocomplete="off" placeholder="pk.ey…" required></label>
+                <button class="primary" type="submit">Save &amp; load map</button>
+              </form>
+              <small>Permanent geocoding must be enabled on the Mapbox account for saved pins.</small>
+            </section>
+            <section id="prospectorMapMessage" class="prospector-map-message hidden"></section>
+            <div id="prospectorMapCorrection" class="prospector-map-correction hidden">
+              <div><strong>Place the pin</strong><small>Tap the correct location or drag the pin.</small></div>
+              <button id="cancelProspectorMapCorrection" class="secondary" type="button">Cancel</button>
+              <button id="saveProspectorMapCorrection" class="primary" type="button">Save pin</button>
+            </div>
+            <div id="prospectorMapSheet" class="prospector-map-sheet hidden"></div>
+          </div>
+          <footer class="prospector-map-status glass">
+            <div><strong id="prospectorMapMappedCount">0 mapped</strong><small id="prospectorMapReviewCount">0 need review</small></div>
+            <button id="mapProspectorAddresses" class="primary" type="button">Map addresses</button>
+            <button id="reviewProspectorMap" class="text-btn" type="button">Review</button>
+            <button id="changeProspectorMapToken" class="text-btn" type="button">Map settings</button>
+          </footer>
         </section>
         <section id="prospectorPipelinePanel" class="prospector-pipeline-panel hidden">
           <section class="pipeline-overview glass">
@@ -1079,6 +1114,6 @@ Andrew Tour | McGrath</textarea></label>
 
 
 
-<script type="module" src="app.js?v=1.36.21-beta-daily-run-sheet"></script>
+<script type="module" src="app.js?v=1.36.20-map-staging-1"></script>
 </body>
 </html>
