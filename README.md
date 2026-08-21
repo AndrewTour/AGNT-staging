@@ -1,9 +1,9 @@
-# AGNT BETA v1.36.13 — Buyer Follow-Up Modal + Alignment
+# AGNT BETA v1.36.21 — Daily Run Sheet
 
-Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.11 Buyer Context + Follow-Ups package supplied on 21 August 2026.
+Incremental BETA update built directly on the verified AGNT BETA v1.36.20 Buyer Save Performance package.
 
 ## Release baseline
-- Application/UI source: confirmed working `AGNT-beta-v1.36.11-Buyer-Context-Follow-Ups.zip` (v1.36.11 baseline).
+- Application/UI source: verified `AGNT-BETA-v1.36.20-Buyer-Save-Performance-FULL-GITHUB-READY.zip`.
 - Firebase environment: existing BETA project `daily-accountability-be0ac`.
 - Existing Firebase Authentication accounts and UIDs are retained.
 - Existing personal data remains under the current `users/{uid}` paths.
@@ -26,6 +26,62 @@ Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.
 - Live/next-open appointment notification with Got it and Add to Calendar.
 - Setter-facing appointment/log/leaderboard context shows `Booked for [First name]` where applicable.
 - Targeted dark-mode contrast fixes for appointment contact suggestions and Editing Appointment.
+
+## Daily Run Sheet added in v1.36.21
+- The existing Home Focus control is now a Daily Run Sheet with one dominant Now action and up to two quieter queued priorities.
+- Priorities are calculated from existing AGNT data only: current and upcoming appointments, overdue contact and buyer follow-ups, outstanding appointment outcomes, active prospecting sessions, Hot Spotting opportunities, the daily pipeline, time-based knocking and remaining accountability work.
+- Each action includes the workload or timing context, a realistic estimate where applicable and a direct Start, Resume, Open, Plan or Review control.
+- Run Sheet actions deep-link into the existing Today, Appointments, Prospector, Hot Spotting and Knocking workflows; no duplicate task system or new data entry has been introduced.
+- The priority order updates after activity changes and refreshes once per minute while AGNT is open, with the existing one-second refresh retained during an active knocking timer.
+- Returning Daily Snapshot now uses the same top Run Sheet priority for its Next Move, keeping the launch experience and Home direction aligned.
+- Historical days show Review and future days show Plan rather than offering live-session actions.
+- Light and dark modes use the existing AGNT blue coaching language with compact, accessible action rows.
+- Firebase configuration, Authentication, Firestore paths/rules, UID separation, Team, appointments, Buyers, Prospector, leaderboards and existing sync behaviour remain unchanged.
+
+## Buyer save performance added in v1.36.20
+- Editing an existing buyer now saves to the device once, returns to the updated buyer profile immediately and completes Firestore sync in the background.
+- The visible save no longer waits for the 160ms prospecting debounce or the full cloud round trip.
+- Existing background-sync error handling remains active, including the local-save fallback and cloud-sync warning.
+- New-buyer creation retains the existing Data-credit-first ordering before the buyer cloud write.
+- Buyer records remain inside the current UID-scoped Prospector state document; no Firebase migration or rule change is required.
+- Firebase configuration, Authentication, Firestore paths/rules, UID separation, Team, appointments and leaderboard behaviour remain unchanged.
+
+## Buyer card hierarchy added in v1.36.19
+- Scheduled buyer follow-ups use AGNT blue, while due-today, overdue and unset states retain distinct amber, red and neutral treatments.
+- Buyer cards separate configuration and budget from the primary suburb, preventing long requirement summaries from competing on one line.
+- Buyer-list budgets use compact values such as `$1.6m` and `$950k`; the full amount remains available in buyer detail and editing views.
+- Card metadata and action controls use a calmer weight while retaining iPhone-safe 44px tap targets.
+- Stage, Temperature and Buyer notes values use 15px medium-weight form text in both themes.
+- The sticky Prospector toolbar and search field use fully opaque light and dark surfaces so scrolled content cannot show through.
+- Firebase configuration, Authentication, Firestore paths/rules, UID separation, Team, appointments and leaderboard behaviour remain unchanged.
+
+## Buyer visual refinement added in v1.36.18
+- Buyer follow-up now uses an explicitly opaque, non-glass sheet with no backdrop blur in both light and dark mode.
+- The sheet, fields, close control and actions have explicit theme surfaces so underlying buyer content cannot bleed through.
+- A saved current address is shown directly under the buyer's mobile in the detail header using the same size, weight and colour.
+- Journey select values and Buyer notes use the standard AGNT form-text weight instead of inheriting the heavier field-label weight.
+- The Prospector search field's native inner outline is removed while retaining the existing outer control shape and focus behaviour.
+- Firebase configuration, Authentication, Firestore paths/rules, UID separation, Team, appointments and leaderboard behaviour remain unchanged.
+
+## Buyer UI cohesion and trust fixes added in v1.36.17
+- Buyer cards now use the same AGNT hierarchy throughout: name and temperature, concise search criteria, visible next action, then equal Call / SMS / Follow up controls.
+- Buyer position tags are contained to one visible tag plus `+N` in the list, with the full set retained in buyer detail.
+- Buyer follow-up dates and overdue state are visible on cards, in buyer detail and in activity history.
+- Buyer detail is organised into Next Action, Buyer Brief and Activity sections using the existing AGNT visual language.
+- Advanced filters now include Position and Follow-up state, alongside the existing property-matching filters.
+- Buyer actions, quick filters, configuration choices, suburb chips and modal close controls use iPhone-safe tap targets.
+- Light-mode buyer metadata contrast is strengthened while existing dark-mode separation is retained.
+- The buyer suburb editor now uses one custom suggestion system instead of competing native and custom autocomplete lists.
+- Editing a buyer and opening a follow-up no longer force the iPhone keyboard open; the follow-up dialog also contains keyboard focus.
+- Empty, filtered, archived and offline PDF-import states now provide clear context and next actions.
+- Buyers can be archived and restored without deleting their interaction history.
+- Permanent deletion is available only from Archived, keeping Archive as the safe default lifecycle action for active buyers.
+- Matching an existing buyer mobile now reuses the existing buyer record instead of creating a duplicate.
+- Cancelling a buyer-list call leaves that buyer outstanding and does not advance the session.
+- Buyer-list session state is reset before loading the current UID, preventing stale device/account state carrying into another user session.
+- New-buyer Data credit is persisted before the buyer cloud write, so a prospecting sync failure cannot silently lose leaderboard credit.
+- Buyer CSS from v1.36.7–v1.36.16 is consolidated into one scoped v1.36.17 section to reduce cascade conflicts.
+- Firebase configuration, Authentication, Firestore paths/rules, UID data separation, Team, Today, appointments, leaderboards and unrelated workflows are unchanged.
 
 ## Buyer journey added in v1.36.7
 - Dedicated Buyers tab inside Prospector, separate from Contacts.
@@ -110,3 +166,20 @@ Existing Firebase/Auth UIDs, `users/{uid}` personal data, days, contacts, prospe
 - Buyer follow-up form submission is now handled directly by the document-level modal, preventing the body-mounted overlay from falling outside the Prospector form event scope.
 - iOS date input sizing now uses explicit inline containment and native-safe sizing so it cannot extend beyond the modal card.
 - Buyer/follow-up data, Today timeline behaviour, Firebase, Firestore paths/rules, UID separation and sync remain unchanged.
+
+
+## Buyer leaderboard detail refinement added in v1.36.15
+
+- Creating a new buyer continues to credit the existing Data metric and leaderboard score exactly as before.
+- In the leaderboard agent-detail list only, buyer-sourced data entries are now labelled `Buyer` instead of `Data`.
+- Buyer detail rows show the saved bedroom / bathroom / car configuration plus the full maximum budget where the address line normally appears, for example `3 Bed · 2 Bath · 1 Car · $1,300,000`.
+- Normal contact data remains labelled `Data` and continues to show its existing address context.
+- No leaderboard scoring, target, Firebase, Firestore, UID separation, local cache or sync behaviour changed.
+
+
+## Buyer position/context tags added in v1.36.16
+- Expanded the existing Buyer Seller position control into a lightweight multi-select buyer context set.
+- Available tags: Buyer Seller, Upsizing, Downsizing, Builder, Investor, First Home Buyer.
+- Tags are saved on the existing buyer record as `buyerPositionTags`; the existing `buyerSeller` boolean remains maintained for backwards compatibility.
+- Selected tags are visible on buyer list cards and in the buyer detail view, and are searchable from the Buyers search field.
+- No new Firestore collection/path, rule change, migration, leaderboard scoring change or Firebase configuration change is required.
