@@ -11070,3 +11070,36 @@ html[data-theme="dark"] .buyer-followup-sheet{
   .buyer-followup-overlay{padding-inline:12px!important}
   .buyer-followup-sheet{padding:18px 16px 16px!important;border-radius:24px!important}
 }
+
+
+/* AGNT BETA v1.36.14 — Buyer follow-up modal scale, hierarchy and reliable modal controls. */
+.buyer-followup-overlay{
+  display:grid!important;
+  place-items:center!important;
+  padding:max(18px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))!important;
+  background:rgba(10,13,18,.54)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.buyer-followup-sheet{
+  width:min(calc(100vw - 40px),520px)!important;
+  max-width:520px!important;
+  max-height:calc(100dvh - max(40px,env(safe-area-inset-top) + env(safe-area-inset-bottom)))!important;
+  gap:16px!important;
+  padding:22px 20px 20px!important;
+  border-radius:28px!important;
+  overflow:auto!important;
+}
+.buyer-followup-head{align-items:flex-start!important;gap:16px!important}
+.buyer-followup-head span{font-size:9.5px!important;font-weight:830!important;letter-spacing:.14em!important;line-height:1.2!important}
+.buyer-followup-head h2{margin:5px 0 0!important;font-size:23px!important;font-weight:760!important;line-height:1.08!important;letter-spacing:-.028em!important}
+.buyer-followup-head>button{flex:0 0 38px!important;width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;border-radius:13px!important;font-size:23px!important;font-weight:400!important}
+.buyer-followup-sheet label{display:grid!important;gap:7px!important;min-width:0!important;width:100%!important;overflow:hidden!important;font-size:12.5px!important;font-weight:720!important;line-height:1.25!important}
+.buyer-followup-sheet input,.buyer-followup-sheet textarea{inline-size:100%!important;width:100%!important;max-inline-size:100%!important;max-width:100%!important;min-inline-size:0!important;min-width:0!important;box-sizing:border-box!important;border-radius:15px!important;font-size:15px!important;font-weight:620!important}
+.buyer-followup-sheet input[type="date"]{-webkit-appearance:none!important;appearance:none!important;inline-size:100%!important;width:100%!important;max-inline-size:100%!important;min-inline-size:0!important;min-height:52px!important;padding:13px 14px!important;text-align:center!important;font-size:15px!important;font-weight:720!important}
+.buyer-followup-sheet textarea{min-height:112px!important;padding:13px 14px!important;line-height:1.4!important}
+.buyer-followup-actions{grid-template-columns:1fr 1.35fr!important;gap:10px!important}
+.buyer-followup-actions button{min-height:48px!important;height:48px!important;padding:0 14px!important;border-radius:15px!important;font-size:14px!important;font-weight:800!important}
+html:not([data-theme="dark"]) .buyer-followup-overlay{background:rgba(20,24,32,.38)!important}
+html[data-theme="dark"] .buyer-followup-overlay{background:rgba(0,0,0,.66)!important}
+@media(max-width:390px){.buyer-followup-overlay{padding-inline:16px!important}.buyer-followup-sheet{width:calc(100vw - 32px)!important;padding:20px 18px 18px!important;border-radius:26px!important}.buyer-followup-head h2{font-size:22px!important}.buyer-followup-actions button{font-size:13.5px!important}}

@@ -100,3 +100,13 @@ Existing Firebase/Auth UIDs, `users/{uid}` personal data, days, contacts, prospe
 - Follow-up date and note controls are explicitly constrained to the modal width, including iOS date input sizing.
 - Buyer configuration/suburb context is left aligned directly beneath the buyer name while the full maximum budget remains right aligned.
 - Buyer/follow-up data, Today timeline logic, Firebase, Firestore paths/rules, UID separation and sync remain unchanged.
+
+
+## Buyer follow-up control + hierarchy refinement added in v1.36.14
+
+- Restored the Buyer Follow Up modal to a broader mobile card footprint while retaining full viewport containment and AGNT rounded geometry.
+- Rebalanced follow-up kicker, buyer name, labels, fields and actions so the modal hierarchy matches the surrounding AGNT UI.
+- Added direct document-level modal controls so the close `×`, Cancel, backdrop tap and Escape key reliably dismiss the modal and return focus to the exact buyer screen/action that opened it.
+- Buyer follow-up form submission is now handled directly by the document-level modal, preventing the body-mounted overlay from falling outside the Prospector form event scope.
+- iOS date input sizing now uses explicit inline containment and native-safe sizing so it cannot extend beyond the modal card.
+- Buyer/follow-up data, Today timeline behaviour, Firebase, Firestore paths/rules, UID separation and sync remain unchanged.
