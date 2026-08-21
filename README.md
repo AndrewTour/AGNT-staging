@@ -1,4 +1,4 @@
-# AGNT BETA v1.36.12 — Buyer Context + Contrast
+# AGNT BETA v1.36.13 — Buyer Follow-Up Modal + Alignment
 
 Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.11 Buyer Context + Follow-Ups package supplied on 21 August 2026.
 
@@ -90,3 +90,13 @@ No Firebase Console, Firestore rule or data migration change is required for thi
 
 ## Protected systems retained
 Existing Firebase/Auth UIDs, `users/{uid}` personal data, days, contacts, prospecting, appointments, notes/history, Team membership/leaderboard data, UID-scoped local cache shapes, offline Firestore sync, manifest/icon identity and service-worker behaviour remain preserved. Only release cache identifiers were bumped.
+
+
+## Buyer follow-up modal + alignment refinement added in v1.36.13
+
+- Buyer follow-up overlay now mounts at document level so it covers the full installed-PWA viewport consistently.
+- Removed the heavy backdrop blur from the buyer follow-up overlay; uses the same restrained dimmed backdrop language as AGNT confirmation overlays.
+- Follow-up card now uses contained AGNT rounded geometry with full light/dark mode surfaces.
+- Follow-up date and note controls are explicitly constrained to the modal width, including iOS date input sizing.
+- Buyer configuration/suburb context is left aligned directly beneath the buyer name while the full maximum budget remains right aligned.
+- Buyer/follow-up data, Today timeline logic, Firebase, Firestore paths/rules, UID separation and sync remain unchanged.

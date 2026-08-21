@@ -10987,3 +10987,86 @@ html[data-theme="dark"] .buyer-followup-actions .primary{
   border:1px solid #397dff!important;
   color:#fff!important;
 }
+
+
+/* AGNT BETA v1.36.13 — Buyer follow-up modal containment + buyer meta alignment. */
+body.buyer-followup-open{overflow:hidden!important}
+
+/* Buyer context stays anchored to the buyer name; budget remains independently right aligned. */
+.buyer-row-meta{
+  width:100%!important;
+  justify-content:flex-start!important;
+  text-align:left!important;
+}
+.buyer-row-meta>span{
+  width:auto!important;
+  text-align:left!important;
+  justify-self:start!important;
+}
+
+/* Follow-up uses the same contained floating-card language as AGNT confirmation overlays. */
+.buyer-followup-overlay{
+  position:fixed!important;
+  inset:0!important;
+  z-index:1400!important;
+  display:grid!important;
+  place-items:center!important;
+  box-sizing:border-box!important;
+  padding:max(18px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))!important;
+  background:rgba(11,13,17,.46)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.buyer-followup-sheet{
+  width:min(100%,430px)!important;
+  max-width:100%!important;
+  max-height:calc(100dvh - max(36px,env(safe-area-inset-top) + env(safe-area-inset-bottom)))!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  box-sizing:border-box!important;
+  gap:14px!important;
+  margin:0!important;
+  padding:20px 18px 18px!important;
+  border:1px solid #e1e4e9!important;
+  border-radius:26px!important;
+}
+.buyer-followup-sheet label{
+  min-width:0!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+.buyer-followup-sheet input,
+.buyer-followup-sheet textarea{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+.buyer-followup-sheet input[type="date"]{
+  min-height:54px!important;
+  padding:14px 15px!important;
+  font-size:16px!important;
+  font-weight:700!important;
+  line-height:1.2!important;
+}
+.buyer-followup-head>button{border-radius:12px!important}
+.buyer-followup-actions button{border-radius:14px!important}
+
+html:not([data-theme="dark"]) .buyer-followup-overlay{background:rgba(20,24,32,.36)!important}
+html:not([data-theme="dark"]) .buyer-followup-sheet{
+  background:#fff!important;
+  border-color:#e1e4e9!important;
+  box-shadow:0 24px 70px rgba(20,28,45,.22)!important;
+}
+html[data-theme="dark"] .buyer-followup-overlay{background:rgba(0,0,0,.64)!important}
+html[data-theme="dark"] .buyer-followup-sheet{
+  background:#11141a!important;
+  border-color:#2c3139!important;
+  box-shadow:0 24px 70px rgba(0,0,0,.52)!important;
+}
+
+@media(max-width:390px){
+  .buyer-followup-overlay{padding-inline:12px!important}
+  .buyer-followup-sheet{padding:18px 16px 16px!important;border-radius:24px!important}
+}
