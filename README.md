@@ -1,9 +1,9 @@
-# AGNT BETA v1.36.11 — Buyer Context + Follow-Ups
+# AGNT BETA v1.36.12 — Buyer Context + Contrast
 
-Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.10 Buyer UI Balance package supplied on 20 August 2026.
+Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.11 Buyer Context + Follow-Ups package supplied on 21 August 2026.
 
 ## Release baseline
-- Application/UI source: confirmed working `AGNT-beta-v1.36.10-Buyer-UI-Balance.zip` (v1.36.10 baseline).
+- Application/UI source: confirmed working `AGNT-beta-v1.36.11-Buyer-Context-Follow-Ups.zip` (v1.36.11 baseline).
 - Firebase environment: existing BETA project `daily-accountability-be0ac`.
 - Existing Firebase Authentication accounts and UIDs are retained.
 - Existing personal data remains under the current `users/{uid}` paths.
@@ -75,6 +75,13 @@ Incremental BETA update built directly on the confirmed working AGNT BETA v1.36.
 - Follow-up creation captures a date and notes. Buyer follow-ups then appear on the existing Today timeline alongside Pipeline/appointment follow-ups.
 - Completing a buyer follow-up from the Today timeline uses the existing Prospector follow-up completion pattern and clears the due task.
 - No new Firebase collection, Firestore rule, local-storage key or backend service is introduced.
+
+## Buyer context + contrast refinement added in v1.36.12
+- Buyer maximum budgets now display as full dollar amounts, for example `$1,300,000`, instead of abbreviated `$1.3m` values.
+- Buyer list context now keeps configuration and location on one compact line. The first-entered suburb is treated as the priority suburb and additional selections display as `+ X suburb(s)`.
+- Buyer list, action buttons, search/filter controls and Buyer Seller tag receive explicit light- and dark-mode contrast treatment.
+- Buyer follow-up overlay, sheet, fields, labels, close button and primary/secondary actions receive explicit opaque light/dark surfaces so the sheet remains clearly separated from the dimmed background.
+- Buyer data shape, suburb ordering, follow-up task behaviour and Firebase architecture are unchanged.
 
 ## Firebase
 The frontend is connected to the existing BETA Firebase project `daily-accountability-be0ac`.
