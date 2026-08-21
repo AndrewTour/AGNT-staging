@@ -11302,7 +11302,7 @@ html[data-theme="dark"] .buyer-followup-actions .primary{border:1px solid #397df
 @media(max-width:430px){.buyer-list-shell{padding-inline:12px}.buyer-quick-filters{gap:5px}.buyer-quick-filters button,.buyer-filter-toggle{padding-inline:3px;font-size:10.5px}.buyer-row-head strong{font-size:13.5px}.buyer-row-brief{font-size:11px}.buyer-card-actions{gap:5px}.buyer-card-actions button,.buyer-card-actions a{font-size:10.5px}.buyer-editor{padding:16px 13px 22px}.buyer-detail-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}.buyer-followup-overlay{padding-inline:16px}.buyer-followup-sheet{width:calc(100vw - 32px);padding:20px 18px 18px;border-radius:26px}.buyer-followup-head h2{font-size:22px}.buyer-followup-actions button{font-size:13.5px}}
 @media(max-width:360px){.prospector-sections button{font-size:.66rem!important;padding-inline:3px!important}.buyer-filter-grid{grid-template-columns:1fr}.buyer-row-next{align-items:flex-start;flex-direction:column;gap:5px}.buyer-position-summary{align-self:flex-start}.buyer-detail-next-action{grid-template-columns:1fr}.buyer-detail-next-action button{width:100%}.buyer-lifecycle-actions{grid-template-columns:1fr}}
 
-/* AGNT STAGING v1.36.21 — Prospector Map foundation. */
+/* AGNT STAGING v1.36.22 — Free Prospector Map foundation. */
 .prospector-map-launch{color:#1769cf!important}
 .buyer-results-actions{display:flex;align-items:center;gap:8px}
 .contacts-head-actions{flex-wrap:wrap}
@@ -11324,9 +11324,9 @@ html[data-theme="dark"] .buyer-followup-actions .primary{border:1px solid #397df
 .prospector-map-stage{position:relative;min-height:440px;height:min(61dvh,640px);overflow:hidden;border:1px solid #dfe3e8;border-radius:22px;background:#e9edf2;isolation:isolate}
 .prospector-map-canvas{position:absolute;inset:0;width:100%;height:100%;max-width:none!important;background:#e9edf2}
 .prospector-map-canvas.setup-active{filter:saturate(.7);opacity:.45}
-.prospector-map-stage .mapboxgl-map,.prospector-map-stage .mapboxgl-canvas-container,.prospector-map-stage .mapboxgl-canvas{width:100%!important;height:100%!important;max-width:none!important}
-.prospector-map-stage .mapboxgl-ctrl-bottom-left{display:none}
-.prospector-map-stage .mapboxgl-ctrl-attrib{font-size:9px}
+.prospector-map-stage .maplibregl-map,.prospector-map-stage .maplibregl-canvas-container,.prospector-map-stage .maplibregl-canvas{width:100%!important;height:100%!important;max-width:none!important}
+.prospector-map-stage .maplibregl-ctrl-bottom-left{display:none}
+.prospector-map-stage .maplibregl-ctrl-attrib{font-size:9px}
 .prospector-map-setup{position:absolute;z-index:8;top:50%;left:18px;right:18px;transform:translateY(-50%);max-height:calc(100% - 36px);padding:20px;border:1px solid #dfe3e8;border-radius:20px;background:#fff;color:#111318;box-shadow:0 20px 55px rgba(24,31,45,.22);overflow:auto}
 .prospector-map-setup h3{margin:6px 0 0;font-size:21px;letter-spacing:-.025em}
 .prospector-map-setup p{margin:9px 0 14px;color:#5f6670;font-size:12px;line-height:1.45}

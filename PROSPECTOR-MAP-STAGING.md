@@ -1,15 +1,14 @@
 # Prospector Map — staging setup
 
-## Mapbox setup
+## Free map setup
 
-1. Create a Mapbox account and add a valid payment method so permanent geocoding is available.
-2. Create a new **public** token beginning with `pk.`. Do not use a secret token.
-3. Restrict that token to the exact staging origin, for example `https://andrewtour.github.io/AGNT-staging/`.
-4. Deploy this complete ZIP to staging and reopen the installed PWA so the new cache activates.
-5. Open **Prospector → Contacts → Map**, paste the public token and select **Save & load map**.
-6. Select **Map addresses**. AGNT maps up to 100 waiting addresses per run.
+1. Create a free Geoapify account at `https://myprojects.geoapify.com/`. No payment card is required for the free plan.
+2. Create a project and copy its API key.
+3. Deploy this complete ZIP to staging and reopen the installed PWA so the new cache activates.
+4. Open **Prospector → Contacts → Map**, paste the Geoapify API key and select **Save & continue**.
+5. Select **Map addresses**. AGNT maps up to 100 waiting addresses per run and stays below the free request-rate limit.
 
-The token remains on the testing device. Coordinates are stored separately from the main Prospector state so buyer and contact saves remain fast.
+The key remains on the testing device. Coordinates are stored separately from the main Prospector state so buyer and contact saves remain fast. OpenFreeMap loads without a token, while Geoapify is used only for new or changed addresses.
 
 ## Accuracy workflow
 
@@ -23,5 +22,6 @@ The token remains on the testing device. Coordinates are stored separately from 
 
 - A network connection is required for the basemap and new geocoding requests.
 - Archived records are excluded.
-- Mapbox billing and usage are external to Firebase.
-- The token should remain restricted to the staging URL before testing begins.
+- OpenFreeMap is a best-effort public basemap service and requires a network connection.
+- Geoapify's free allowance is currently 3,000 credits per day. AGNT stores successful and failed matching attempts so unchanged addresses are not repeatedly submitted.
+- Existing coordinates created by the earlier Mapbox staging build remain compatible and do not require re-mapping.

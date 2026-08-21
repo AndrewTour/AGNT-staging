@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="AGNT">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css?v=1.36.20-map-staging-1">
+<link rel="stylesheet" href="styles.css?v=1.36.22-free-map-1">
 <title>AGNT</title>
 </head>
 <body>
@@ -678,13 +678,13 @@
             <div id="prospectorMapCanvas" class="prospector-map-canvas" aria-label="Interactive client map"></div>
             <section id="prospectorMapSetup" class="prospector-map-setup hidden">
               <span>MAP SETUP</span>
-              <h3>Connect Mapbox for staging</h3>
-              <p>Paste a public Mapbox token restricted to your staging URL. AGNT sends addresses only—never names, notes or conversation history.</p>
+              <h3>Connect free address matching</h3>
+              <p>Paste a free Geoapify API key. AGNT sends only the formatted address—never names, notes or conversation history.</p>
               <form id="prospectorMapTokenForm">
-                <label>Public token<input id="prospectorMapToken" name="token" type="password" inputmode="text" autocomplete="off" placeholder="pk.ey…" required></label>
-                <button class="primary" type="submit">Save &amp; load map</button>
+                <label>Geoapify API key<input id="prospectorMapToken" name="token" type="password" inputmode="text" autocomplete="off" placeholder="Paste free API key" required></label>
+                <button class="primary" type="submit">Save &amp; continue</button>
               </form>
-              <small>Permanent geocoding must be enabled on the Mapbox account for saved pins.</small>
+              <small>No card is required. The free map loads independently; this key is only used to match new or changed addresses.</small>
             </section>
             <section id="prospectorMapMessage" class="prospector-map-message hidden"></section>
             <div id="prospectorMapCorrection" class="prospector-map-correction hidden">
@@ -1114,6 +1114,6 @@ Andrew Tour | McGrath</textarea></label>
 
 
 
-<script type="module" src="app.js?v=1.36.20-map-staging-1"></script>
+<script type="module" src="app.js?v=1.36.22-free-map-1"></script>
 </body>
 </html>

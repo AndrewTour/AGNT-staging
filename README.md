@@ -1,18 +1,20 @@
-# AGNT STAGING v1.36.20-map.1 — Prospector Map Foundation
+# AGNT STAGING v1.36.22-free-map.1 — Prospector Free Map Foundation
 
 Staging-only map prototype built directly on the supplied `AGNT Beta - 21:8 - Buyer Support 7.zip` package. The supplied buyer and contact workflows remain the functional baseline.
 
 ## Prospector Map added in this staging build
 - Contacts and Buyers include a Map action without adding another permanent Prospector navigation tab.
-- The interactive Mapbox view supports client search, Contacts/Buyers/Hot/Follow-up filters, temperature-coloured pins, overdue/review rings and automatic clustering.
+- The interactive MapLibre + OpenFreeMap view supports client search, Contacts/Buyers/Hot/Follow-up filters, temperature-coloured pins, overdue/review rings and automatic clustering.
 - Tapping a pin opens an AGNT client sheet with tags, next action, the latest two conversations and the existing Call, SMS, Follow-up/Log Contact and full-profile actions.
 - Multiple clients at the same address are grouped behind one pin and presented as a selection list.
 - Missing, failed and approximate address results are surfaced instead of being presented as confirmed locations.
 - A pin can be manually placed or dragged, then confirmed against the current client address.
 - Geocoding runs only when requested, in batches of up to 100 addresses, and only for records whose address is not already mapped.
 - Map coordinates are cached separately at `users/{uid}/prospectingMap/{prospectId}` and locally per UID. The existing combined Prospector save document is not enlarged or delayed.
-- Mapbox receives only the formatted address. Names, notes, tags and conversation history remain in the existing private AGNT data layer.
-- The public Mapbox token is stored on the testing device and is not written into Firebase or the ZIP.
+- Geoapify receives only the formatted address. Names, notes, tags and conversation history remain in the existing private AGNT data layer.
+- The free Geoapify API key is stored on the testing device and is not written into Firebase or the ZIP.
+- OpenFreeMap provides the basemap without a token, registration or Mapbox billing.
+- Failed address matches are retained for review rather than repeatedly consuming the free daily allowance. Editing the address returns the record to the mapping queue.
 - Existing Firebase Authentication, UIDs, Contacts, Buyers, prospecting history, appointments, Teams, leaderboards and buyer-save performance remain unchanged.
 
 ## Release baseline
