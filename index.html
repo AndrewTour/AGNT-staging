@@ -9,8 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="AGNT">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css?v=1.43.2-market-refinement">
-<link rel="stylesheet" href="cleanup.css?v=1.43.2-market-refinement">
+<link rel="stylesheet" href="styles.css?v=1.44.0-market-insights">
+<link rel="stylesheet" href="cleanup.css?v=1.44.0-market-insights">
 <title>AGNT</title>
 </head>
 <body>
@@ -776,11 +776,12 @@
         <section id="prospectorMarketPanel" class="prospector-market-panel hidden" aria-live="polite">
           <div id="myMarketHub" class="my-market-hub">
             <div class="my-market-heading"><div><h3>My Market</h3><p id="myMarketCounts" class="my-market-counts"></p></div><button class="marketpulse-orb my-market-pulse" type="button" data-my-market-open="marketpulse" aria-label="MarketPulse — view today’s activity"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17 9 10l4 5 7-9"/><path d="M15 6h5v5"/></svg></button></div>
-            <div class="my-market-controls"><label>Show<select id="myMarketStatus"><option value="current">Current listings</option><option value="sold">Sold results</option><option value="withdrawn">Withdrawn</option><option value="price">Price changes</option><option value="auction">Auction results</option></select></label><details class="my-market-refine"><summary>Refine</summary><div class="my-market-selects"><label>Suburb<select id="myMarketSuburb"><option value="">All suburbs</option></select></label><label>Category<select id="myMarketCategory"><option value="">All categories</option><option value="House">House</option><option value="Strata">Strata</option><option value="Unknown">Not recorded</option></select></label></div></details></div>
+            <div class="my-market-controls"><label>Show<select id="myMarketStatus"><option value="current">Current listings</option><option value="sold">Sold · last 6 months</option><option value="withdrawn">Withdrawn · last 6 months</option><option value="price">Price changes</option><option value="auction">Auction results</option></select></label><details class="my-market-refine"><summary>Refine</summary><div class="my-market-selects"><label>Suburb<select id="myMarketSuburb"><option value="">All suburbs</option></select></label><label>Category<select id="myMarketCategory"><option value="">All categories</option><option value="House">House</option><option value="Strata">Strata</option><option value="Unknown">Not recorded</option></select></label></div></details></div>
+            <section id="myMarketSignal" class="my-market-signal hidden" aria-label="Market snapshot"><span class="eyebrow">MARKET SNAPSHOT</span><div id="myMarketAnalytics"></div></section>
             <div id="myMarketProperties" class="my-market-properties"></div>
             <button id="myMarketMore" class="secondary hidden" type="button">Show more properties</button>
-            <details class="my-market-disclosure"><summary>Market insights</summary><div id="myMarketAnalytics"></div><h4>Agency share</h4><div id="myMarketAgencyShares"></div><h4>Agent share</h4><div id="myMarketAgentShares"></div><p class="my-market-muted">Share of imported properties in this selection. Joint agents split credit equally; this is not whole-market coverage.</p></details>
-            <details class="my-market-disclosure"><summary>Comparable-sold estimate</summary><label class="my-market-estimate-label">Contact property<select id="myMarketEstimateContact"><option value="">Choose a configured contact property</option></select></label><div id="myMarketEstimate"></div></details>
+            <details class="my-market-disclosure"><summary>Agency activity in these reports</summary><h4>Agencies</h4><div id="myMarketAgencyShares"></div><h4>Agents</h4><div id="myMarketAgentShares"></div><p class="my-market-muted">Share of imported properties in this selection. Joint agents split credit equally. This does not represent the whole market.</p></details>
+            <details class="my-market-disclosure"><summary>Estimate for a seller contact</summary><label class="my-market-estimate-label">Contact property<select id="myMarketEstimateContact"><option value="">Choose a configured contact property</option></select></label><div id="myMarketEstimate"></div></details>
           </div>
           <div id="hotSpottingPanel" class="hotspotting-panel">
             <button id="backFromMarketPulse" class="market-pulse-back text-btn" type="button">‹ Back to Sessions</button>
@@ -1241,7 +1242,7 @@ Andrew Tour | McGrath</textarea></label>
 
 
 
-<script src="runtime.js?v=1.43.2-market-refinement"></script>
-<script type="module" src="app.js?v=1.43.2-market-refinement"></script>
+<script src="runtime.js?v=1.44.0-market-insights"></script>
+<script type="module" src="app.js?v=1.44.0-market-insights"></script>
 </body>
 </html>

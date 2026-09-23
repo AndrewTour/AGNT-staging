@@ -14003,6 +14003,12 @@ html[data-theme="dark"] .seller-close-match{border-color:#285942;background:#162
 .my-market-counts{font-size:12px;color:var(--muted);line-height:1.4}
 .my-market-controls{border-bottom:1px solid var(--line);padding-bottom:8px}
 .my-market-controls>label{padding-bottom:12px}
+.my-market-signal{padding:18px 0 4px;border-bottom:1px solid var(--line)}
+.my-market-signal>.eyebrow{font-size:10px;letter-spacing:.13em}
+.my-market-signal .my-market-facts{margin:5px 0}
+.my-market-signal .my-market-facts>div{padding:9px 0;border-bottom:0}
+.my-market-signal .my-market-facts dd{font-size:13px}
+.my-market-signal>.my-market-muted{margin:4px 0 12px}
 .my-market-refine>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;list-style:none;color:var(--muted);font-size:12px;font-weight:700}
 .my-market-refine .my-market-selects{padding-top:4px}
 .my-market-disclosure,.my-market-property{border-bottom:1px solid var(--line);padding:16px 0;min-width:0}

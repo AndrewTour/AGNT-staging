@@ -1,13 +1,15 @@
-# AGNT v1.43.2 — My Market Refinement
+# AGNT v1.44.0 — My Market Insights
 
-Baseline: v1.43.1 Campaign History.
+Baseline: v1.43.2 My Market Refinement.
 
-My Market now leads with a concise count and the property list. A single view selector retains Current, Sold, Withdrawn, Price changes and Auction results. Suburb and category remain available under Refine. The MarketPulse icon still opens today's activity. Insights and the comparable-sold estimator follow the list as optional disclosures.
+My Market now puts a concise market snapshot above the existing full-width property list. Current listings show new listing reports in the last seven days, campaigns with recorded guide changes and a median guide when at least three exact prices are available. Sold results show median disclosed sale price, source-reported days on market and sale movement from the first recorded guide when each metric has at least three valid records. Other views show their corresponding activity counts. Filters continue to apply to all figures.
 
-Property rows use a compact Contacts-style hierarchy: address, suburb/configuration, price and report date. Expanded rows show the existing campaign figures. Campaign history and property-linked outreach have their own disclosures; their open state is preserved when market data rerenders.
+The snapshot follows the useful hierarchy of agent-facing market products: inventory, campaign movement and sold evidence. AGNT does not receive listing views, enquiries or promotion data from Ignite or Domain Skylight, so it does not present those metrics or pretend the import is whole-market coverage. Agency/agent activity and the existing seller-contact comparable estimate remain available below the list. Campaign history, outreach and all status filters remain available.
 
-No campaign records, calculations, matching, follow-up triggers, call/SMS workflows, data keys, Firebase paths or service-worker behaviour changed. Historical import limitations and the finite capacity guard from v1.43.1 still apply. Photos remain excluded.
+New price figures exclude ranges and undisclosed results. Missing source days-on-market figures are not inferred from email dates. The snapshot is based only on imported records; medians require at least three valid observations from one suburb and one recorded property category. Mixed selections retain activity counts and prompt for a narrower comparison. Data that older builds discarded cannot be restored.
 
-Changed: index.html (layout and controls), app.js (view selector, compact row presentation, disclosure state), styles.css (scoped My Market presentation), runtime.js and service-worker.js (release identifiers), RELEASE-NOTES.md (replaced prior notes). Configuration, rules, manifest, icons and automation unchanged. No Firebase Console or GitHub settings changes required.
+Changed: app.js (selection-based snapshot); index.html (snapshot placement and clear scope labels); styles.css (scoped flat snapshot); runtime.js and service-worker.js (release IDs); RELEASE-NOTES.md (current notes only).
 
-Verification: JavaScript syntax, local references, duplicate IDs, all five status options, core campaign and appointment/SMS/storage regression tests, version coherence and ZIP integrity. Physical iPhone and live Firebase were not tested.
+Matching, retention, Firebase configuration/authentication/UIDs, Firestore paths/rules, storage keys, sync architecture, automation, manifest/icons, existing call/SMS/task/appointment flows and service-worker lifecycle remain unchanged. No Firebase Console, Firestore rules or GitHub settings changes are required.
+
+Verification: JavaScript syntax; HTML references and IDs; snapshot calculations under empty, small and populated samples; status/filter routes; campaign and storage regressions; ZIP integrity. Physical-iPhone, installed-PWA and live Firebase tests were unavailable.
