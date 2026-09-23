@@ -1,33 +1,27 @@
-# AGNT v1.43.0 — My Market
+# AGNT v1.43.1 — Campaign History
 
-Baseline: v1.42.1 Appointment CSS Consolidation, including the approved My Market navigation changes.
+Baseline: v1.43.0 My Market.
 
-## Included
-- My Market replaces the Prospector tab label and becomes its landing section. Sub-navigation: My Market, Reach, Buyers, Contacts, Pipeline. Reach retains the existing calling dashboard; Pipeline also displays existing Insights.
-- A full-width market hub with suburb and House/Strata/category filters, current listings, six months of sold and withdrawn results, price updates and auction results.
-- Agency and agent shares of the imported properties in the selected view. Joint agents share credit equally. These figures describe imported records, not independently verified whole-market coverage.
-- Per-property recorded outreach and pending/triggered follow-ups, using existing interaction records. A call or message attempt is not presented as proof of successful contact.
-- The existing comparable-sold estimator is accessible for configured contact properties.
-- Existing MarketPulse and Hot Spotting remain accessible. Photos are not included.
+## My Market refinement
+- Full-width data rows and fine dividers replace overview tiles and filter pills. The comparable-sold section also uses a flat treatment within My Market only.
+- One AGNT-orange MarketPulse icon opens daily activity. Hot Spotting remains available through Reach.
+- Listings show the latest recorded guide and campaign information. Sold rows show the result and reporting date, with agency/agent information where supplied.
+- Properties expand to first/last recorded guides, sale price, dollar/percentage movement, recorded price changes, reported days on market and chronological history. Outreach stays accessible in its own disclosure.
+- Market insights show median price/guide, median reported days on market, sale-to-first-guide movement or campaigns with price changes, plus agency/agent shares. Medians include sample sizes; suburb/category/status filters apply.
 
-## Retention and storage
-The daily opportunity queue keeps its existing behaviour. The separate history now retains compact property snapshots with agency/agent metadata and old event identifiers for interaction links. Current listings have no arbitrary 300-event expiry. Explicit sold/withdrawn events close listings; an auction result alone does not establish a sale. Relisting can reopen a property.
+## History and calculation boundaries
+Active campaigns retain their recorded event steps. Recently sold/withdrawn campaigns retain those steps for six calendar months after the terminal report. Relisting starts a separate campaign for comparisons. Existing twelve-month sold evidence and latest lifecycle markers remain retained.
 
-The hub displays six months of recent results using imported event dates. History keeps the latest snapshot per event type within that period, the latest lifecycle state indefinitely, and sold evidence for the existing twelve-month estimator. It is not a complete price-change ledger. Records already discarded by earlier builds cannot be reconstructed; the existing importer’s stale-email rules remain unchanged.
+History consists of imported reports, not independently verified listing dates or a complete live property feed. The existing importer identifies an event by property, type and report date; same-day corrections update that report. Earlier discarded steps cannot be restored. Report dates and missing-history limitations are labelled. Days on market use an explicit source figure, not an estimate from email dates.
 
-An import capacity preflight rejects oversized snapshots before mutating the existing data, rather than silently evicting active properties. The existing single-document storage still has finite capacity; this release does not create unlimited archival storage or guarantee capacity for later unrelated contact growth. History uses the same storage key and Firestore paths, with additional optional metadata.
+Price ranges and undisclosed values remain visible but are excluded from numeric price analytics. Sold comparisons use the first/last recorded guide, not an assumed original asking price. Imported-data shares are not whole-market statistics. The oversized-import safeguard remains; storage capacity is finite.
 
-## Files changed
-- app.js: navigation, hub rendering/aggregation, history retention and import capacity preflight.
-- index.html: navigation labels/order and hub markup.
-- styles.css: styles scoped to the new hub, using existing theme tokens.
-- runtime.js: release identifier only.
-- service-worker.js: release identifier and matching asset-version checks only.
-- RELEASE-NOTES.md: replaced previous notes with this release.
+## Scope
+Changed: app.js, index.html, styles.css; release identifiers only in runtime.js and service-worker.js; these notes replace the previous release notes.
 
-Firebase configuration, authentication, UID separation, security rules, manifest, icons, automation script and deployment configuration are unchanged. No Firebase Console, Firestore rules, Apps Script or GitHub settings changes are required. Existing workflows remain available.
+Matching, call/SMS workflows, follow-up triggers, metrics, authentication, UID separation, Firebase configuration, Firestore paths/rules, local keys, manifest, icons and service-worker lifecycle remain unchanged. No Firebase Console, Apps Script or GitHub settings changes are required.
 
-## Verification
-JavaScript syntax, local file references, duplicate HTML IDs, navigation wiring, archive lifecycle/compaction, metadata preservation, historical interaction links, shares, capacity rejection, empty/populated rendering and appointment/SMS regression checks were exercised. Package integrity was checked.
+## Validation
+JavaScript syntax, unique HTML IDs, local references, version coherence, history retention/pruning, relisting isolation, price calculations, excluded price ranges, empty/populated rendering, escaped imported text, daily queue preservation, import-capacity rejection and prior appointment/SMS/storage-warning checks passed. ZIP integrity checked.
 
-Physical iPhone layout, installed-PWA lifecycle, live Firebase/team sync and production deployment could not be tested in this environment. Verify these on the installed app after deployment; this release is not a claim that earlier intermittent device restarts have been reproduced or eliminated.
+Physical iPhone layout, installed-PWA behaviour and live Firebase/team sync were not tested. Review these on device after deployment.
