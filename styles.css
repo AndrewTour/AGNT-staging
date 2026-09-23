@@ -2864,11 +2864,44 @@ button:not(:disabled):active,.file-btn:active{
 .appointment-followup-card{display:block}
 .appointment-status-badge{margin-left:auto;font-size:.58rem;font-weight:800;color:var(--muted);text-transform:none}
 .appointment-status-badge.follow-up{color:#d88522}.appointment-status-badge.completed{color:#18a879}.appointment-status-badge.upcoming{color:var(--blue)}
+#appointmentsView .appointment-card .appointment-card-copy .appointment-context-note,
+#appointmentsView .appointment-card .appointment-card-copy .appointment-outcome-note{
+  display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;
+  gap:8px;margin-top:9px;padding:9px 10px;border-radius:11px;
+  background:var(--cleanup-soft);color:var(--cleanup-ink);
+  font-size:11px;line-height:1.4;white-space:pre-line;
+}
+.appointment-context-note b,.appointment-outcome-note b{
+  color:var(--cleanup-muted);font-size:8px;line-height:1.75;letter-spacing:.12em;
+}
+.appointment-outcome-note{font-style:normal}
+#appointmentHistoryList{display:grid;gap:18px}
+.appointment-history-group{display:grid;gap:8px;min-width:0}
+.appointment-history-group-head{
+  display:flex;align-items:center;justify-content:space-between;min-height:24px;
+  padding:0 4px;border-bottom:1px solid var(--cleanup-line);
+}
+.appointment-history-group-head span{
+  color:var(--cleanup-muted);font-size:9px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;
+}
+.appointment-history-group-head small{
+  display:grid;place-items:center;min-width:20px;height:20px;margin:0;padding:0 5px;
+  border-radius:10px;background:var(--cleanup-soft);color:var(--cleanup-muted);font-size:9px;font-weight:850;
+}
+/* Overrides the existing .appointment-secondary-action color:var(--ink)!important. */
+#appointmentsView .appointment-message-action{color:var(--cleanup-accent)!important}
+html[data-theme="dark"] #appointmentsView .appointment-card .appointment-card-copy .appointment-context-note,
+html[data-theme="dark"] #appointmentsView .appointment-card .appointment-card-copy .appointment-outcome-note,
+html[data-theme="dark"] .appointment-history-group-head small{background:#1a1e25;color:#e9ebef}
+html[data-theme="dark"] .appointment-history-group-head{border-color:#282d35}
+@media(max-width:390px){
+  #appointmentsView .appointment-card .appointment-card-copy .appointment-context-note,
+  #appointmentsView .appointment-card .appointment-card-copy .appointment-outcome-note{grid-template-columns:1fr;gap:3px}
+}
 .appointment-followup-actions,.scorecard-followup-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
 .appointment-followup-actions a,.appointment-followup-actions button,.scorecard-followup-actions a,.scorecard-followup-actions button{min-height:38px;border:0;border-radius:12px;padding:0 13px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-size:.68rem;font-weight:800}
 .appointment-action-wide,.scorecard-call{background:#111318!important;color:#fff!important;width:auto;height:auto}
 .appointment-secondary-action,.scorecard-followup-actions button{background:rgba(91,145,255,.12)!important;color:var(--ink)!important}
-.appointment-outcome-note{padding-top:4px;font-style:italic}
 
 
 /* v1.36.1 — requested login copy, appointment time and action alignment refinements only. */
@@ -13957,3 +13990,31 @@ html[data-theme="dark"] .seller-close-match{border-color:#285942;background:#162
 .property-details-action{margin-top:-5px}
 .seller-property-editor-form{display:grid;gap:14px;padding:18px 16px 24px}
 .seller-property-editor-form>.seller-estimate{margin-top:0}
+
+/* My Market uses the existing full-width rows, controls and theme tokens. */
+.my-market-hub{min-width:0;width:100%;color:var(--ink)}
+.my-market-tools,.my-market-selects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.my-market-tools button{margin:0;min-height:44px}
+.my-market-selects label,.my-market-estimate-label{display:grid;gap:6px;min-width:0;font-size:12px;color:var(--muted)}
+.my-market-hub select{width:100%;max-width:100%;min-width:0;min-height:44px;box-sizing:border-box;border:1px solid var(--line);border-radius:14px;background:var(--cleanup-surface);color:var(--ink);padding:10px;font:inherit;font-size:16px}
+.my-market-muted{font-size:12px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
+.my-market-hub .my-market-filters{display:flex;flex-wrap:wrap;gap:6px}
+.my-market-filters button{min-height:44px;flex:1 1 auto}
+.my-market-disclosure,.my-market-property{border-bottom:1px solid var(--line);padding:16px 0;min-width:0}
+.my-market-disclosure>summary,.my-market-property>summary{cursor:pointer;min-height:44px;overflow-wrap:anywhere}
+.my-market-disclosure>summary{font-weight:750;font-size:14px}
+.my-market-property>summary>span{display:inline-grid;gap:5px;max-width:calc(100% - 24px);vertical-align:top}
+.my-market-property>summary strong{font-size:16px;line-height:1.3}
+.my-market-property>summary small{font-size:12px;line-height:1.4;color:var(--muted)}
+.my-market-property-body{padding-top:12px;font-size:13px;overflow-wrap:anywhere}
+.my-market-hub h4{font-size:12px;margin:16px 0 8px}
+.my-market-share-row{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+.my-market-share-row>span{min-width:0;overflow-wrap:anywhere}
+.my-market-share-row>strong{flex-shrink:0}
+.my-market-contact{display:grid;gap:5px;padding:12px 0;border-top:1px solid var(--line)}
+.my-market-contact>small,.my-market-activity>small{display:block;font-size:12px;line-height:1.45;color:var(--muted)}
+.my-market-contact .text-btn{width:auto;min-height:44px;text-align:left;justify-self:start}
+.my-market-estimate-label{margin-top:14px}
+html[data-theme="dark"] .my-market-hub{color:var(--ink)}
+html[data-theme="dark"] .my-market-hub select{background:var(--cleanup-surface);color:var(--ink);border-color:var(--line)}
+@media(max-width:350px){.my-market-selects{grid-template-columns:minmax(0,1fr)}}
