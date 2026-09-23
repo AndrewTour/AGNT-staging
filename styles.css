@@ -14044,9 +14044,6 @@ html[data-theme="dark"] .my-market-sms-ready{color:#8bb5ff}
 .my-market-share-row{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
 .my-market-share-row>span{min-width:0;overflow-wrap:anywhere}
 .my-market-share-row>strong{flex-shrink:0}
-.my-market-contact{display:grid;gap:5px;padding:12px 0;border-top:1px solid var(--line)}
-.my-market-contact>small,.my-market-activity>small{display:block;font-size:12px;line-height:1.45;color:var(--muted)}
-.my-market-contact .text-btn{width:auto;min-height:44px;text-align:left;justify-self:start}
 .my-market-estimate-label{margin-top:14px}
 .my-market-facts{margin:12px 0;display:grid;gap:0}
 .my-market-facts>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px;line-height:1.45}
@@ -14074,7 +14071,18 @@ html[data-theme="dark"] .my-market-hub select{background:var(--cleanup-surface);
 .my-market-detail-section{padding:18px 0;border-bottom:1px solid var(--line);min-width:0}
 .my-market-detail-section h3{font-size:16px;margin:8px 0;line-height:1.3}
 .my-market-detail-section .my-market-muted{margin:8px 0 0}
-.my-market-detail-section .contact-card-v156{width:100%}
+.my-market-person-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:10px;width:100%;min-height:64px;padding:13px 0;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
+.my-market-person-row:last-child{border-bottom:0}
+.my-market-person-copy{display:grid;gap:4px;min-width:0;overflow-wrap:anywhere}
+.my-market-person-copy strong{font-size:16px;line-height:1.3;color:var(--agnt-blue,#3266d6)}
+.my-market-person-copy small,.my-market-person-copy em{font-size:12px;line-height:1.4;color:var(--muted);font-style:normal}
+.my-market-person-row>b{font-size:24px;font-weight:400;color:var(--muted)}
+.my-market-street-disclosure>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;cursor:pointer;list-style:none}
+.my-market-street-disclosure>summary::-webkit-details-marker{display:none}
+.my-market-street-disclosure>summary .eyebrow{font-size:10px;letter-spacing:.13em}
+.my-market-street-disclosure>summary small{margin-left:auto;font-size:12px;color:var(--muted)}
+.my-market-street-disclosure>summary::after{content:'›';font-size:24px;color:var(--muted)}
+.my-market-street-disclosure[open]>summary::after{transform:rotate(90deg)}
 .my-market-detail-section .my-market-facts{margin:6px 0 16px}
 .my-market-detail-section .my-market-history li:last-child{border-bottom:0}
 .my-market-owner-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
