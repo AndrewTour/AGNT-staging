@@ -13994,22 +13994,22 @@ html[data-theme="dark"] .seller-close-match{border-color:#285942;background:#162
 /* My Market uses the existing full-width rows, controls and theme tokens. */
 .my-market-hub{min-width:0;width:100%;color:var(--ink)}
 .my-market-selects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0 0 16px}
-.my-market-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 0 16px}
-.my-market-heading>div{min-width:0}.my-market-heading h3{font-size:18px;margin:0}.my-market-heading p{margin:5px 0 0}
 .my-market-pulse{position:relative;flex-shrink:0;width:44px;height:44px;min-width:44px;min-height:44px;margin:0}
 .my-market-selects label,.my-market-estimate-label,.my-market-controls>label{display:grid;gap:6px;min-width:0;font-size:12px;color:var(--muted)}
 .my-market-hub select{width:100%;max-width:100%;min-width:0;min-height:44px;box-sizing:border-box;border:1px solid var(--line);border-radius:14px;background:var(--cleanup-surface);color:var(--ink);padding:10px;font:inherit;font-size:16px}
 .my-market-muted{font-size:12px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
 .my-market-counts{font-size:12px;color:var(--muted);line-height:1.4}
 .my-market-controls{border-bottom:1px solid var(--line);padding-bottom:0}
-.my-market-controls>label{padding-bottom:14px}
-.my-market-signal{padding:18px 0 4px;border-bottom:1px solid var(--line)}
-.my-market-signal>.eyebrow{font-size:10px;letter-spacing:.13em}
+.my-market-controls>label{padding:12px 0 14px}
+.my-market-signal{padding:8px 0 14px;border-bottom:1px solid var(--line)}
+.my-market-signal-head{display:flex;align-items:center;justify-content:space-between;gap:14px;min-width:0}
+.my-market-signal-head>div{min-width:0}
+.my-market-signal-head .eyebrow{font-size:10px;letter-spacing:.13em}
+.my-market-signal-head .my-market-counts{margin:6px 0 0}
 .my-market-signal .my-market-facts{margin:5px 0}
 .my-market-signal .my-market-facts>div{padding:9px 0;border-bottom:0}
 .my-market-signal .my-market-facts dd{font-size:13px}
-.my-market-signal>.my-market-muted{margin:4px 0 12px}
-.my-market-refine{border-top:1px solid var(--line)}
+.my-market-refine{border-bottom:1px solid var(--line)}
 .my-market-refine>summary{cursor:pointer;min-height:56px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;list-style:none;position:relative;padding:9px 30px 9px 0}
 .my-market-refine>summary span{font-size:10px;font-weight:800;letter-spacing:.13em;color:var(--ink)}
 .my-market-refine>summary small{font-size:12px;color:var(--muted);font-weight:550;line-height:1.35}
@@ -14031,6 +14031,15 @@ html[data-theme="dark"] .seller-close-match{border-color:#285942;background:#162
 .my-market-property strong{font-size:16px;line-height:1.3}
 .my-market-property small{font-size:12px;line-height:1.4;color:var(--muted)}
 .my-market-property em{font-size:12px;line-height:1.35;color:var(--muted);font-style:normal}
+.my-market-signals{display:flex;align-items:center;flex-wrap:wrap;gap:7px 14px;margin-top:3px}
+.my-market-signal-tag,.my-market-address-tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:750;line-height:1.3}
+.my-market-signal-tag::before,.my-market-address-tag::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+.signal-current,.signal-unknown{color:#3266d6}.signal-long60{color:#a97413}.signal-long90{color:#bc6525}.signal-long120{color:#bd454c}.signal-withdrawn{color:#777f8b}.signal-sold,.my-market-address-tag{color:#34805b}
+.my-market-sms-ready{font-size:11px;font-weight:750;line-height:1.3;color:#3266d6}
+html[data-theme="dark"] .signal-current,html[data-theme="dark"] .signal-unknown{color:#8bb5ff}
+html[data-theme="dark"] .signal-long60{color:#e8bd6d}html[data-theme="dark"] .signal-long90{color:#eea473}html[data-theme="dark"] .signal-long120{color:#f28791}
+html[data-theme="dark"] .signal-withdrawn{color:#aeb6c2}html[data-theme="dark"] .signal-sold,html[data-theme="dark"] .my-market-address-tag{color:#75c9a0}
+html[data-theme="dark"] .my-market-sms-ready{color:#8bb5ff}
 .my-market-hub h4{font-size:12px;margin:16px 0 8px}
 .my-market-share-row{display:flex;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
 .my-market-share-row>span{min-width:0;overflow-wrap:anywhere}
@@ -14061,10 +14070,17 @@ html[data-theme="dark"] .my-market-hub select{background:var(--cleanup-surface);
 .my-market-detail-head p{font-size:13px;color:var(--muted);margin:0 0 14px}
 .my-market-detail-head>strong{display:block;font-size:21px}
 .my-market-detail-head>small{display:block;margin-top:6px;color:var(--muted);font-size:12px;line-height:1.45}
+.my-market-detail-head .my-market-signals{margin-top:12px}
 .my-market-detail-section{padding:18px 0;border-bottom:1px solid var(--line);min-width:0}
 .my-market-detail-section h3{font-size:16px;margin:8px 0;line-height:1.3}
 .my-market-detail-section .my-market-muted{margin:8px 0 0}
 .my-market-detail-section .contact-card-v156{width:100%}
 .my-market-detail-section .my-market-facts{margin:6px 0 16px}
 .my-market-detail-section .my-market-history li:last-child{border-bottom:0}
+.my-market-owner-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.my-market-owner-row>span{min-width:0}.my-market-owner-row strong,.my-market-owner-row small{display:block;overflow-wrap:anywhere}
+.my-market-owner-row strong{font-size:14px}.my-market-owner-row small{font-size:12px;color:var(--muted);margin-top:4px}
+.my-market-owner-row>div{display:flex;align-items:center;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.my-market-owner-row .secondary,.my-market-owner-row .text-btn{width:auto;min-width:0;min-height:44px;margin:0;font-size:12px}
+@media(max-width:390px){.my-market-owner-row{align-items:flex-start;flex-direction:column}.my-market-owner-row>div{justify-content:flex-start;width:100%}}
 @media(max-width:390px){.my-market-result{display:grid}.my-market-property{gap:6px}.my-market-history li{grid-template-columns:85px minmax(0,1fr);gap:10px}}
