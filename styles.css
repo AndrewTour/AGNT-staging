@@ -13993,14 +13993,20 @@ html[data-theme="dark"] .seller-close-match{border-color:#285942;background:#162
 
 /* My Market uses the existing full-width rows, controls and theme tokens. */
 .my-market-hub{min-width:0;width:100%;color:var(--ink)}
-.my-market-selects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0 0 16px}
-.my-market-pulse{position:relative;flex-shrink:0;width:44px;height:44px;min-width:44px;min-height:44px;margin:0}
-.my-market-selects label,.my-market-estimate-label,.my-market-controls>label{display:grid;gap:6px;min-width:0;font-size:12px;color:var(--muted)}
-.my-market-hub select{width:100%;max-width:100%;min-width:0;min-height:44px;box-sizing:border-box;border:1px solid var(--line);border-radius:14px;background:var(--cleanup-surface);color:var(--ink);padding:10px;font:inherit;font-size:16px}
+.my-market-selects{display:grid;grid-template-columns:minmax(0,1fr);gap:0;padding:0}
+.my-market-pulse{position:relative;flex-shrink:0;width:35.2px;height:35.2px;min-width:35.2px;min-height:35.2px;margin:0;transform:none}
+.my-market-pulse svg{width:12px;height:12px}
+.my-market-pulse:active{transform:scale(.94)}
+.my-market-selects label,.my-market-estimate-label,.my-market-controls>label{position:relative;display:grid;align-content:center;gap:3px;min-width:0;min-height:58px;padding:9px 30px 9px 0;color:var(--ink)}
+.my-market-selects label+label,.my-market-estimate-label{border-top:1px solid var(--line)}
+.my-market-field-title{font-size:12px;font-weight:800;line-height:1.2}
+.my-market-selects label::after,.my-market-estimate-label::after,.my-market-controls>label::after{content:'›';position:absolute;right:2px;top:50%;transform:translateY(-50%) rotate(90deg);color:var(--agnt-blue,#1769ff);font-size:21px;pointer-events:none}
+.my-market-hub select{width:100%;max-width:100%;min-width:0;min-height:26px;box-sizing:border-box;appearance:none;border:0;border-radius:0;background:transparent;color:var(--muted);padding:0 8px 0 0;font:inherit;font-size:13px;line-height:1.35;text-overflow:ellipsis}
+.my-market-hub select:focus-visible{outline:2px solid var(--agnt-blue,#1769ff);outline-offset:2px}
 .my-market-muted{font-size:12px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
 .my-market-counts{font-size:12px;color:var(--muted);line-height:1.4}
 .my-market-controls{border-bottom:1px solid var(--line);padding-bottom:0}
-.my-market-controls>label{padding:12px 0 14px}
+.my-market-controls>label{padding-right:30px}
 .my-market-signal{padding:8px 0 14px;border-bottom:1px solid var(--line)}
 .my-market-signal-head{display:flex;align-items:center;justify-content:space-between;gap:14px;min-width:0}
 .my-market-signal-head>div{min-width:0}
@@ -14013,9 +14019,9 @@ html[data-theme="dark"] .seller-close-match{border-color:#285942;background:#162
 .my-market-refine>summary{cursor:pointer;min-height:56px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;list-style:none;position:relative;padding:9px 30px 9px 0}
 .my-market-refine>summary span{font-size:10px;font-weight:800;letter-spacing:.13em;color:var(--ink)}
 .my-market-refine>summary small{font-size:12px;color:var(--muted);font-weight:550;line-height:1.35}
-.my-market-refine>summary::after{position:absolute;right:0;top:50%;transform:translateY(-50%)}
+.my-market-refine>summary::after{position:absolute;right:0;top:50%;transform:translateY(-50%);color:var(--agnt-blue,#1769ff)}
 .my-market-refine[open]>summary::after{transform:translateY(-50%) rotate(90deg)}
-.my-market-refine .my-market-selects{padding-top:8px}
+.my-market-refine .my-market-selects{padding-top:0}
 .my-market-disclosure,.my-market-property{border-bottom:1px solid var(--line);min-width:0}
 .my-market-disclosure{padding:16px 0}
 .my-market-disclosure>summary,.my-market-outreach>summary{cursor:pointer;min-height:44px;overflow-wrap:anywhere;display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none}
@@ -14055,8 +14061,7 @@ html[data-theme="dark"] .my-market-sms-ready{color:#8bb5ff}
 #myMarketHub .seller-estimate{padding:14px 0;border:0;border-radius:0;box-shadow:none;background:transparent}
 #myMarketHub .seller-estimate em{padding:0;background:transparent;border:0;border-radius:0;color:var(--muted)}
 html[data-theme="dark"] .my-market-hub{color:var(--ink)}
-html[data-theme="dark"] .my-market-hub select{background:var(--cleanup-surface);color:var(--ink);border-color:var(--line)}
-@media(max-width:350px){.my-market-selects{grid-template-columns:minmax(0,1fr)}}
+html[data-theme="dark"] .my-market-hub select{background:transparent;color:var(--muted)}
 
 /* Property details use the same full-width rows as Contacts. */
 .my-market-property-screen{min-width:0;width:100%;color:var(--ink)}
