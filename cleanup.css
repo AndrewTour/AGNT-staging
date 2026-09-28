@@ -1271,11 +1271,73 @@ html[data-theme="dark"] #todayView:not(.off-day-opportunity-mode) #openMarketPul
   #todayView:not(.off-day-opportunity-mode) #openMarketPulseHome svg{width:15px;height:15px}
 }
 
-/* v1.42.0 — Appointment context and communication continuity. */
-#appointmentForm #appointmentContext{
-  width:100%;min-width:0;min-height:84px;max-height:180px;resize:vertical;
-  box-sizing:border-box;border:1px solid var(--cleanup-line);border-radius:14px;
-  background:var(--cleanup-surface);color:var(--cleanup-ink);padding:12px 13px;
-  font:inherit;font-size:16px;line-height:1.35;
+/* Contacts list: compact management actions and a fixed, draggable index. */
+#prospectorContactsPanel .contacts-head{display:block!important;padding-bottom:12px!important}
+#prospectorContactsPanel .contacts-head-actions{display:flex!important;flex-wrap:wrap;align-items:center!important;justify-content:flex-start!important;width:100%;gap:6px 18px!important;margin-top:10px;white-space:normal}
+#prospectorContactsPanel .contacts-head-actions :is(.prospect-import-button,.manage-contacts-btn){display:inline-flex!important;justify-content:flex-start!important;width:auto;min-height:36px;padding:6px 0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#69717d!important;text-align:left;font-size:11px!important;font-weight:780!important;line-height:1.2!important;cursor:pointer}
+#prospectorContactsPanel .contacts-head-actions .prospect-import-button{color:var(--agnt-blue,#1769ff)!important}
+#prospectorContactsPanel .contacts-head-actions :is(.prospect-import-button,.manage-contacts-btn)::after{content:none!important}
+#prospectorContactsPanel .contacts-head-actions :is(.prospect-import-button,.manage-contacts-btn):active{opacity:.6}
+#prospectorContactsPanel .contacts-list{padding-right:29px}
+#prospectorContactsPanel .contact-card-v156{grid-template-columns:minmax(0,1fr) 20px 52px 10px!important;gap:10px!important;min-height:76px;scroll-margin-top:72px}
+#prospectorContactsPanel .contact-card-v156:not(:has(.contact-value)){grid-template-columns:minmax(0,1fr) 52px 10px!important}
+#prospectorContactsPanel .contact-card-v156.bulk-mode{grid-template-columns:26px minmax(0,1fr) 20px 52px!important}
+#prospectorContactsPanel .contact-card-v156.bulk-mode:not(:has(.contact-value)){grid-template-columns:26px minmax(0,1fr) 52px!important}
+#prospectorContactsPanel .contact-card-v156 .prospect-card-copy{min-width:0}
+#prospectorContactsPanel .contact-card-v156 .prospect-temp{justify-self:center;margin:0;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;white-space:nowrap;font-size:11px!important}
+#prospectorContactsPanel .contact-value{display:inline-grid;place-items:center;justify-self:center;width:20px;height:24px;margin:0;color:#8b929d;font-size:15px;font-weight:750;line-height:1}
+#prospectorContactsPanel .trend-up{color:#258255}
+#prospectorContactsPanel .trend-down{color:#ca4545}
+#contactAlphabet{position:fixed;top:calc(50% + min(10dvh,90px));right:max(3px,env(safe-area-inset-right));z-index:6;display:grid;grid-template-rows:repeat(26,minmax(0,1fr));width:26px;height:min(52dvh,390px);max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 150px);transform:translateY(-50%);touch-action:none;user-select:none;-webkit-user-select:none}
+#contactAlphabet.hidden,body:not(:has(#prospectingView.active #prospectingDashboard:not(.hidden) #prospectorContactsPanel:not(.hidden))) #contactAlphabet{display:none!important}
+#contactAlphabet button{display:grid;place-items:center;min-width:0;min-height:0;padding:0;border:0;background:transparent;color:var(--agnt-blue,#1769ff);font-size:10px;font-weight:800;line-height:1;cursor:pointer}
+#contactAlphabet button.active{border-radius:5px;background:#e5efff;color:#145bd5;font-size:11px}
+#contactAlphabet button:disabled{color:#c3c9d0;cursor:default}
+html[data-theme="dark"] #prospectorContactsPanel .contacts-head-actions .manage-contacts-btn{color:#aeb6c1!important}
+html[data-theme="dark"] #contactAlphabet button.active{background:#253b60;color:#a5c7ff}
+html[data-theme="dark"] #contactAlphabet button:disabled{color:#555d68}
+@media(max-width:390px){#prospectorContactsPanel .contact-card-v156{gap:7px!important}}
+
+/* Leaderboard: use My Market's open rows and plain controls. */
+#leaderboardModeShortcut{
+  min-width:58px!important;min-height:44px!important;width:auto!important;height:44px!important;
+  padding:0 8px!important;border:0!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;color:var(--agnt-ink,#151922)!important;
 }
-html[data-theme="dark"] #appointmentForm #appointmentContext{background:#171a20;border-color:#2b3039;color:#f5f6f7}
+#leaderboardInsights .leaderboard-live{
+  display:inline-flex;align-items:center;gap:6px;min-height:34px;
+  padding:0!important;border:0!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;
+}
+#leaderboardInsights .leaderboard-live::before{
+  content:'';width:6px;height:6px;flex:none;border-radius:50%;background:currentColor;
+}
+#leaderboardInsights .leaderboard-period-controls{
+  gap:0!important;border-bottom:1px solid var(--line,#e6e9ee);
+}
+#leaderboardInsights .leaderboard-period-controls button{
+  min-width:40px!important;min-height:44px!important;height:44px!important;
+  padding:0 9px!important;border:0!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;
+  color:var(--agnt-ink,#151922)!important;
+}
+#leaderboardInsights .leaderboard-period-controls button:disabled{color:var(--agnt-muted,#8b929d)!important}
+#leaderboardInsights .leaderboard-viewport-row .rank,
+#leaderboardInsights .leaderboard-viewport-row.leader .rank{
+  display:flex;align-items:center;justify-content:flex-start;
+  width:100%!important;height:auto!important;min-height:44px;
+  padding:0 0 0 2px!important;border:0!important;border-radius:0!important;
+  background:transparent!important;box-shadow:none!important;
+  color:var(--agnt-ink,#151922)!important;font-size:.79rem!important;font-weight:850!important;
+}
+#leaderboardInsights .leaderboard-viewport-row.me{background:transparent!important}
+#leaderboardInsights .leaderboard-viewport-row.leader:not(.me){background:transparent!important}
+html[data-theme="dark"] #leaderboardModeShortcut{color:#f5f6f7!important}
+html[data-theme="dark"] #leaderboardInsights .leaderboard-period-controls{border-bottom-color:#292e36}
+html[data-theme="dark"] #leaderboardInsights .leaderboard-period-controls button{background:transparent!important;color:#f5f6f7!important}
+html[data-theme="dark"] #leaderboardInsights .leaderboard-period-controls button:disabled{color:#727b88!important}
+html[data-theme="dark"] #leaderboardInsights .leaderboard-viewport-row .rank,
+html[data-theme="dark"] #leaderboardInsights .leaderboard-viewport-row.leader .rank{background:transparent!important;color:#f5f6f7!important}
+html[data-theme="dark"] #leaderboardInsights .leaderboard-viewport-row.me,
+html[data-theme="dark"] #leaderboardInsights .leaderboard-viewport-row.leader:not(.me){background:transparent!important}
+@media(max-width:390px){#leaderboardInsights .leaderboard-live{display:none}}

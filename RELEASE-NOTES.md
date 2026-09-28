@@ -1,11 +1,17 @@
-# AGNT v1.44.4 — Core controls
+# AGNT v1.44.25 — Design Pass
 
-Baseline: v1.44.3 My Market Contacts.
+- Built from v1.44.24 Trust & Continuity. This release adds `refinement.css` after the existing styles and updates the offline asset list for the new visual layer.
+- Across Home, Today, Core, Appointments, Leaderboard and Settings, information surfaces use a flatter hierarchy, cleaner dividers, consistent supporting text and restrained colour in light and dark mode.
+- Existing rounded action controls remain. `cleanup.css` retains all structural rules in their existing location.
+- No Firebase, authentication, Firestore, storage, sync, metric, match, navigation or workflow logic changed.
 
-My Market Show, Refine choices and the seller estimate contact picker now display as full-width flat rows with the same straightforward label and chevron hierarchy as the contact-detail actions. They remain native select controls. The My Market MarketPulse button and glyph are exactly 20% smaller than their previous 44 px / 15 px measurements (35.2 px / 12 px); its transparent tap extension remains. The property list also shows the number of recorded outreach contacts beside the existing street-contact count, making already worked properties visible before opening them.
+## Previous release
 
-Changed: index.html (field-label wrappers/release references); styles.css (scoped My Market row control and icon sizing); app.js (property-row outreach count and release metadata); runtime.js and service-worker.js (matching release identifiers); RELEASE-NOTES.md (current notes only).
+### AGNT v1.44.24 — Trust & Continuity
 
-Contacts, Buyers and Pipeline editor fields keep their existing approved form treatment. Firebase configuration, authentication, UID and Firestore paths/rules, saved data shapes, MarketPulse parsing, matching, metrics, SMS actions, navigation, service-worker behaviour, manifest and icons remain unchanged. No Firebase Console, Firestore rules or GitHub settings changes are required.
-
-Validation: JavaScript syntax, local file references, unique HTML IDs, control structure, release coherence, protected-file comparison and ZIP integrity. A physical iPhone, live Firebase and production were not tested.
+- Built from the approved v1.44.22 Morning Update package; its screens and features remain in place.
+- The cloud status now stays at Connecting until the day listener confirms a server snapshot. Offline/reconnect resets that confirmation.
+- Solo and team leaderboard publishes are serialized so an older write cannot complete after a newer one and become the remembered state.
+- A seller priority resolved as Contacted or Not required is rejected from a retained in-memory priority card for the rest of that day.
+- Warm PWA return continues to preserve an open form or workflow; this release has its own coherent offline asset cache.
+- Firestore rules, Firebase configuration, collection paths, document shapes, and CSS are unchanged.

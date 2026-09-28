@@ -9,8 +9,9 @@
 <meta name="apple-mobile-web-app-title" content="AGNT">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="styles.css?v=1.44.4-core-controls">
-<link rel="stylesheet" href="cleanup.css?v=1.44.4-core-controls">
+<link rel="stylesheet" href="styles.css?v=1.44.24-trust-continuity">
+<link rel="stylesheet" href="cleanup.css?v=1.44.24-trust-continuity">
+<link rel="stylesheet" href="refinement.css?v=1.44.25-design-pass">
 <title>AGNT</title>
 </head>
 <body>
@@ -577,7 +578,7 @@
         <label class="appointment-contact-picker">Contact name<div class="appointment-contact-input"><input id="appointmentContactName" type="text" placeholder="Search contacts or enter a name" autocomplete="off" autocapitalize="words" required><div id="appointmentContactSuggestions" class="appointment-contact-suggestions hidden" role="listbox"></div></div></label>
         <label>Contact number<input id="appointmentContactNumber" type="tel" placeholder="04xx xxx xxx" autocomplete="tel" inputmode="tel" required></label>
         <label>Property address<input id="appointmentAddress" type="text" placeholder="14 Calla Grove, Pendle Hill" autocomplete="street-address" required></label>
-        <label>Appointment context<textarea id="appointmentContext" rows="3" maxlength="1000" placeholder="Reason for the appointment, client priorities or agreed next step"></textarea></label>
+        <input id="appointmentContext" type="hidden">
         <div class="appointment-schedule">
           <label>Booking date<input id="appointmentDatePicker" type="date" required></label>
           <label>Booking time<input id="appointmentTime" type="time" value="12:00" required></label>
@@ -717,6 +718,7 @@
           <div class="prospecting-section-head contacts-head"><div><span id="prospectContactsEyebrow">CONTACTS</span><h3 id="prospectContactsHeading">Your database</h3><small id="prospectContactCount">0 contacts · Sorted A–Z</small></div><div class="contacts-head-actions"><label class="prospect-import-button">Import CSV<input id="prospectCsvImport" type="file" accept=".csv,text/csv"></label><button id="toggleProspectBulk" class="text-btn manage-contacts-btn" type="button">Manage Contacts</button><button id="toggleArchivedContacts" class="text-btn manage-contacts-btn" type="button">Archived</button></div></div>
           <div class="prospect-bulk-bar"><span id="prospectSelectedCount">0 selected</span><button id="selectAllProspects" class="text-btn" type="button">Select All</button><button id="restoreSelectedProspects" class="primary hidden" type="button" disabled>Restore</button><button id="deleteSelectedProspects" class="danger-btn" type="button" disabled>Delete</button></div>
           <div id="prospectContactList" class="prospect-list contacts-list"></div>
+          <nav id="contactAlphabet" class="contact-alphabet hidden" aria-label="Jump to contact by first letter"></nav>
         </section>
         <section id="prospectorBuyersPanel" class="prospector-buyers-panel hidden" aria-live="polite">
           <section class="buyer-overview">
@@ -1242,7 +1244,7 @@ Andrew Tour | McGrath</textarea></label>
 
 
 
-<script src="runtime.js?v=1.44.4-core-controls"></script>
-<script type="module" src="app.js?v=1.44.4-core-controls"></script>
+<script src="runtime.js?v=1.44.24-trust-continuity"></script>
+<script type="module" src="app.js?v=1.44.24-trust-continuity"></script>
 </body>
 </html>
