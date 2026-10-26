@@ -1,3 +1,9 @@
+STAGING ACCESS DIAGNOSTICS — build cb6ce-2
+
+This is a diagnostic staging build, not a confirmed fix for the live permission rejection. The displayed loading overview is provisional until the server responds. On access failure, Check team access reads six bounded server subscriptions and displays project ID, signed-in UID, team ID, verified membership, owner match and individual query errors. It writes nothing, ignores cache-only responses, cleans up subscriptions, rejects stale account results and reports timeouts. Share the report privately for troubleshooting. Underlying rules, indexes and team permissions are unchanged.
+
+Use only on the staging GitHub site. After uploading, open staging, close all its browser/PWA windows and reopen to activate the cache update. Select Team > Check team access; send the resulting report or screenshot.
+
 STAGING CONNECTION FIX — 27 October 2026
 
 This package connects ONLY to agnt-staging-cb6ce. Upload only to the staging site. The service worker release/cache is distinct from the earlier package. Existing rules and indexes are unchanged. Close every staging browser/PWA window and reopen after the update has downloaded.
