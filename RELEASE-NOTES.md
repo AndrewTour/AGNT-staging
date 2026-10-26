@@ -1,3 +1,9 @@
+STAGING CONNECTION FIX — 27 October 2026
+
+This package connects ONLY to agnt-staging-cb6ce. Upload only to the staging site. The service worker release/cache is distinct from the earlier package. Existing rules and indexes are unchanged. Close every staging browser/PWA window and reopen after the update has downloaded.
+
+Firebase Auth accounts, authorised domains and team/member records belong to the staging project. Sign in with a staging account and create/join its team if needed. Production accounts and data are not copied or migrated. Feature flags still default off; enable only after staging team configuration. No live authentication or server configuration has been changed or verified.
+
 # AGNT v1.48.0 — audited operations review
 
 Prepared 27 October 2026, Australia/Sydney. This is an isolated review build. Nothing has been pushed, merged, deployed, migrated or published to Firebase.
