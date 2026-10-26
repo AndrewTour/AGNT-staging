@@ -104,6 +104,271 @@ service cloud.firestore {
                     && request.resource.data.ownerUid == resource.data.ownerUid;
       allow delete: if isTeamOwner(teamId);
 
+      function opsSettings() { return get(/databases/$(database)/documents/teams/$(teamId)/settings/operations).data; }
+      function opsOn() { return exists(/databases/$(database)/documents/teams/$(teamId)/settings/operations) && opsSettings().teamOpsV1==true; }
+      function opsProfile(id) { return get(/databases/$(database)/documents/teams/$(teamId)/opsProfiles/$(id)).data; }
+      function opsFinanceReader() { return isTeamOwner(teamId) || request.auth.uid in opsSettings().financeReaders; }
+      function opsCanManageCampaign(c) { return opsOn() && (isTeamOwner(teamId) || (c.leadUid==request.auth.uid && opsProfile(request.auth.uid).opsRole=='agent' && opsProfile(request.auth.uid).active)); }
+      function opsCampaignValid(d,id) {
+        return d.opsVersion==1 && opsOn() && d.status in ['Pending','Listed','Live','Sold','Settled']
+          && d.agreementSigned is bool && d.agreementRef is string && d.agreementRef.size()<=240
+          && (d.status=='Pending' || (d.agreementSigned && d.agreementRef.size()>0))
+          && d.salePhase in ['','Under contract','Unconditional'] && d.exchangeDate is string
+          && d.unconditionalDate is string && d.settlementDate is string && d.auctionDate is string && d.nextInspectionDate is string
+          && (!('associateMode' in d) || d.associateMode in ['default','none','override']) && d.associateUid is string && (d.associateUid=='' || (exists(/databases/$(database)/documents/teams/$(teamId)/members/$(d.associateUid)) && opsProfile(d.associateUid).opsRole=='associate'))
+          && d.accessUids is list && d.accessUids.size()<=10 && d.leadUid in d.accessUids
+          && d.archived is bool && d.archiveReason is string && d.archiveReason.size()<=1000 && d.archiveFollowUp is string
+          && (!d.archived || d.status!='Pending' || (d.archiveReason.size()>0 && d.archiveFollowUp.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')))
+          && (!('preparationTemplate' in d) || (d.preparationTemplate is list && d.preparationTemplate.size()<=21)) && d.leverageStarted is bool && (!d.leverageStarted || d.status!='Pending') && d.auctionFinished is bool
+          && d.saleTransactionId is string && d.templateId is string
+          && (!(d.status in ['Sold','Settled']) || (d.exchangeDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') && getAfter(/databases/$(database)/documents/teams/$(teamId)/sales/$(d.saleTransactionId)).data.commissionStatus=='Confirmed' && getAfter(/databases/$(database)/documents/teams/$(teamId)/sales/$(d.saleTransactionId)).data.confirmedGciCents>0 && getAfter(/databases/$(database)/documents/teams/$(teamId)/sales/$(d.saleTransactionId)).data.propertyId==id))
+          && (d.salePhase!='Unconditional' || d.unconditionalDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
+          && (d.status!='Settled' || (d.salePhase=='Unconditional' && d.settlementDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')));
+      }
+      function isOpsTask(d) { return 'ops' in d; }
+      function opsDateString(ms) { let t=timestamp.value(ms);return string(t.year())+'-'+(t.month()<10?'0':'')+string(t.month())+'-'+(t.day()<10?'0':'')+string(t.day()); }
+      function validOpsTask(d,id) {
+        return d.keys().hasOnly(['id','teamId','taskId','title','note','date','scheduledDate','time','scheduledAt','createdDate','at','setterUid','setterName','assignedToName','assignedToUid','allocationSource','accessUids','completedAt','completedByUid','startedAt','archived','ops','revision','eventId','updatedByUid','updatedAt'])
+          && d.teamId==teamId && d.taskId==id && d.title is string && d.title.size()>0 && d.title.size()<=160
+          && d.note is string && d.note.size()<=1000 && d.date is string && (d.date=='' || d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
+          && d.completedAt is int && d.completedAt>=0 && d.startedAt is int && d.startedAt>=0 && d.archived is bool
+          && d.ops.keys().hasAll(['version','campaignId','itemKey','category','leadUid','assignmentClass','stage','trigger','allocationSource','workDateAt'])
+          && d.ops.keys().hasOnly(['version','campaignId','itemKey','category','leadUid','assignmentClass','stage','trigger','allocationSource','workDateAt'])
+          && d.ops.workDateAt is int && (d.ops.category!='associate-daily' || opsDateString(d.ops.workDateAt)==d.date) && d.ops.itemKey is string && d.ops.itemKey.size()<=120 && d.ops.campaignId is string && d.ops.campaignId.size()<=160 && d.ops.version==1 && d.ops.category in ['preparation','leverage','associate-daily','collective']
+          && d.ops.assignmentClass in ['lead_only','associate_eligible','collective']
+          && (!(d.ops.itemKey in ['agreement','marketing_approval','launch','contract_ready','sale','past_appraisals','underbidder_callbacks','sold_prospect_calls']) || d.ops.assignmentClass=='lead_only')
+          && d.ops.allocationSource in ['associate','lead_fallback','manual','routine','lead','lead_associate','property_associate','no_associate_fallback','unavailable_or_permission_fallback']
+          && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(d.assignedToUid))
+          && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(d.ops.leadUid))
+          && d.accessUids is list && d.accessUids.toSet()==[d.ops.leadUid,d.assignedToUid].toSet()
+          && (d.ops.assignmentClass!='lead_only' || d.assignedToUid==d.ops.leadUid)
+          && (d.ops.assignmentClass!='associate_eligible' || d.assignedToUid==d.ops.leadUid || opsProfile(d.ops.leadUid).associateUid==d.assignedToUid || get(/databases/$(database)/documents/teams/$(teamId)/campaigns/$(d.ops.campaignId)).data.associateUid==d.assignedToUid)
+          && (d.ops.category in ['associate-daily','collective'] || get(/databases/$(database)/documents/teams/$(teamId)/campaigns/$(d.ops.campaignId)).data.leadUid==d.ops.leadUid)
+          && d.revision is int && d.eventId is string && d.updatedAt==request.time && d.updatedByUid==request.auth.uid;
+      }
+      function opsTaskActor(d) { return isTeamOwner(teamId) || (d.ops.leadUid==request.auth.uid && (d.ops.category!='collective' && opsProfile(request.auth.uid).opsRole=='agent' && opsProfile(request.auth.uid).active)); }
+      function opsTaskApplicable(d) {
+        let c=get(/databases/$(database)/documents/teams/$(teamId)/campaigns/$(d.ops.campaignId)).data;
+        return !c.archived && c.status!='Settled' && (d.ops.category!='preparation' || d.ops.stage=='Pending' || (d.ops.stage=='Listed' && c.status in ['Listed','Live','Sold']) || (d.ops.stage=='Live' && c.status in ['Live','Sold']) || (d.ops.stage=='Sold' && c.status=='Sold')) && (d.ops.category!='leverage' || (c.leverageStarted && opsSettings().campaignLeverageV1==true
+          && (!(d.ops.trigger in ['auction_enabled','auction_finished']) || c.auctionDate!='')
+          && (d.ops.trigger!='auction_finished' || c.auctionFinished)
+          && (!(d.ops.trigger in ['inspection_scheduled','weekly_open_home']) || c.nextInspectionDate!='')
+          && (d.ops.trigger!='sold' || c.status in ['Sold','Settled'])));
+      }
+      match /settings/operations {
+        allow read: if isTeamMember(teamId);
+        allow create,update: if isTeamMember(teamId) && isTeamOwner(teamId)
+          && request.resource.data.keys().hasOnly(['teamOpsV1','campaignLeverageV1','financeReaders'])
+          && request.resource.data.teamOpsV1 is bool && request.resource.data.campaignLeverageV1 is bool
+          && request.resource.data.financeReaders is list && request.resource.data.financeReaders.size()<=100;
+        allow delete: if false;
+      }
+      match /opsProfiles/{memberId} {
+        allow read: if isTeamMember(teamId) && opsOn();
+        allow create,update: if isTeamMember(teamId) && isTeamOwner(teamId) && opsOn()
+          && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(memberId))
+          && request.resource.data.uid==memberId && request.resource.data.teamId==teamId
+          && request.resource.data.opsRole in ['agent','associate','operations'] && request.resource.data.active is bool
+          && request.resource.data.associateUid is string && (request.resource.data.associateUid=='' || (request.resource.data.associateUid!=memberId && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.resource.data.associateUid)) && opsProfile(request.resource.data.associateUid).opsRole=='associate'))
+          && request.resource.data.workingDays is list && request.resource.data.workingDays.hasOnly([0,1,2,3,4,5,6])
+          && request.resource.data.leaveDates is list && request.resource.data.leaveDates.size()<=366
+          && request.resource.data.attemptTarget is int && request.resource.data.attemptTarget>=0 && request.resource.data.attemptTarget<=10000
+          && request.resource.data.fridaySigns is int && request.resource.data.fridaySigns>=0 && request.resource.data.fridaySigns<=1000
+          && request.resource.data.secondRoundDay in [1,2,3,4,5,6] && request.resource.data.disabledRoutineKeys is list
+          && request.resource.data.updatedByUid==request.auth.uid && request.resource.data.updatedAt==request.time
+          && (!exists(/databases/$(database)/documents/teams/$(teamId)/opsProfiles/$(memberId)) ? request.resource.data.revision==1 : request.resource.data.revision==resource.data.revision+1);
+        allow delete: if false;
+      }
+      match /checklistTemplates/{templateId} {
+        allow read: if isTeamMember(teamId) && opsOn();
+        allow create,update: if isTeamMember(teamId) && isTeamOwner(teamId) && opsOn()
+          && request.resource.data.teamId==teamId && request.resource.data.name is string && request.resource.data.name.size()>0 && request.resource.data.name.size()<=100
+          && request.resource.data.steps is list && request.resource.data.steps.size()>0 && request.resource.data.steps.size()<=21
+          && request.resource.data.archived is bool && request.resource.data.updatedByUid==request.auth.uid && request.resource.data.updatedAt==request.time
+          && (!exists(/databases/$(database)/documents/teams/$(teamId)/checklistTemplates/$(templateId)) ? request.resource.data.revision==1 : request.resource.data.revision==resource.data.revision+1);
+        allow delete: if false;
+      }
+      function shareAt(d,i) { return i>=d.agentShares.size() || (d.agentShares[i].userId==d.beneficiaryUids[i] && d.agentShares[i].basisPoints is int && d.agentShares[i].basisPoints>0 && d.agentShares[i].basisPoints<=10000 && d.agentShares[i].userId is string && d.agentShares[i].userId.size()>0 && d.agentShares[i].userId.size()<=128); }
+      function shareBps(d,i) { return i>=d.agentShares.size()?0:d.agentShares[i].basisPoints; }
+      match /sales/{transactionId} {
+        function validSale() {
+          let d=request.resource.data;
+          return d.keys().hasOnly(['transactionId','propertyId','confirmedGciCents','commissionStatus','agentShares','beneficiaryUids','includesGST','stage','salePhase','unconditionalDate','voided','teamId','revision','eventId','createdByUid','createdAt','updatedByUid','updatedAt'])
+            && d.teamId==teamId && d.transactionId==transactionId && d.propertyId is string
+            && exists(/databases/$(database)/documents/teams/$(teamId)/campaigns/$(d.propertyId))
+            && d.confirmedGciCents is int && d.confirmedGciCents>=0 && d.confirmedGciCents<=10000000000
+            && d.commissionStatus in ['Proposed','Confirmed','Voided'] && (d.commissionStatus!='Confirmed' || d.confirmedGciCents>0)
+            && d.includesGST==true && d.voided==(d.commissionStatus=='Voided')
+            && d.agentShares is list && d.agentShares.size()>0 && d.agentShares.size()<=6
+            && d.beneficiaryUids is list && d.beneficiaryUids.size()==d.agentShares.size() && d.beneficiaryUids.toSet().size()==d.beneficiaryUids.size()
+            && shareAt(d,0) && shareAt(d,1) && shareAt(d,2) && shareAt(d,3) && shareAt(d,4) && shareAt(d,5)
+            && shareBps(d,0)+shareBps(d,1)+shareBps(d,2)+shareBps(d,3)+shareBps(d,4)+shareBps(d,5)==10000
+            && d.stage in ['Pending','Listed','Live','Sold','Settled'] && d.salePhase in ['','Under contract','Unconditional'] && d.unconditionalDate is string
+            && d.createdByUid is string && d.createdAt is int && d.updatedByUid==request.auth.uid && d.updatedAt==request.time
+            && d.revision is int && d.eventId is string;
+        }
+        function financialAudit() {
+          let d=request.resource.data;
+          let a=getAfter(/databases/$(database)/documents/teams/$(teamId)/financialActivity/$(d.eventId)).data;
+          return a.transactionId==transactionId && a.revision==d.revision && a.actorUid==request.auth.uid && a.at==request.time;
+        }
+        allow read: if isTeamMember(teamId) && opsOn() && opsFinanceReader();
+        allow create: if isTeamMember(teamId) && isTeamOwner(teamId) && opsOn() && request.resource.data.revision==1 && request.resource.data.createdByUid==request.auth.uid && validSale() && financialAudit();
+        allow update: if isTeamMember(teamId) && isTeamOwner(teamId) && opsOn()
+          && request.resource.data.transactionId==resource.data.transactionId && request.resource.data.propertyId==resource.data.propertyId
+          && request.resource.data.createdByUid==resource.data.createdByUid && request.resource.data.createdAt==resource.data.createdAt && request.resource.data.revision==resource.data.revision+1 && validSale() && financialAudit();
+        allow delete: if false;
+      }
+      match /financialActivity/{eventId} {
+        function financialTarget(d) {
+          let t=getAfter(/databases/$(database)/documents/teams/$(teamId)/sales/$(d.transactionId)).data;
+          return t.eventId==eventId && t.revision==d.revision && t.updatedAt==request.time
+            && t.confirmedGciCents==d.confirmedGciCents && t.commissionStatus==d.commissionStatus && t.agentShares==d.agentShares;
+        }
+        allow read: if isTeamMember(teamId) && opsOn() && opsFinanceReader();
+        allow create: if isTeamMember(teamId) && isTeamOwner(teamId) && opsOn()
+          && request.resource.data.keys().hasAll(['transactionId','revision','actorUid','at','confirmedGciCents','commissionStatus','agentShares'])
+          && request.resource.data.keys().hasOnly(['transactionId','revision','actorUid','at','confirmedGciCents','commissionStatus','agentShares'])
+          && request.resource.data.actorUid==request.auth.uid && request.resource.data.at==request.time && financialTarget(request.resource.data);
+        allow update,delete: if false;
+      }
+      function opsAppointment(d) { return 'opsVersion' in d && d.opsVersion==1; }
+      function opsBookingValid(d,id) {
+        return opsOn() && d.appointmentId==id && d.leadUid==d.assignedToUid && d.setterUid is string
+          && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(d.leadUid))
+          && d.supportUids is list && d.supportUids.size()<=4 && !d.supportUids.hasAny([d.leadUid])
+          && d.participantUids is list && d.participantUids.toSet()==d.supportUids.concat([d.leadUid,d.setterUid]).toSet()
+          && d.timezone=='Australia/Sydney' && d.scheduledAt is int && d.scheduledAt>0
+          && d.date is string && d.time is string && d.time.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$')
+          && d.type in ['MAP','LAP','BAP','OFI','VM'] && d.context is string && d.context.size()<=1000
+          && d.contactName is string && d.contactName.size()<=240 && d.contactNumber is string && d.contactNumber.size()<=80 && d.address is string && d.address.size()<=240
+          && d.campaignId is string && (d.campaignId=='' || get(/databases/$(database)/documents/teams/$(teamId)/campaigns/$(d.campaignId)).data.leadUid==d.leadUid)
+          && supportAt(d,0) && supportAt(d,1) && supportAt(d,2) && supportAt(d,3)
+          && d.updatedAt==request.time && d.updatedByUid==request.auth.uid && d.eventId is string && d.revision is int;
+      }
+      function supportAt(d,i) { return i>=d.supportUids.size() || exists(/databases/$(database)/documents/teams/$(teamId)/members/$(d.supportUids[i])); }
+
+      function linkedActivity(kind,id,d) {
+        let e = getAfter(/databases/$(database)/documents/teams/$(teamId)/activity/$(d.eventId)).data;
+        return (kind in ['task','appointment'] || !exists(/databases/$(database)/documents/teams/$(teamId)/activity/$(d.eventId)))
+          && e.kind == kind && e.recordId == id && e.revision == d.revision
+          && e.actorUid == request.auth.uid && e.at == request.time
+          && d.updatedByUid == request.auth.uid && d.updatedAt == request.time;
+      }
+      function ownTask(i,b,a,v) {
+        return i >= b.size() || b[i] == a[i]
+          || (b[i].assignedToUid == request.auth.uid && a[i].done is bool
+              && v == (a[i].done ? 'Completed' : 'Reopened') && a[i].diff(b[i]).affectedKeys().hasOnly(['done']));
+      }
+      function ownTasksOnly(b,a,v) {
+        return a.size() == b.size() && b.size() <= 21 &&
+          ownTask(0,b,a,v)
+          && ownTask(1,b,a,v)
+          && ownTask(2,b,a,v)
+          && ownTask(3,b,a,v)
+          && ownTask(4,b,a,v)
+          && ownTask(5,b,a,v)
+          && ownTask(6,b,a,v)
+          && ownTask(7,b,a,v)
+          && ownTask(8,b,a,v)
+          && ownTask(9,b,a,v)
+          && ownTask(10,b,a,v)
+          && ownTask(11,b,a,v)
+          && ownTask(12,b,a,v)
+          && ownTask(13,b,a,v)
+          && ownTask(14,b,a,v)
+          && ownTask(15,b,a,v)
+          && ownTask(16,b,a,v)
+          && ownTask(17,b,a,v)
+          && ownTask(18,b,a,v)
+          && ownTask(19,b,a,v)
+          && ownTask(20,b,a,v);
+      }
+      // Campaign owners edit definitions; assigned members may change only their own completion flags.
+      match /campaigns/{campaignId} {
+        function validCampaign() {
+          let d = request.resource.data;
+          return d.keys().hasAll(['teamId','address','suburb','status','leadUid','nextAction','dueDate','note','checklist','createdByUid','createdAt','updatedAt','revision','eventId','updatedByUid'])
+            && d.keys().hasOnly(['teamId','address','suburb','status','leadUid','nextAction','dueDate','note','checklist','createdByUid','createdAt','updatedAt','revision','eventId','updatedByUid','opsVersion','accessUids','agreementSigned','agreementRef','salePhase','exchangeDate','unconditionalDate','settlementDate','auctionDate','auctionFinished','nextInspectionDate','associateUid','archived','archiveReason','archiveFollowUp','saleTransactionId','leverageStarted','templateId','associateMode','preparationTemplate','sourceContactId','sourceOwnerUid'])
+            && (!('opsVersion' in d) || opsCampaignValid(d,campaignId))
+            && d.teamId == teamId
+            && d.address is string && d.address.size() > 0 && d.address.size() <= 240
+            && d.suburb is string && d.suburb.size() <= 100
+            && d.status in ['Pending','Listed','Live','Sold','Settled','Archived']
+            && d.leadUid is string
+            && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(d.leadUid))
+            && d.nextAction is string && d.nextAction.size() <= 240
+            && d.dueDate is string && d.dueDate.size() <= 10
+            && d.note is string && d.note.size() <= 3000
+            && d.checklist is list && d.checklist.size() <= 40
+            && d.createdByUid is string && d.createdAt is int && d.updatedAt is timestamp
+            && d.revision is int && d.revision > 0 && d.eventId is string && d.updatedByUid is string;
+        }
+        allow read: if isTeamMember(teamId);
+        allow create: if isTeamMember(teamId) && isTeamOwner(teamId) && request.resource.data.createdByUid == request.auth.uid && request.resource.data.revision == 1 && validCampaign() && linkedActivity('campaign',campaignId,request.resource.data) && getAfter(/databases/$(database)/documents/teams/$(teamId)/activity/$(request.resource.data.eventId)).data.verb=='Created';
+        allow update: if isTeamMember(teamId)
+          && (!('opsVersion' in resource.data) || ('opsVersion' in request.resource.data && request.resource.data.opsVersion==1))
+          && request.resource.data.createdByUid == resource.data.createdByUid
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.revision == resource.data.revision + 1 && validCampaign()
+          && linkedActivity('campaign',campaignId,request.resource.data)
+          && (isTeamOwner(teamId) || (opsCanManageCampaign(resource.data) && request.resource.data.leadUid==resource.data.leadUid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','agreementSigned','agreementRef','salePhase','exchangeDate','unconditionalDate','settlementDate','auctionDate','auctionFinished','nextInspectionDate','archived','archiveReason','archiveFollowUp','saleTransactionId','leverageStarted','updatedAt','updatedByUid','eventId','revision'])) || (resource.data.status != 'Archived'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checklist','revision','eventId','updatedByUid','updatedAt'])
+            && request.resource.data.checklist != resource.data.checklist && ownTasksOnly(resource.data.checklist,request.resource.data.checklist,getAfter(/databases/$(database)/documents/teams/$(teamId)/activity/$(request.resource.data.eventId)).data.verb)));
+        allow delete: if false;
+      }
+
+      match /teamActions/{actionId} {
+        function validAction() {
+          let d = request.resource.data;
+          return d.keys().hasAll(['teamId','title','note','dueDate','assignedToUid','done','archived','createdByUid','createdAt','updatedAt','updatedByUid','eventId','revision'])
+            && d.keys().hasOnly(['teamId','title','note','dueDate','assignedToUid','done','archived','createdByUid','createdAt','updatedAt','updatedByUid','eventId','revision'])
+            && d.teamId == teamId && d.title is string && d.title.size()>0 && d.title.size()<=160
+            && d.note is string && d.note.size()<=1000 && d.dueDate is string && d.dueDate.size()==10
+            && d.done is bool && d.archived is bool && d.createdAt is int && d.createdByUid is string
+            && d.updatedAt is timestamp && d.updatedByUid is string && d.eventId is string && d.revision is int
+            && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(d.assignedToUid));
+        }
+        allow read: if isTeamMember(teamId);
+        allow create: if isTeamMember(teamId) && isTeamOwner(teamId) && validAction()
+          && request.resource.data.createdByUid==request.auth.uid && request.resource.data.revision==1
+          && linkedActivity('action',actionId,request.resource.data) && getAfter(/databases/$(database)/documents/teams/$(teamId)/activity/$(request.resource.data.eventId)).data.verb=='Created';
+        allow update: if isTeamMember(teamId) && validAction()
+          && request.resource.data.createdByUid==resource.data.createdByUid && request.resource.data.createdAt==resource.data.createdAt
+          && request.resource.data.revision==resource.data.revision+1 && linkedActivity('action',actionId,request.resource.data) && getAfter(/databases/$(database)/documents/teams/$(teamId)/activity/$(request.resource.data.eventId)).data.verb == (resource.data.done != request.resource.data.done ? (request.resource.data.done ? 'Completed' : 'Reopened') : 'Updated')
+          && (isTeamOwner(teamId) || (resource.data.assignedToUid==request.auth.uid && !resource.data.archived
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['done','revision','eventId','updatedByUid','updatedAt'])));
+        allow delete: if false;
+      }
+      match /activity/{eventId} {
+        allow get: if isTeamMember(teamId) && !exists(/databases/$(database)/documents/teams/$(teamId)/activity/$(eventId));
+        function linkedRecord(d) {
+          let target = d.kind=='campaign' ? getAfter(/databases/$(database)/documents/teams/$(teamId)/campaigns/$(d.recordId)).data
+            : d.kind=='action' ? getAfter(/databases/$(database)/documents/teams/$(teamId)/teamActions/$(d.recordId)).data
+            : d.kind=='task' ? getAfter(/databases/$(database)/documents/teams/$(teamId)/tasks/$(d.recordId)).data
+            : getAfter(/databases/$(database)/documents/teams/$(teamId)/appointments/$(d.recordId)).data;
+          return target.eventId == eventId && target.revision == d.revision
+            && target.updatedByUid == request.auth.uid && target.updatedAt == request.time
+            && (d.kind in ['campaign','appointment'] ? target.address == d.label : target.title == d.label)
+            && (d.kind!='task' || (d.audienceUids.toSet()==target.accessUids.toSet()
+              && d.details.afterOwnerUid==target.assignedToUid && d.details.afterDueDate==target.date
+              && d.details.beforeOwnerUid==(exists(/databases/$(database)/documents/teams/$(teamId)/tasks/$(d.recordId))?get(/databases/$(database)/documents/teams/$(teamId)/tasks/$(d.recordId)).data.assignedToUid:'')
+              && d.details.beforeDueDate==(exists(/databases/$(database)/documents/teams/$(teamId)/tasks/$(d.recordId))?get(/databases/$(database)/documents/teams/$(teamId)/tasks/$(d.recordId)).data.date:'')))
+            && (d.kind!='appointment' || d.audienceUids.toSet()==target.participantUids.toSet());
+        }
+        allow read: if isTeamMember(teamId) && (resource.data.kind in ['campaign','action'] || isTeamOwner(teamId) || request.auth.uid in resource.data.audienceUids);
+        allow create: if isTeamMember(teamId)
+          && request.resource.data.keys().hasAll(['kind','recordId','revision','label','verb','actorUid','at'])
+          && request.resource.data.keys().hasOnly(['kind','recordId','revision','label','verb','actorUid','at','details','audienceUids'])
+          && request.resource.data.kind in ['campaign','action','task','appointment']
+          && request.resource.data.verb in ['Created','Updated','Completed','Reopened']
+          && request.resource.data.recordId is string && request.resource.data.revision is int
+          && request.resource.data.label is string && request.resource.data.label.size()<=240
+          && request.resource.data.actorUid == request.auth.uid && request.resource.data.at == request.time
+          && linkedRecord(request.resource.data);
+        allow update,delete: if false;
+      }
+
       match /members/{memberId} {
         // A user can verify their own membership; team members can see their team.
         allow read: if isOwner(memberId)
@@ -136,38 +401,49 @@ service cloud.firestore {
         allow delete: if isTeamOwner(teamId) || isOwner(memberId);
       }
 
-      // Team appointment assignment. Setter keeps personal appointment/stat record.
+      // Existing appointment assignment path, extended with lead/support operations metadata.
       match /appointments/{appointmentId} {
-        allow read: if isTeamMember(teamId)
-                    || hasActiveTeamManagerGrant(teamId);
-        allow create: if isTeamMember(teamId)
-                      && request.resource.data.setterUid == request.auth.uid
-                      && request.resource.data.assignedToUid is string
-                      && request.resource.data.assignedToUid != request.auth.uid
-                      && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.resource.data.assignedToUid));
-        allow update: if isTeamMember(teamId)
-                      && ((resource.data.setterUid == request.auth.uid && request.resource.data.setterUid == resource.data.setterUid)
-                          || (resource.data.assignedToUid == request.auth.uid
-                              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['acknowledgedAt','calendarAddedAt','updatedAt'])));
-        allow delete: if isTeamOwner(teamId) || resource.data.setterUid == request.auth.uid;
+        allow get: if isTeamMember(teamId) && opsOn() && !exists(/databases/$(database)/documents/teams/$(teamId)/appointments/$(appointmentId));
+        allow get: if isTeamMember(teamId) && (!opsAppointment(resource.data) || isTeamOwner(teamId) || request.auth.uid in resource.data.participantUids)
+          || (!opsAppointment(resource.data) && hasActiveTeamManagerGrant(teamId));
+        allow list: if isTeamMember(teamId) && (isTeamOwner(teamId) || resource.data.assignedToUid==request.auth.uid || resource.data.setterUid==request.auth.uid || request.auth.uid in resource.data.participantUids) || hasActiveTeamManagerGrant(teamId);
+        allow create: if isTeamMember(teamId) && (
+          (!opsAppointment(request.resource.data) && request.resource.data.setterUid==request.auth.uid && request.resource.data.assignedToUid is string && request.resource.data.assignedToUid!=request.auth.uid && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.resource.data.assignedToUid)))
+          || (opsAppointment(request.resource.data) && request.resource.data.setterUid==request.auth.uid && request.resource.data.revision==1 && opsBookingValid(request.resource.data,appointmentId)
+              && (isTeamOwner(teamId) || request.resource.data.leadUid==request.auth.uid || opsProfile(request.resource.data.leadUid).associateUid==request.auth.uid)
+              && linkedActivity('appointment',appointmentId,request.resource.data)));
+        allow update: if isTeamMember(teamId) && (
+          (!opsAppointment(resource.data) && !opsAppointment(request.resource.data) && ((resource.data.setterUid==request.auth.uid && request.resource.data.setterUid==resource.data.setterUid) || (resource.data.assignedToUid==request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['acknowledgedAt','calendarAddedAt','updatedAt']))))
+          || (opsAppointment(resource.data) && opsAppointment(request.resource.data) && (
+            ((isTeamOwner(teamId) || resource.data.leadUid==request.auth.uid) && request.resource.data.setterUid==resource.data.setterUid && request.resource.data.revision==resource.data.revision+1 && opsBookingValid(request.resource.data,appointmentId) && linkedActivity('appointment',appointmentId,request.resource.data))
+            || (request.auth.uid in resource.data.participantUids && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['acknowledgedAt','calendarAddedAt','updatedAt'])))));
+        allow delete: if !opsAppointment(resource.data) && (isTeamOwner(teamId) || resource.data.setterUid==request.auth.uid);
       }
-
-      // Team task assignment mirrors appointment ownership: the setter controls
-      // the task and the allocated agent can only update completion state.
+      // Existing task path. New operations tasks are immutable-definition records with audited changes.
       match /tasks/{taskId} {
-        allow read: if isTeamMember(teamId)
-                    || hasActiveTeamManagerGrant(teamId);
-        allow create: if isTeamMember(teamId)
-                      && request.resource.data.setterUid == request.auth.uid
-                      && request.resource.data.assignedToUid is string
-                      && request.resource.data.assignedToUid != request.auth.uid
-                      && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.resource.data.assignedToUid));
-        allow update: if isTeamMember(teamId)
-                      && ((resource.data.setterUid == request.auth.uid
-                           && request.resource.data.setterUid == resource.data.setterUid)
-                          || (resource.data.assignedToUid == request.auth.uid
-                              && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completedAt','updatedAt'])));
-        allow delete: if isTeamOwner(teamId) || resource.data.setterUid == request.auth.uid;
+        allow get: if isTeamMember(teamId) && opsOn() && !exists(/databases/$(database)/documents/teams/$(teamId)/tasks/$(taskId));
+        allow get: if (isTeamMember(teamId) && (!isOpsTask(resource.data) || isTeamOwner(teamId) || request.auth.uid in resource.data.accessUids))
+          || (!isOpsTask(resource.data) && hasActiveTeamManagerGrant(teamId));
+        allow list: if isTeamMember(teamId) && (isTeamOwner(teamId) || resource.data.assignedToUid==request.auth.uid || resource.data.setterUid==request.auth.uid || request.auth.uid in resource.data.accessUids) || hasActiveTeamManagerGrant(teamId);
+        allow create: if isTeamMember(teamId) && (
+          (!isOpsTask(request.resource.data) && request.resource.data.setterUid==request.auth.uid && request.resource.data.assignedToUid is string && request.resource.data.assignedToUid!=request.auth.uid && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.resource.data.assignedToUid)))
+          || (isOpsTask(request.resource.data) && opsOn() && request.resource.data.revision==1 && request.resource.data.setterUid==request.auth.uid && validOpsTask(request.resource.data,taskId) && request.resource.data.completedAt==0 && request.resource.data.startedAt==0 && (opsTaskActor(request.resource.data) || (request.resource.data.ops.category=='associate-daily' && request.resource.data.ops.leadUid==request.auth.uid))
+            && (request.resource.data.ops.category!='associate-daily' || (request.resource.data.assignedToUid==request.auth.uid && opsProfile(request.auth.uid).opsRole=='associate' && opsProfile(request.auth.uid).active && !opsProfile(request.auth.uid).leaveDates.hasAny([request.resource.data.date]) && timestamp.value(request.resource.data.ops.workDateAt).dayOfWeek()%7 in opsProfile(request.auth.uid).workingDays))
+            && linkedActivity('task',taskId,request.resource.data)));
+        allow update: if isTeamMember(teamId) && (
+          (!isOpsTask(resource.data) && !isOpsTask(request.resource.data) && ((resource.data.setterUid==request.auth.uid && request.resource.data.setterUid==resource.data.setterUid) || (resource.data.assignedToUid==request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completedAt','updatedAt']))))
+          || (isOpsTask(resource.data) && isOpsTask(request.resource.data) && opsOn()
+            && request.resource.data.setterUid==resource.data.setterUid && request.resource.data.taskId==resource.data.taskId
+            && request.resource.data.revision==resource.data.revision+1 && validOpsTask(request.resource.data,taskId) && linkedActivity('task',taskId,request.resource.data)
+            && request.resource.data.ops.diff(resource.data.ops).affectedKeys().hasOnly(['allocationSource'])
+            && (request.resource.data.completedAt==resource.data.completedAt || request.resource.data.completedByUid==request.auth.uid)
+            && (request.resource.data.completedAt==resource.data.completedAt || resource.data.ops.category in ['associate-daily','collective'] || opsTaskApplicable(resource.data))
+            && ((opsTaskActor(resource.data) && request.resource.data.ops.leadUid==resource.data.ops.leadUid)
+              || (resource.data.assignedToUid==request.auth.uid && !resource.data.archived && (request.resource.data.completedAt==resource.data.completedAt || request.resource.data.completedByUid==request.auth.uid)
+                && (request.resource.data.startedAt==resource.data.startedAt || (resource.data.startedAt==0 && request.resource.data.startedAt>0))
+                && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completedAt','completedByUid','startedAt','updatedAt','updatedByUid','revision','eventId'])
+                && (resource.data.ops.category in ['associate-daily','collective'] || opsTaskApplicable(resource.data))))));
+        allow delete: if !isOpsTask(resource.data) && (isTeamOwner(teamId) || resource.data.setterUid==request.auth.uid);
       }
 
       // Secure team-facing leaderboard. This is additive; it does not replace
