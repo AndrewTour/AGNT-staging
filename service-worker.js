@@ -1,4 +1,4 @@
-const RELEASE='1.48.0-staging-visual-1';
+const RELEASE='1.48.0-staging-gci-focus-1';
 const CACHE=`agnt-v${RELEASE}`;
 const SDK_CACHE='agnt-sdk-11.10.0';
 const SDK_BASE='https://www.gstatic.com/firebasejs/11.10.0/';

@@ -1,3 +1,7 @@
+FOCUS FIT + OVERVIEW GCI — 28 October 2026
+
+Focus main container now uses its allocated grid height rather than a percentage height; tighter header, toolbar and metric spacing preserve the four-row stack above navigation. Overview replaces the membership list with team and individual GCI from the existing canonical sales ledger, allocations and period helper. Finance access is unchanged: Team Operations must be enabled; owner or explicit finance readers only. Loading, errors, disabled operations, conflicts and cached reporting are distinct. No amounts or targets are fabricated. Team management remains available to the owner. No Firebase configuration, rules or indexes change.
+
 STAGING VISUAL ALIGNMENT — 27 October 2026
 
 Compared with AndrewTour/andrewtour.github.io main visual-system.css. The existing base matches main exactly; scoped Team additions now explicitly override global full-width button styles. Shared font sizes, neutral primary actions, flexible section headings, equal task actions, compact metadata, team summary spacing and header sync position align with the main application. Repeated overview identity is hidden because the header already identifies the team. Today metrics share remaining height above navigation.
