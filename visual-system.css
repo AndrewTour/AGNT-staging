@@ -2177,3 +2177,48 @@ html[data-theme] body #app #openTeamGci[hidden] {display:none!important}
 html[data-theme] body #app #teamWorkspace :is(#opsPage,#opsEditor) button.primary {background:var(--ds-ink)!important;color:var(--ds-canvas)!important;border-color:var(--ds-ink)!important}
 @media(max-width:480px){html[data-theme] body #app #teamWorkspace #opsPage .campaign-section-head {flex-wrap:wrap}html[data-theme] body #app #teamWorkspace #opsPage .campaign-section-head h2 {flex-basis:100%}}
 html[data-theme] body #app #teamWorkspace #opsEditor .ops-template-row {display:grid;gap:12px;padding:20px 0;border-bottom:1px solid var(--ds-rule)}
+/* Team presentation aligned with the main branch's Day Plan and People screens. */
+html[data-theme] body #app #teamWorkspace button {width:auto!important;flex:0 0 auto!important;min-width:44px!important;min-height:44px!important;margin:0!important;font:500 13px/1.35 var(--ds-font)!important;white-space:nowrap!important;box-shadow:none!important}
+html[data-theme] body #app #teamWorkspace button.primary {background:var(--ds-ink)!important;color:var(--ds-canvas)!important;-webkit-text-fill-color:var(--ds-canvas)!important;border-color:var(--ds-ink)!important}
+html[data-theme] body #app #teamWorkspace :is(h2,h3) {word-break:normal!important;overflow-wrap:normal!important;min-width:0!important}
+html[data-theme] body #app #teamWorkspace h2 {font-size:20px!important;line-height:1.25!important;letter-spacing:-.03em!important;font-weight:600!important}
+html[data-theme] body #app #teamWorkspace h3 {font-size:16px!important;line-height:1.4!important;font-weight:600!important}
+html[data-theme] body #app #teamWorkspace .campaign-tabs {gap:20px!important;margin:0!important;padding:0!important;scrollbar-width:none}
+html[data-theme] body #app #teamWorkspace .campaign-tabs button {padding:12px 0!important;font-size:13px!important;background:transparent!important;color:var(--ds-muted)!important;-webkit-text-fill-color:var(--ds-muted)!important;border-radius:0!important}
+html[data-theme] body #app #teamWorkspace .campaign-tabs button[aria-current=page] {color:var(--ds-ink)!important;-webkit-text-fill-color:var(--ds-ink)!important}
+html[data-theme] body #app #teamWorkspace .campaign-sync {font-size:11px!important;line-height:1.4!important;padding:12px 0!important;color:var(--ds-muted)!important}
+html[data-theme] body #app #teamWorkspace .campaign-section-head {display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;padding:20px 0 14px!important;flex-wrap:wrap!important}
+html[data-theme] body #app #teamWorkspace .campaign-section-head h2 {flex:1 1 140px!important}
+html[data-theme] body #app #teamWorkspace .campaign-identity {padding:16px 0 20px!important}
+html[data-theme] body #app #teamWorkspace .campaign-identity>span {font-size:10px!important;letter-spacing:.1em!important;margin-bottom:8px!important}
+html[data-theme] body #app #teamWorkspace .campaign-identity>p {font-size:13px!important;line-height:1.5!important;margin-top:8px!important}
+html[data-theme] body #app #teamWorkspace .campaign-stats {padding:20px 0!important;gap:16px!important}
+html[data-theme] body #app #teamWorkspace .campaign-identity:has(+.campaign-stats) {display:none!important}
+html[data-theme] body #app #teamWorkspace .campaign-stats strong {font-size:28px!important;line-height:1.1!important;font-weight:600!important;font-variant-numeric:tabular-nums}
+html[data-theme] body #app #teamWorkspace .campaign-stats span {display:block!important;margin-top:6px!important;font-size:11px!important;color:var(--ds-muted)!important}
+html[data-theme] body #app #teamWorkspace .campaign-members {padding:20px 0!important}
+html[data-theme] body #app #teamWorkspace .campaign-members>div {padding:14px 0!important;align-items:center!important;font-size:13px!important}
+html[data-theme] body #app #teamWorkspace .campaign-members>div>span {font-size:11px!important;color:var(--ds-muted)!important}
+html[data-theme] body #app #teamWorkspace .campaign-members>button {margin-top:16px!important}
+html[data-theme] body #app #teamWorkspace .campaign-filters {gap:8px!important;padding:0 0 16px!important;scrollbar-width:thin}
+html[data-theme] body #app #teamWorkspace .campaign-filters button {min-height:40px!important;padding:8px 12px!important;font-size:12px!important;background:transparent!important;border-color:var(--ds-rule)!important}
+html[data-theme] body #app #teamWorkspace .campaign-filters button[aria-pressed=true] {background:var(--ds-soft)!important;border-color:var(--ds-ink)!important}
+html[data-theme] body #app #teamWorkspace button.campaign-row {display:flex!important;width:100%!important;flex:auto!important;padding:18px 0!important;background:transparent!important;border-radius:0!important;white-space:normal!important}
+html[data-theme] body #app #teamWorkspace .campaign-row strong {font-size:16px!important;line-height:1.35!important;margin:5px 0!important;font-weight:600!important;overflow-wrap:break-word!important}
+html[data-theme] body #app #teamWorkspace .campaign-row small {font-size:11px!important;line-height:1.5!important}
+html[data-theme] body #app #teamWorkspace .campaign-row p {font-size:12px!important;margin-top:8px!important}
+html[data-theme] body #app :is(#teamWorkspace,#teamDayPlanWork) .work-row {grid-template-columns:24px minmax(0,1fr) 64px!important;gap:12px!important;padding:18px 0!important;align-items:start!important}
+html[data-theme] body #app :is(#teamWorkspace,#teamDayPlanWork) .work-row strong {display:block!important;font-size:14px!important;line-height:1.4!important;font-weight:500!important}
+html[data-theme] body #app :is(#teamWorkspace,#teamDayPlanWork) .work-row small {font-size:11px!important;line-height:1.5!important;margin-top:5px!important}
+html[data-theme] body #app :is(#teamWorkspace,#teamDayPlanWork) .work-row>button {width:64px!important;padding:8px!important;font-size:12px!important}
+html[data-theme] body #app #teamWorkspace :is(input:not([type=checkbox]):not([type=radio]),select,textarea) {font:400 16px/1.4 var(--ds-font)!important;color:var(--ds-ink)!important;background:var(--ds-surface)!important;min-height:44px!important;min-width:0!important;max-width:100%!important}
+html[data-theme] body #app #teamWorkspace :is(button,input,select,textarea):focus-visible {outline:2px solid var(--ds-focus)!important;outline-offset:3px!important}
+/* Share the same header slots as the other main destinations. */
+html body #app[data-workspace-screen=teamView] .topbar .date-line {position:absolute!important;right:52px!important;top:24px!important;width:auto!important;margin:0!important}
+html body #app[data-workspace-screen=teamView] .topbar .top-actions {align-self:start!important;margin-top:8px!important}
+html body #app[data-workspace-screen=teamView] #viewSubtitle {padding-right:20px!important}
+/* Let the four metric rows share the space remaining above the fixed navigation. */
+html body #app #todayView.dashboard.active:not(.off-day-opportunity-mode) {display:flex!important;flex-direction:column!important;min-height:0!important;overflow:hidden!important}
+html body #app #todayView.dashboard.active:not(.off-day-opportunity-mode)>.score-week {flex:0 0 auto!important}
+html body #app #todayView.dashboard.active:not(.off-day-opportunity-mode)>.metrics {flex:1 1 0!important;height:auto!important;min-height:0!important;align-self:stretch!important;grid-template-rows:repeat(4,minmax(0,1fr))!important}
+@media(max-width:374px){html[data-theme] body #app #teamWorkspace .campaign-tabs {gap:16px!important}html[data-theme] body #app #teamWorkspace .campaign-section-head h2 {flex-basis:120px!important;font-size:18px!important}}

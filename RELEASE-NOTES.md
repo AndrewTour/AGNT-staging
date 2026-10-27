@@ -1,3 +1,9 @@
+STAGING VISUAL ALIGNMENT — 27 October 2026
+
+Compared with AndrewTour/andrewtour.github.io main visual-system.css. The existing base matches main exactly; scoped Team additions now explicitly override global full-width button styles. Shared font sizes, neutral primary actions, flexible section headings, equal task actions, compact metadata, team summary spacing and header sync position align with the main application. Repeated overview identity is hidden because the header already identifies the team. Today metrics share remaining height above navigation.
+
+Firebase staging configuration, rules, indexes, app.js, runtime.js, navigation, event handlers and data calculations are unchanged. This is a full replacement for the staging site only. No Firebase publication is needed. Open staging, close all staging Safari/PWA windows, and reopen after download to activate the new cache release.
+
 STAGING ACCESS DIAGNOSTICS — build cb6ce-2
 
 This is a diagnostic staging build, not a confirmed fix for the live permission rejection. The displayed loading overview is provisional until the server responds. On access failure, Check team access reads six bounded server subscriptions and displays project ID, signed-in UID, team ID, verified membership, owner match and individual query errors. It writes nothing, ignores cache-only responses, cleans up subscriptions, rejects stale account results and reports timeouts. Share the report privately for troubleshooting. Underlying rules, indexes and team permissions are unchanged.
