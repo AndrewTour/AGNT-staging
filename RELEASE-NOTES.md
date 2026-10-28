@@ -1,3 +1,35 @@
+AGNT v1.48.3 — Sold workflow and named team activity
+29 October 2026, Australia/Sydney. STAGING REVIEW BUILD. Nothing deployed, merged or migrated.
+
+INSTALL
+1. Publish the complete matching Firestore rules from this package (or the matching plaintext rules file) in agnt-staging-cb6ce / (default).
+2. Replace the staging site with all files from this ZIP. Firebase/index configuration is unchanged; no new indexes are required.
+3. Open staging to download the release, close its Safari/PWA windows and reopen. Settings should show AGNT v1.48.3.
+This full replacement contains the staging Firebase connection. Do not upload it to production.
+
+ACTIVITY
+New campaign checklist events snapshot the specific task name, property and acting member. Listing status/date/next-action changes have descriptive summaries. Operations task events also capture task and property names. History is not rewritten. Older events that never recorded a task name are explicitly described as historical entries with the task name unavailable; no task identity is guessed.
+
+SOLD SECTION
+Campaigns has separate visible Active listings and Sold sections. Sold includes Sold and Settled filters, property cards and a record/edit sale picker. Sale price, commission rate and total GCI appear on sold records. Quick Mark sold / Edit sale actions exist on campaign detail, campaign edit and listing progression, opening the same sale form.
+
+PRICE, COMMISSION & GST
+Enter sale price and commission percentage. The checkbox "Commission rate includes GST" defaults on. Checked: price x rate is total agency GCI, with its GST component shown separately. Unchecked: 10% GST is added to the calculated commission. Example: $1,000,000 x 2% gives $20,000 total when inclusive, or $22,000 total when exclusive. Values use integer cents and round to the nearest cent. Contract, unconditional and settlement dates are reviewable in a collapsed section; 28, 35, 42, 72, 90 and 120-day settlement shortcuts remain. The sale action records an unconditional sale; use listing progression for the earlier under-contract/cooling-off stage. Existing auction and cooling-off dates are preserved.
+
+SAVING & ALLOCATIONS
+The sale action saves listing progression, the canonical sale/GCI record and both audit events in one Firestore transaction. Failed transactions do not partially mark a listing sold. Revision checks prevent silently overwriting another member's edits. Existing transaction IDs and agent percentage allocations are retained; new sales default to 100% of the listing lead. If multiple non-voided sale records exist for one property, the form pauses rather than guessing which one to overwrite. Owner-only fee/allocation management remains in Team Overview, including fee status; editing allocations retains the recorded price/rate/GST details. Calculated fees are edited through sale details, rather than overwriting their calculated total directly.
+
+ACCESS & EXISTING RECORDS
+Verified team members can view GCI; team owners or the listing lead can record/edit a sale for that listing. Unrelated members cannot alter another lead's listing/sale. Existing manual GCI records remain supported. Old records without a price/rate need those details entered explicitly; they are not inferred from a commission total. Existing contacts, appointments, source links, checklist IDs, personal statistics and hosting architecture remain intact. No data migration is performed.
+
+VALIDATION
+38 targeted Firestore emulator checks cover listing progression, source identity, role boundaries, stale revisions, atomic sale/GCI create/update/rollback, both GST settings, tampered calculations, task-name validation, full 21-task checklist updates, six-agent allocation preservation and owner allocation editing. Browser fixtures use synthetic records and SDK stubs: actual task completion/activity, campaign edit quick sale action, live GST preview and save, existing-sale edits with one ledger record, retained dates and fee allocations, owner split editing, six light/dark sale layouts with no page errors. Eight Focus layouts retain the full knocking row above navigation. Commission calculations include 400 cent-level checks. Syntax and all 10 service-worker precache assets pass. All 1263 prior named functions remain. Staging Firebase config, core CSS, cleanup CSS, manifest and Firebase/index configuration are unchanged.
+
+BEFORE PRODUCTION
+Automated emulator/browser checks do not substitute for acceptance in the real staging project. Test one listing with the lead and owner accounts, refresh both devices, check GCI totals/allocations and verify Back navigation and the iPhone layout. Keep production unchanged until these checks and your approval are complete.
+
+PRIOR RELEASE NOTES FOLLOW (superseded above where applicable)
+
 AGNT v1.48.2 — Connected listing workflows
 28 October 2026, Australia/Sydney. Staging review build. Nothing deployed, merged or migrated.
 

@@ -190,10 +190,26 @@ service cloud.firestore {
       }
       function shareAt(d,i) { return i>=d.agentShares.size() || (d.agentShares[i].userId==d.beneficiaryUids[i] && d.agentShares[i].basisPoints is int && d.agentShares[i].basisPoints>0 && d.agentShares[i].basisPoints<=10000 && d.agentShares[i].userId is string && d.agentShares[i].userId.size()>0 && d.agentShares[i].userId.size()<=128); }
       function shareBps(d,i) { return i>=d.agentShares.size()?0:d.agentShares[i].basisPoints; }
+      function saleEditor(propertyId) { return isTeamOwner(teamId) || get(/databases/$(database)/documents/teams/$(teamId)/campaigns/$(propertyId)).data.leadUid==request.auth.uid; }
+      function commissionBase(d) { let n=d.salePriceCents*d.commissionRateUnits; return int((n-(n%1000000)) / 1000000)+(n%1000000>=500000?1:0); }
+      function saleFormulaValues(d) {
+        let base=commissionBase(d);
+        let gst=d.rateIncludesGST?int((base+5) / 11):int((base+5) / 10);
+        return d.salePriceCents is int && d.salePriceCents>0 && d.salePriceCents<=1000000000000
+          && d.commissionRateUnits is int && d.commissionRateUnits>0 && d.commissionRateUnits<=1000000 && d.rateIncludesGST is bool
+          && d.gstCents is int && d.commissionBeforeGstCents is int && d.gstCents==gst
+          && d.commissionBeforeGstCents==(d.rateIncludesGST?base-gst:base)
+          && d.confirmedGciCents==d.commissionBeforeGstCents+gst;
+      }
+      function saleFormulaValid(d) {
+        return !d.keys().hasAny(['salePriceCents','commissionRateUnits','rateIncludesGST','gstCents','commissionBeforeGstCents'])
+          || (d.keys().hasAll(['salePriceCents','commissionRateUnits','rateIncludesGST','gstCents','commissionBeforeGstCents']) && saleFormulaValues(d));
+      }
       match /sales/{transactionId} {
         function validSale() {
           let d=request.resource.data;
-          return d.keys().hasOnly(['transactionId','propertyId','confirmedGciCents','commissionStatus','agentShares','beneficiaryUids','includesGST','stage','salePhase','unconditionalDate','voided','teamId','revision','eventId','createdByUid','createdAt','updatedByUid','updatedAt'])
+          return d.keys().hasOnly(['transactionId','propertyId','confirmedGciCents','commissionStatus','agentShares','beneficiaryUids','includesGST','stage','salePhase','unconditionalDate','voided','teamId','revision','eventId','createdByUid','createdAt','updatedByUid','updatedAt','salePriceCents','commissionRateUnits','rateIncludesGST','gstCents','commissionBeforeGstCents'])
+            && saleFormulaValid(d)
             && d.teamId==teamId && d.transactionId==transactionId && d.propertyId is string
             && exists(/databases/$(database)/documents/teams/$(teamId)/campaigns/$(d.propertyId))
             && d.confirmedGciCents is int && d.confirmedGciCents>=0 && d.confirmedGciCents<=10000000000
@@ -201,8 +217,8 @@ service cloud.firestore {
             && d.includesGST==true && d.voided==(d.commissionStatus=='Voided')
             && d.agentShares is list && d.agentShares.size()>0 && d.agentShares.size()<=6
             && d.beneficiaryUids is list && d.beneficiaryUids.size()==d.agentShares.size() && d.beneficiaryUids.toSet().size()==d.beneficiaryUids.size()
-            && shareAt(d,0) && shareAt(d,1) && shareAt(d,2) && shareAt(d,3) && shareAt(d,4) && shareAt(d,5)
-            && shareBps(d,0)+shareBps(d,1)+shareBps(d,2)+shareBps(d,3)+shareBps(d,4)+shareBps(d,5)==10000
+            && ((resource != null && d.agentShares==resource.data.agentShares && d.beneficiaryUids==resource.data.beneficiaryUids) || (shareAt(d,0) && shareAt(d,1) && shareAt(d,2) && shareAt(d,3) && shareAt(d,4) && shareAt(d,5)
+            && shareBps(d,0)+shareBps(d,1)+shareBps(d,2)+shareBps(d,3)+shareBps(d,4)+shareBps(d,5)==10000))
             && d.stage in ['Pending','Listed','Live','Sold','Settled'] && d.salePhase in ['','Under contract','Unconditional'] && d.unconditionalDate is string
             && d.createdByUid is string && d.createdAt is int && d.updatedByUid==request.auth.uid && d.updatedAt==request.time
             && d.revision is int && d.eventId is string;
@@ -213,8 +229,8 @@ service cloud.firestore {
           return a.transactionId==transactionId && a.revision==d.revision && a.actorUid==request.auth.uid && a.at==request.time;
         }
         allow read: if isTeamMember(teamId);
-        allow create: if isTeamMember(teamId) && isTeamOwner(teamId) && request.resource.data.revision==1 && request.resource.data.createdByUid==request.auth.uid && validSale() && financialAudit();
-        allow update: if isTeamMember(teamId) && isTeamOwner(teamId)
+        allow create: if isTeamMember(teamId) && saleEditor(request.resource.data.propertyId) && request.resource.data.revision==1 && request.resource.data.createdByUid==request.auth.uid && validSale() && financialAudit();
+        allow update: if isTeamMember(teamId) && saleEditor(resource.data.propertyId)
           && request.resource.data.transactionId==resource.data.transactionId && request.resource.data.propertyId==resource.data.propertyId
           && request.resource.data.createdByUid==resource.data.createdByUid && request.resource.data.createdAt==resource.data.createdAt && request.resource.data.revision==resource.data.revision+1 && validSale() && financialAudit();
         allow delete: if false;
@@ -223,12 +239,13 @@ service cloud.firestore {
         function financialTarget(d) {
           let t=getAfter(/databases/$(database)/documents/teams/$(teamId)/sales/$(d.transactionId)).data;
           return t.eventId==eventId && t.revision==d.revision && t.updatedAt==request.time
-            && t.confirmedGciCents==d.confirmedGciCents && t.commissionStatus==d.commissionStatus && t.agentShares==d.agentShares;
+            && t.confirmedGciCents==d.confirmedGciCents && t.commissionStatus==d.commissionStatus && t.agentShares==d.agentShares
+            && (!('salePriceCents' in d) || (d.salePriceCents==t.salePriceCents && d.commissionRateUnits==t.commissionRateUnits && d.rateIncludesGST==t.rateIncludesGST));
         }
         allow read: if isTeamMember(teamId);
-        allow create: if isTeamMember(teamId) && isTeamOwner(teamId)
+        allow create: if isTeamMember(teamId) && saleEditor(getAfter(/databases/$(database)/documents/teams/$(teamId)/sales/$(request.resource.data.transactionId)).data.propertyId)
           && request.resource.data.keys().hasAll(['transactionId','revision','actorUid','at','confirmedGciCents','commissionStatus','agentShares'])
-          && request.resource.data.keys().hasOnly(['transactionId','revision','actorUid','at','confirmedGciCents','commissionStatus','agentShares'])
+          && request.resource.data.keys().hasOnly(['transactionId','revision','actorUid','at','confirmedGciCents','commissionStatus','agentShares','salePriceCents','commissionRateUnits','rateIncludesGST'])
           && request.resource.data.actorUid==request.auth.uid && request.resource.data.at==request.time && financialTarget(request.resource.data);
         allow update,delete: if false;
       }
@@ -255,34 +272,35 @@ service cloud.firestore {
           && e.actorUid == request.auth.uid && e.at == request.time
           && d.updatedByUid == request.auth.uid && d.updatedAt == request.time;
       }
-      function ownTask(i,b,a,v) {
+      function ownTask(i,b,a,v,owner) {
         return i >= b.size() || b[i] == a[i]
-          || (b[i].assignedToUid == request.auth.uid && a[i].done is bool
+          || ((owner || b[i].assignedToUid == request.auth.uid) && a[i].done is bool
               && v == (a[i].done ? 'Completed' : 'Reopened') && a[i].diff(b[i]).affectedKeys().hasOnly(['done']));
       }
       function ownTasksOnly(b,a,v) {
+        let owner=isTeamOwner(teamId);
         return a.size() == b.size() && b.size() <= 21 &&
-          ownTask(0,b,a,v)
-          && ownTask(1,b,a,v)
-          && ownTask(2,b,a,v)
-          && ownTask(3,b,a,v)
-          && ownTask(4,b,a,v)
-          && ownTask(5,b,a,v)
-          && ownTask(6,b,a,v)
-          && ownTask(7,b,a,v)
-          && ownTask(8,b,a,v)
-          && ownTask(9,b,a,v)
-          && ownTask(10,b,a,v)
-          && ownTask(11,b,a,v)
-          && ownTask(12,b,a,v)
-          && ownTask(13,b,a,v)
-          && ownTask(14,b,a,v)
-          && ownTask(15,b,a,v)
-          && ownTask(16,b,a,v)
-          && ownTask(17,b,a,v)
-          && ownTask(18,b,a,v)
-          && ownTask(19,b,a,v)
-          && ownTask(20,b,a,v);
+          ownTask(0,b,a,v,owner)
+          && ownTask(1,b,a,v,owner)
+          && ownTask(2,b,a,v,owner)
+          && ownTask(3,b,a,v,owner)
+          && ownTask(4,b,a,v,owner)
+          && ownTask(5,b,a,v,owner)
+          && ownTask(6,b,a,v,owner)
+          && ownTask(7,b,a,v,owner)
+          && ownTask(8,b,a,v,owner)
+          && ownTask(9,b,a,v,owner)
+          && ownTask(10,b,a,v,owner)
+          && ownTask(11,b,a,v,owner)
+          && ownTask(12,b,a,v,owner)
+          && ownTask(13,b,a,v,owner)
+          && ownTask(14,b,a,v,owner)
+          && ownTask(15,b,a,v,owner)
+          && ownTask(16,b,a,v,owner)
+          && ownTask(17,b,a,v,owner)
+          && ownTask(18,b,a,v,owner)
+          && ownTask(19,b,a,v,owner)
+          && ownTask(20,b,a,v,owner);
       }
       // Campaign owners edit definitions; assigned members may change only their own completion flags.
       match /campaigns/{campaignId} {
@@ -311,9 +329,31 @@ service cloud.firestore {
             && d.createdByUid is string && d.createdAt is int && d.updatedAt is timestamp
             && d.revision is int && d.revision > 0 && d.eventId is string && d.updatedByUid is string;
         }
+        function checklistCompletion() {
+          let d=request.resource.data;
+          let e=getAfter(/databases/$(database)/documents/teams/$(teamId)/activity/$(d.eventId)).data;
+          return isTeamMember(teamId) && resource.data.status!='Archived' && (!('archived' in resource.data)||!resource.data.archived)
+            && d.diff(resource.data).affectedKeys().hasOnly(['checklist','revision','eventId','updatedByUid','updatedAt']) && d.checklist!=resource.data.checklist
+            && d.revision==resource.data.revision+1 && d.updatedByUid==request.auth.uid && d.updatedAt==request.time
+            && e.verb in ['Completed','Reopened'] && ownTasksOnly(resource.data.checklist,d.checklist,e.verb) && linkedActivity('campaign',campaignId,d);
+        }
+        function progressionDate(d,key) { return !(key in d) || (d[key] is string && (d[key]=='' || d[key].matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))); }
+        function progressionUpdate() {
+          let d=request.resource.data;
+          return isTeamMember(teamId) && (isTeamOwner(teamId)||resource.data.leadUid==request.auth.uid)
+            && d.diff(resource.data).affectedKeys().hasOnly(['status','salePhase','saleTransactionId','auctionDate','exchangeDate','coolingOffDate','unconditionalDate','settlementDate','settlementDays','archived','revision','eventId','updatedByUid','updatedAt'])
+            && d.status in ['Pending','Listed','Live','Sold','Settled','Archived'] && d.salePhase in ['','Under contract','Unconditional']
+            && progressionDate(d,'auctionDate') && progressionDate(d,'exchangeDate') && progressionDate(d,'coolingOffDate') && progressionDate(d,'unconditionalDate') && progressionDate(d,'settlementDate')
+            && (!(d.status in ['Sold','Settled']) || d.exchangeDate!='') && (d.salePhase!='Unconditional'||d.unconditionalDate!='') && (d.status!='Settled'||(d.salePhase=='Unconditional'&&d.settlementDate!=''))
+            && (!('settlementDays' in d)||d.settlementDays in [0,28,35,42,72,90,120]) && (!('archived' in d)||d.archived is bool)
+            && (!('saleTransactionId' in d)||d.saleTransactionId is string)
+            && (!('opsVersion' in d) || (opsOn() && d.status!='Archived' && (!d.archived||d.status!='Pending'||(d.archiveReason.size()>0&&d.archiveFollowUp.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')))))
+            && d.revision==resource.data.revision+1 && d.updatedByUid==request.auth.uid && d.updatedAt==request.time
+            && linkedActivity('campaign',campaignId,d);
+        }
         allow read: if isTeamMember(teamId);
         allow create: if isTeamMember(teamId) && (isTeamOwner(teamId) || request.resource.data.leadUid==request.auth.uid) && request.resource.data.createdByUid == request.auth.uid && request.resource.data.revision == 1 && (!('sourceOwnerUid' in request.resource.data) || request.resource.data.sourceOwnerUid==request.auth.uid) && (!('sourceAppointmentOwnerUid' in request.resource.data) || request.resource.data.sourceAppointmentOwnerUid==request.auth.uid) && validCampaign() && linkedActivity('campaign',campaignId,request.resource.data) && getAfter(/databases/$(database)/documents/teams/$(teamId)/activity/$(request.resource.data.eventId)).data.verb=='Created';
-        allow update: if isTeamMember(teamId)
+        allow update: if checklistCompletion() || progressionUpdate() || isTeamMember(teamId)
           && (!('sourceOwnerUid' in resource.data) || request.resource.data.sourceOwnerUid==resource.data.sourceOwnerUid)
           && (!('sourceAppointmentOwnerUid' in resource.data) || request.resource.data.sourceAppointmentOwnerUid==resource.data.sourceAppointmentOwnerUid)
           && (!('opsVersion' in resource.data) || ('opsVersion' in request.resource.data && request.resource.data.opsVersion==1))
@@ -363,17 +403,19 @@ service cloud.firestore {
               && d.details.afterOwnerUid==target.assignedToUid && d.details.afterDueDate==target.date
               && d.details.beforeOwnerUid==(exists(/databases/$(database)/documents/teams/$(teamId)/tasks/$(d.recordId))?get(/databases/$(database)/documents/teams/$(teamId)/tasks/$(d.recordId)).data.assignedToUid:'')
               && d.details.beforeDueDate==(exists(/databases/$(database)/documents/teams/$(teamId)/tasks/$(d.recordId))?get(/databases/$(database)/documents/teams/$(teamId)/tasks/$(d.recordId)).data.date:'')))
+            && (!(d.kind=='campaign' && 'details' in d && d.details.type=='checklist') || (d.details.taskIndex is int && d.details.taskIndex>=0 && d.details.taskIndex<target.checklist.size() && d.details.taskId==target.checklist[d.details.taskIndex].id && d.details.taskLabel==target.checklist[d.details.taskIndex].label))
             && (d.kind!='appointment' || d.audienceUids.toSet()==target.participantUids.toSet());
         }
         allow read: if isTeamMember(teamId) && (resource.data.kind in ['campaign','action'] || isTeamOwner(teamId) || request.auth.uid in resource.data.audienceUids);
         allow create: if isTeamMember(teamId)
           && request.resource.data.keys().hasAll(['kind','recordId','revision','label','verb','actorUid','at'])
-          && request.resource.data.keys().hasOnly(['kind','recordId','revision','label','verb','actorUid','at','details','audienceUids'])
+          && request.resource.data.keys().hasOnly(['kind','recordId','revision','label','verb','actorUid','actorName','at','details','audienceUids'])
           && request.resource.data.kind in ['campaign','action','task','appointment']
           && request.resource.data.verb in ['Created','Updated','Completed','Reopened']
           && request.resource.data.recordId is string && request.resource.data.revision is int
           && request.resource.data.label is string && request.resource.data.label.size()<=240
           && request.resource.data.actorUid == request.auth.uid && request.resource.data.at == request.time
+          && (!('actorName' in request.resource.data) || (request.resource.data.actorName is string && request.resource.data.actorName.size()<=120))
           && linkedRecord(request.resource.data);
         allow update,delete: if false;
       }

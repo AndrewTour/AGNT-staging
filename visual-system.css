@@ -2261,3 +2261,18 @@ html[data-theme] body #app #teamWorkspace .listing-disclosure-body {display:grid
 html[data-theme] body #app #teamWorkspace .listing-disclosure-body .campaign-check {margin:0}
 html[data-theme] body #app #teamWorkspace .listing-component-actions {display:flex;flex-wrap:wrap;gap:8px;padding:0 0 12px}
 html[data-theme] body #app #teamWorkspace .listing-disclosure summary:focus-visible {outline:2px solid var(--ds-focus);outline-offset:2px}
+/* Sale entry and activity remain flat records in AGNT's shared language. */
+html[data-theme] body #app #teamWorkspace .campaign-buckets {padding-top:16px!important;gap:10px!important}
+html[data-theme] body #app #teamWorkspace .campaign-buckets button {flex:1!important;font-size:13px!important}
+html[data-theme] body #app #teamWorkspace .sold-listing-picker {display:grid;gap:8px;margin-bottom:12px;font-size:12px;color:var(--ds-muted)}
+html[data-theme] body #app #teamWorkspace .sold-listing-picker select {width:100%}
+html[data-theme] body #app #teamWorkspace #opsEditor[data-kind=sold]>div {display:grid;gap:16px}
+html[data-theme] body #app #teamWorkspace #opsEditor[data-kind=sold] label {display:grid;gap:6px;font-size:12px;color:var(--ds-secondary)}
+html[data-theme] body #app #teamWorkspace #opsEditor[data-kind=sold] :is(input:not([type=checkbox]),select) {width:100%}
+html[data-theme] body #app #teamWorkspace #opsEditor[data-kind=sold] .sold-gst {display:flex;align-items:center;gap:10px}
+html[data-theme] body #app #teamWorkspace #opsEditor[data-kind=sold] input[type=checkbox] {width:22px!important;height:22px!important;min-height:22px!important;accent-color:var(--ds-ink);margin:0!important}
+html[data-theme] body #app #teamWorkspace .sold-calculation {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:16px 0;border-block:1px solid var(--ds-rule);font-size:13px;line-height:1.4}
+html[data-theme] body #app #teamWorkspace .sold-calculation span {color:var(--ds-muted)}
+html[data-theme] body #app #teamWorkspace .sold-calculation strong {font-variant-numeric:tabular-nums}
+html[data-theme] body #app #teamWorkspace .sold-summary {display:grid;gap:6px;margin-top:12px;font-size:12px;line-height:1.5}
+html[data-theme] body #app #teamWorkspace .activity-property {display:block;font-size:13px;line-height:1.5;color:var(--ds-secondary);margin-top:6px}
