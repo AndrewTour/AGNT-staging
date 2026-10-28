@@ -1,3 +1,29 @@
+AGNT v1.48.2 — Connected listing workflows
+28 October 2026, Australia/Sydney. Staging review build. Nothing deployed, merged or migrated.
+
+INSTALL
+Publish the complete matching v1.48.2 Firestore rules to staging agnt-staging-cb6ce / (default), then replace the staging site files. Indexes unchanged. Open staging to download, close its Safari/PWA windows and reopen for the new cache release. This package includes the staging Firebase connection; do not upload it to production.
+
+CONNECTED WORK
+Seller/contact profiles offer Create listing / Open listing. MAP/LAP appointment cards offer Open / create listing. Both prefill the same existing campaign editor for review; no listing is created until Save. Source contact and booking records remain intact, including their original metrics, history and calendar behaviour. Only property address/suburb and source record IDs pass into the team listing; private phone, email, conversations and background notes are not copied. Appointment contacts are linked only when an explicit prospect ID exists. No name or fuzzy-address matching is introduced.
+
+REPEATED ACTIONS
+Existing linked listings or exact normalised address/suburb matches open the existing record. New listing IDs use SHA-256 of team plus normalised property address/suburb, so simultaneous new conversions of the same exact property cannot create two new records. Legacy random-ID records are checked against the current server-synced team list first. Differently entered addresses/suburbs are not guessed or merged; review the prefill. Existing records are not automatically migrated. A seller moving to another property should be reviewed against the linked listing before another campaign is created.
+
+PERMISSIONS & RETURNS
+Verified team members may create listings with themselves as lead; owners may assign other members. Server validation, revisions and existing activity records remain authoritative. Source ownership is bound to the creator and cannot be reassigned by an update. Back to source restores the originating seller/appointment and its context. Open linked contact is available only to its owner and returns to the listing. Creation requires a connection and server-synced membership/data. Conflicting and denied saves retain the form.
+
+SIMPLER SALES UI
+The five original checklist phases are native accessible disclosure sections, showing completed/total. Expansion state is retained across saves during the current team/account session. Task IDs, allocations and completion handlers are reused. Preparation and leverage have separate disclosures when Team Operations is enabled. Listing progression groups campaign dates, contract/cooling-off and settlement separately, preserving all v1.48.1 date shortcuts and validation. Saving a progression form returns to the top of its listing.
+
+GCI
+Removed the Performance/leaderboard shortcut and the separate GCI page/navigation. Team and individual totals remain in Team Overview. Owner fee/allocation editing is within its Manage GCI disclosure. Same ledger and reporting calculations; no duplicate finance store or new public access.
+
+VALIDATION
+28 targeted Firestore emulator checks, including member/lead creation, source ownership, forged owner changes, unrelated users, stale revisions, listing progression, Sold without GCI, team finance visibility and owner fee writes. Browser fixtures use synthetic records and SDK stubs: seller/appointment review-save-reopen, duplicate prevention, private source data preserved, source return and linked-contact round-trip, completion and disclosure persistence, Sold/42-day settlement flow, inline fee editor with no separate GCI route, six team layouts, 200 menu transitions, subscription cleanup and account isolation. Eight Focus layouts remain above navigation. All 10 cache assets and syntax pass. All 1252 original named functions retained; Firebase config, core styles, cleanup CSS, manifest and index configuration unchanged. Real Firebase multi-user and physical iPhone acceptance still required before production approval.
+
+PRIOR RELEASE NOTES FOLLOW (superseded above where applicable)
+
 AGNT v1.48.1 — Focus viewport, listing progression and shared team GCI
 28 October 2026, Australia/Sydney. STAGING ONLY. Nothing deployed or merged.
 

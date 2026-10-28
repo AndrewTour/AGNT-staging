@@ -289,10 +289,15 @@ service cloud.firestore {
         function validCampaign() {
           let d = request.resource.data;
           return d.keys().hasAll(['teamId','address','suburb','status','leadUid','nextAction','dueDate','note','checklist','createdByUid','createdAt','updatedAt','revision','eventId','updatedByUid'])
-            && d.keys().hasOnly(['teamId','address','suburb','status','leadUid','nextAction','dueDate','note','checklist','createdByUid','createdAt','updatedAt','revision','eventId','updatedByUid','opsVersion','accessUids','agreementSigned','agreementRef','salePhase','exchangeDate','unconditionalDate','settlementDate','auctionDate','auctionFinished','nextInspectionDate','associateUid','archived','archiveReason','archiveFollowUp','saleTransactionId','leverageStarted','templateId','associateMode','preparationTemplate','sourceContactId','sourceOwnerUid','coolingOffDate','settlementDays'])
+            && d.keys().hasOnly(['teamId','address','suburb','status','leadUid','nextAction','dueDate','note','checklist','createdByUid','createdAt','updatedAt','revision','eventId','updatedByUid','opsVersion','accessUids','agreementSigned','agreementRef','salePhase','exchangeDate','unconditionalDate','settlementDate','auctionDate','auctionFinished','nextInspectionDate','associateUid','archived','archiveReason','archiveFollowUp','saleTransactionId','leverageStarted','templateId','associateMode','preparationTemplate','sourceContactId','sourceOwnerUid','sourceAppointmentId','sourceAppointmentOwnerUid','sourceAppointmentDate','coolingOffDate','settlementDays'])
             && (!('opsVersion' in d) || opsCampaignValid(d,campaignId))
             && (!('coolingOffDate' in d) || (d.coolingOffDate is string && (d.coolingOffDate=='' || d.coolingOffDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))))
             && (!('settlementDays' in d) || d.settlementDays in [0,28,35,42,72,90,120])
+            && (!('sourceOwnerUid' in d) || d.sourceOwnerUid is string)
+            && (!('sourceContactId' in d) || (d.sourceContactId is string && d.sourceContactId.size()<=160))
+            && (!('sourceAppointmentId' in d) || (d.sourceAppointmentId is string && d.sourceAppointmentId.size()<=160))
+            && (!('sourceAppointmentDate' in d) || d.sourceAppointmentDate is string)
+            && (!('sourceAppointmentOwnerUid' in d) || d.sourceAppointmentOwnerUid is string)
             && d.teamId == teamId
             && d.address is string && d.address.size() > 0 && d.address.size() <= 240
             && d.suburb is string && d.suburb.size() <= 100
@@ -307,8 +312,10 @@ service cloud.firestore {
             && d.revision is int && d.revision > 0 && d.eventId is string && d.updatedByUid is string;
         }
         allow read: if isTeamMember(teamId);
-        allow create: if isTeamMember(teamId) && isTeamOwner(teamId) && request.resource.data.createdByUid == request.auth.uid && request.resource.data.revision == 1 && validCampaign() && linkedActivity('campaign',campaignId,request.resource.data) && getAfter(/databases/$(database)/documents/teams/$(teamId)/activity/$(request.resource.data.eventId)).data.verb=='Created';
+        allow create: if isTeamMember(teamId) && (isTeamOwner(teamId) || request.resource.data.leadUid==request.auth.uid) && request.resource.data.createdByUid == request.auth.uid && request.resource.data.revision == 1 && (!('sourceOwnerUid' in request.resource.data) || request.resource.data.sourceOwnerUid==request.auth.uid) && (!('sourceAppointmentOwnerUid' in request.resource.data) || request.resource.data.sourceAppointmentOwnerUid==request.auth.uid) && validCampaign() && linkedActivity('campaign',campaignId,request.resource.data) && getAfter(/databases/$(database)/documents/teams/$(teamId)/activity/$(request.resource.data.eventId)).data.verb=='Created';
         allow update: if isTeamMember(teamId)
+          && (!('sourceOwnerUid' in resource.data) || request.resource.data.sourceOwnerUid==resource.data.sourceOwnerUid)
+          && (!('sourceAppointmentOwnerUid' in resource.data) || request.resource.data.sourceAppointmentOwnerUid==resource.data.sourceAppointmentOwnerUid)
           && (!('opsVersion' in resource.data) || ('opsVersion' in request.resource.data && request.resource.data.opsVersion==1))
           && request.resource.data.createdByUid == resource.data.createdByUid
           && request.resource.data.createdAt == resource.data.createdAt
