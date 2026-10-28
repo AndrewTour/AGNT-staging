@@ -2240,3 +2240,9 @@ html body #app #todayView.dashboard.active:not(.off-day-opportunity-mode) {displ
 html body #app #todayView.dashboard.active:not(.off-day-opportunity-mode)>.score-week {flex:0 0 auto!important}
 html body #app #todayView.dashboard.active:not(.off-day-opportunity-mode)>.metrics {flex:1 1 0!important;height:auto!important;min-height:0!important;align-self:stretch!important;grid-template-rows:repeat(4,minmax(0,1fr))!important}
 @media(max-width:374px){html[data-theme] body #app #teamWorkspace .campaign-tabs {gap:16px!important}html[data-theme] body #app #teamWorkspace .campaign-section-head h2 {flex-basis:120px!important;font-size:18px!important}}
+/* Listing progression uses the existing flat form and row language. */
+html[data-theme] body #app #teamWorkspace .listing-dates {display:grid;gap:4px;margin-top:10px;color:var(--ds-muted);font-size:11px;line-height:1.5}
+html[data-theme] body #app #teamWorkspace #opsEditor[data-kind=listing]>div {display:grid;gap:16px}
+html[data-theme] body #app #teamWorkspace #opsEditor[data-kind=listing] label {display:grid;gap:6px;font-size:12px;color:var(--ds-secondary)}
+html[data-theme] body #app #teamWorkspace #opsEditor[data-kind=listing] :is(input,select) {width:100%}
+html[data-theme] body #app #teamWorkspace #opsEditor[data-kind=listing] p {font-size:12px;line-height:1.5;color:var(--ds-muted)}

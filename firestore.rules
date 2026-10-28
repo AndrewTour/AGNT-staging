@@ -112,7 +112,7 @@ service cloud.firestore {
       function opsCampaignValid(d,id) {
         return d.opsVersion==1 && opsOn() && d.status in ['Pending','Listed','Live','Sold','Settled']
           && d.agreementSigned is bool && d.agreementRef is string && d.agreementRef.size()<=240
-          && (d.status=='Pending' || (d.agreementSigned && d.agreementRef.size()>0))
+          
           && d.salePhase in ['','Under contract','Unconditional'] && d.exchangeDate is string
           && d.unconditionalDate is string && d.settlementDate is string && d.auctionDate is string && d.nextInspectionDate is string
           && (!('associateMode' in d) || d.associateMode in ['default','none','override']) && d.associateUid is string && (d.associateUid=='' || (exists(/databases/$(database)/documents/teams/$(teamId)/members/$(d.associateUid)) && opsProfile(d.associateUid).opsRole=='associate'))
@@ -121,7 +121,7 @@ service cloud.firestore {
           && (!d.archived || d.status!='Pending' || (d.archiveReason.size()>0 && d.archiveFollowUp.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')))
           && (!('preparationTemplate' in d) || (d.preparationTemplate is list && d.preparationTemplate.size()<=21)) && d.leverageStarted is bool && (!d.leverageStarted || d.status!='Pending') && d.auctionFinished is bool
           && d.saleTransactionId is string && d.templateId is string
-          && (!(d.status in ['Sold','Settled']) || (d.exchangeDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') && getAfter(/databases/$(database)/documents/teams/$(teamId)/sales/$(d.saleTransactionId)).data.commissionStatus=='Confirmed' && getAfter(/databases/$(database)/documents/teams/$(teamId)/sales/$(d.saleTransactionId)).data.confirmedGciCents>0 && getAfter(/databases/$(database)/documents/teams/$(teamId)/sales/$(d.saleTransactionId)).data.propertyId==id))
+          && (!(d.status in ['Sold','Settled']) || d.exchangeDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
           && (d.salePhase!='Unconditional' || d.unconditionalDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))
           && (d.status!='Settled' || (d.salePhase=='Unconditional' && d.settlementDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')));
       }
@@ -212,9 +212,9 @@ service cloud.firestore {
           let a=getAfter(/databases/$(database)/documents/teams/$(teamId)/financialActivity/$(d.eventId)).data;
           return a.transactionId==transactionId && a.revision==d.revision && a.actorUid==request.auth.uid && a.at==request.time;
         }
-        allow read: if isTeamMember(teamId) && opsOn() && opsFinanceReader();
-        allow create: if isTeamMember(teamId) && isTeamOwner(teamId) && opsOn() && request.resource.data.revision==1 && request.resource.data.createdByUid==request.auth.uid && validSale() && financialAudit();
-        allow update: if isTeamMember(teamId) && isTeamOwner(teamId) && opsOn()
+        allow read: if isTeamMember(teamId);
+        allow create: if isTeamMember(teamId) && isTeamOwner(teamId) && request.resource.data.revision==1 && request.resource.data.createdByUid==request.auth.uid && validSale() && financialAudit();
+        allow update: if isTeamMember(teamId) && isTeamOwner(teamId)
           && request.resource.data.transactionId==resource.data.transactionId && request.resource.data.propertyId==resource.data.propertyId
           && request.resource.data.createdByUid==resource.data.createdByUid && request.resource.data.createdAt==resource.data.createdAt && request.resource.data.revision==resource.data.revision+1 && validSale() && financialAudit();
         allow delete: if false;
@@ -225,8 +225,8 @@ service cloud.firestore {
           return t.eventId==eventId && t.revision==d.revision && t.updatedAt==request.time
             && t.confirmedGciCents==d.confirmedGciCents && t.commissionStatus==d.commissionStatus && t.agentShares==d.agentShares;
         }
-        allow read: if isTeamMember(teamId) && opsOn() && opsFinanceReader();
-        allow create: if isTeamMember(teamId) && isTeamOwner(teamId) && opsOn()
+        allow read: if isTeamMember(teamId);
+        allow create: if isTeamMember(teamId) && isTeamOwner(teamId)
           && request.resource.data.keys().hasAll(['transactionId','revision','actorUid','at','confirmedGciCents','commissionStatus','agentShares'])
           && request.resource.data.keys().hasOnly(['transactionId','revision','actorUid','at','confirmedGciCents','commissionStatus','agentShares'])
           && request.resource.data.actorUid==request.auth.uid && request.resource.data.at==request.time && financialTarget(request.resource.data);
@@ -289,8 +289,10 @@ service cloud.firestore {
         function validCampaign() {
           let d = request.resource.data;
           return d.keys().hasAll(['teamId','address','suburb','status','leadUid','nextAction','dueDate','note','checklist','createdByUid','createdAt','updatedAt','revision','eventId','updatedByUid'])
-            && d.keys().hasOnly(['teamId','address','suburb','status','leadUid','nextAction','dueDate','note','checklist','createdByUid','createdAt','updatedAt','revision','eventId','updatedByUid','opsVersion','accessUids','agreementSigned','agreementRef','salePhase','exchangeDate','unconditionalDate','settlementDate','auctionDate','auctionFinished','nextInspectionDate','associateUid','archived','archiveReason','archiveFollowUp','saleTransactionId','leverageStarted','templateId','associateMode','preparationTemplate','sourceContactId','sourceOwnerUid'])
+            && d.keys().hasOnly(['teamId','address','suburb','status','leadUid','nextAction','dueDate','note','checklist','createdByUid','createdAt','updatedAt','revision','eventId','updatedByUid','opsVersion','accessUids','agreementSigned','agreementRef','salePhase','exchangeDate','unconditionalDate','settlementDate','auctionDate','auctionFinished','nextInspectionDate','associateUid','archived','archiveReason','archiveFollowUp','saleTransactionId','leverageStarted','templateId','associateMode','preparationTemplate','sourceContactId','sourceOwnerUid','coolingOffDate','settlementDays'])
             && (!('opsVersion' in d) || opsCampaignValid(d,campaignId))
+            && (!('coolingOffDate' in d) || (d.coolingOffDate is string && (d.coolingOffDate=='' || d.coolingOffDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'))))
+            && (!('settlementDays' in d) || d.settlementDays in [0,28,35,42,72,90,120])
             && d.teamId == teamId
             && d.address is string && d.address.size() > 0 && d.address.size() <= 240
             && d.suburb is string && d.suburb.size() <= 100
@@ -312,7 +314,7 @@ service cloud.firestore {
           && request.resource.data.createdAt == resource.data.createdAt
           && request.resource.data.revision == resource.data.revision + 1 && validCampaign()
           && linkedActivity('campaign',campaignId,request.resource.data)
-          && (isTeamOwner(teamId) || (opsCanManageCampaign(resource.data) && request.resource.data.leadUid==resource.data.leadUid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','agreementSigned','agreementRef','salePhase','exchangeDate','unconditionalDate','settlementDate','auctionDate','auctionFinished','nextInspectionDate','archived','archiveReason','archiveFollowUp','saleTransactionId','leverageStarted','updatedAt','updatedByUid','eventId','revision'])) || (resource.data.status != 'Archived'
+          && (isTeamOwner(teamId) || (resource.data.leadUid==request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','salePhase','auctionDate','exchangeDate','coolingOffDate','unconditionalDate','settlementDate','settlementDays','archived','updatedAt','updatedByUid','eventId','revision'])) || (opsCanManageCampaign(resource.data) && request.resource.data.leadUid==resource.data.leadUid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','agreementSigned','agreementRef','salePhase','exchangeDate','unconditionalDate','settlementDate','auctionDate','auctionFinished','nextInspectionDate','archived','archiveReason','archiveFollowUp','saleTransactionId','leverageStarted','updatedAt','updatedByUid','eventId','revision'])) || (resource.data.status != 'Archived'
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['checklist','revision','eventId','updatedByUid','updatedAt'])
             && request.resource.data.checklist != resource.data.checklist && ownTasksOnly(resource.data.checklist,request.resource.data.checklist,getAfter(/databases/$(database)/documents/teams/$(teamId)/activity/$(request.resource.data.eventId)).data.verb)));
         allow delete: if false;

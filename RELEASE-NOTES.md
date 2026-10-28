@@ -1,3 +1,26 @@
+AGNT v1.48.1 — Focus viewport, listing progression and shared team GCI
+28 October 2026, Australia/Sydney. STAGING ONLY. Nothing deployed or merged.
+
+INSTALL
+Publish the complete included firestore.rules to agnt-staging-cb6ce / (default), then upload all application files to the staging GitHub site. No index changes. Open staging to download, close its Safari/PWA windows, and reopen. Do not upload this staging Firebase configuration to the production site.
+
+FOCUS
+The viewport calculation no longer expands the PWA to hardware screen height. It uses the usable window/visual viewport, preserving the layout height while the keyboard is open. Existing frame-bounded resize handling is retained. All four metric rows, including the knocking timer, were checked above navigation at 390x844, 430x932, 375x812 and 320x740 in light and dark themes. Browser synthetic standalone fixtures were used; physical iPhone sign-off remains yours.
+
+LISTINGS
+Open a campaign and choose Update listing. Pending / Listed / Active / Under contract / Sold / Settled / Archived use the existing campaign document and activity store. Active and Under contract retain compatible Live status storage; salePhase distinguishes the two. Auction, contract/sold, cooling-off, unconditional and settlement dates display on the record. Settlement shortcuts: 28, 35, 42, 72, 90, 120 calendar days from contract/sold date. Date can be overridden manually. No holiday or statutory cooling-off expiry is guessed. Sold is recorded as unconditional; any earlier cooling-off expiry remains historical, and does not automatically advance status. Progression requires no GCI entry. Lead or team owner may update progression; unrelated fields and account data are unchanged. Edits require a connection, enforce revisions and retain immutable activity. Associate setup remains in Allocation & settings when enabled.
+
+GCI
+Existing canonical sales ledger and exact allocation/period helpers reused. Team GCI is visible to verified current team members, independent of Team Operations flags and financeReaders. Only the owner edits fees/splits. Personal contacts and cross-team data remain private. No public access is introduced. No separate finance system, targets or amounts have been invented. Listing dates drive confirmed unconditional reporting. GCI is an internal display, not accounting or legal verification.
+
+HANDOFF CROSS-CHECK
+The original audited archive describes listing status, auction, exchange and settlement fields. Cooling-off expiry and these six settlement presets were not found; added to AGNT existing campaign records. Existing checklists are not replaced or duplicated. The previous strict agreement/GCI gating on listing progression is removed per the new request.
+
+CHECKS
+21 targeted Firestore emulator allow/deny checks including lead progression, Sold without fees, GCI with flags absent, team reads, owner writes, cross-team isolation and stale revisions. Browser: 8 Focus layouts, 6 Team layouts, progression form and six date presets, manual date override, GCI total/allocation and owner fee editor without operations enabled; no page errors. Pure checks cover lifecycle mapping, leap-year/date calculations and invalid date order. Syntax and all 10 cache assets pass. All 1246 original named functions retained. Firebase config, core styles, cleanup CSS, Firebase manifest/index configuration and icons preserved. This is targeted verification of this release, not a claim of live customer/physical-device acceptance.
+
+PRIOR NOTES FOLLOW (superseded where this release states otherwise)
+
 FOCUS FIT + OVERVIEW GCI — 28 October 2026
 
 Focus main container now uses its allocated grid height rather than a percentage height; tighter header, toolbar and metric spacing preserve the four-row stack above navigation. Overview replaces the membership list with team and individual GCI from the existing canonical sales ledger, allocations and period helper. Finance access is unchanged: Team Operations must be enabled; owner or explicit finance readers only. Loading, errors, disabled operations, conflicts and cached reporting are distinct. No amounts or targets are fabricated. Team management remains available to the owner. No Firebase configuration, rules or indexes change.
