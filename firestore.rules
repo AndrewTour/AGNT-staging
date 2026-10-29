@@ -104,50 +104,6 @@ service cloud.firestore {
                     && request.resource.data.ownerUid == resource.data.ownerUid;
       allow delete: if isTeamOwner(teamId);
 
-      function associateAdmin() { return isTeamOwner(teamId) || (opsProfile(request.auth.uid).active && opsProfile(request.auth.uid).opsRole=='operations' && opsProfile(request.auth.uid).canManageTasks==true); }
-      function associateManager(lead) {
-        return isTeamOwner(teamId) || (opsProfile(request.auth.uid).active && ((request.auth.uid==lead && opsProfile(request.auth.uid).opsRole=='agent') || (opsProfile(request.auth.uid).opsRole=='operations' && opsProfile(request.auth.uid).canManageTasks==true)));
-      }
-      function associateProfileManager(memberId) {
-        return isTeamOwner(teamId) || (associateManager(request.auth.uid) && (memberId==request.auth.uid || opsProfile(request.auth.uid).associateUid==memberId));
-      }
-      function associateScheduleValid(d) {
-        return d.keys().hasOnly(['teamId','leadUid','title','note','frequency','repeatDays','startDate','endDate','assignmentMode','assignedToUid','backupUid','campaignId','priority','dueTime','timeSensitive','absencePolicy','status','mandatory','reminder','condition','accessUids','revision','createdByUid','createdAt','updatedByUid','updatedAt'])
-          && d.teamId==teamId && d.title is string && d.title.size()>0 && d.title.size()<=160 && d.note is string && d.note.size()<=4000
-          && d.frequency in ['once','daily','weekly'] && d.repeatDays is list && d.repeatDays.size()<=7 && d.repeatDays.hasOnly([0,1,2,3,4,5,6]) && (d.frequency=='once'||d.repeatDays.size()>0)
-          && d.startDate is string && d.startDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') && d.endDate is string && (d.endDate=='' || (d.endDate>=d.startDate && d.endDate.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')))
-          && d.assignmentMode in ['auto','manual','lead'] && d.absencePolicy in ['move','reassign','skip'] && d.timeSensitive is bool && (!d.timeSensitive||d.absencePolicy=='reassign')
-          && d.status in ['active','paused','ended'] && d.priority in ['normal','high','urgent'] && d.mandatory is bool && d.reminder is bool
-          && d.dueTime is string && d.dueTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$') && d.condition in ['always','active_campaign']
-          && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(d.leadUid)) && opsProfile(d.leadUid).opsRole=='agent'
-          && (d.assignedToUid=='' || exists(/databases/$(database)/documents/teams/$(teamId)/members/$(d.assignedToUid)))
-          && (d.assignmentMode!='manual'||d.assignedToUid!='') && (d.backupUid==''||exists(/databases/$(database)/documents/teams/$(teamId)/members/$(d.backupUid)))
-          && (d.campaignId==''||get(/databases/$(database)/documents/teams/$(teamId)/campaigns/$(d.campaignId)).data.leadUid==d.leadUid)
-          && d.accessUids is list && d.accessUids.toSet()==[d.leadUid,d.assignedToUid,d.backupUid,opsProfile(d.leadUid).associateUid].removeAll(['']).toSet()
-          && d.createdAt is int && d.revision is int && d.updatedByUid==request.auth.uid && d.updatedAt==request.time;
-      }
-      function associateRosterValid(d) {
-        return !('schedule' in d) || (d.schedule.keys().hasOnly(['regularDayOff','start','end','absences','exceptions','backupUid','connectionTarget','dataTarget','appointmentTarget'])
-          && d.schedule.regularDayOff in [null,2,3] && d.schedule.start is string && d.schedule.end is string && d.schedule.start<d.schedule.end
-          && d.schedule.start.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$') && d.schedule.end.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$')
-          && d.schedule.absences is list && d.schedule.absences.size()<=50 && d.schedule.exceptions is list && d.schedule.exceptions.size()<=100
-          && (d.schedule.backupUid==''||exists(/databases/$(database)/documents/teams/$(teamId)/members/$(d.schedule.backupUid)))
-          && d.schedule.connectionTarget is int && d.schedule.connectionTarget>=0 && d.schedule.connectionTarget<=10000
-          && d.schedule.dataTarget is int && d.schedule.dataTarget>=0 && d.schedule.dataTarget<=10000 && d.schedule.appointmentTarget is int && d.schedule.appointmentTarget>=0 && d.schedule.appointmentTarget<=10000);
-      }
-      match /taskSchedules/{scheduleId} {
-        allow read: if isTeamMember(teamId) && (associateAdmin()||request.auth.uid in resource.data.accessUids);
-        allow create: if isTeamMember(teamId) && opsOn() && associateManager(request.resource.data.leadUid) && request.resource.data.createdByUid==request.auth.uid && request.resource.data.revision==1 && associateScheduleValid(request.resource.data);
-        allow update: if isTeamMember(teamId) && opsOn() && associateManager(resource.data.leadUid) && request.resource.data.leadUid==resource.data.leadUid && request.resource.data.createdByUid==resource.data.createdByUid && request.resource.data.createdAt==resource.data.createdAt && request.resource.data.revision==resource.data.revision+1 && associateScheduleValid(request.resource.data);
-        allow delete: if false;
-        match /history/{revision} {
-          allow read: if isTeamMember(teamId) && (associateAdmin()||request.auth.uid in get(/databases/$(database)/documents/teams/$(teamId)/taskSchedules/$(scheduleId)).data.accessUids);
-          allow create: if isTeamMember(teamId) && associateManager(getAfter(/databases/$(database)/documents/teams/$(teamId)/taskSchedules/$(scheduleId)).data.leadUid) && request.resource.data.actorUid==request.auth.uid && request.resource.data.at==request.time && request.resource.data.revision==getAfter(/databases/$(database)/documents/teams/$(teamId)/taskSchedules/$(scheduleId)).data.revision;
-          allow update,delete: if false;
-        }
-      }
-      match /settings/schedulerStatus { allow read: if isTeamMember(teamId); allow write: if false; }
-
       function opsSettings() { return get(/databases/$(database)/documents/teams/$(teamId)/settings/operations).data; }
       function opsOn() { return exists(/databases/$(database)/documents/teams/$(teamId)/settings/operations) && opsSettings().teamOpsV1==true; }
       function opsProfile(id) { return get(/databases/$(database)/documents/teams/$(teamId)/opsProfiles/$(id)).data; }
@@ -202,23 +158,14 @@ service cloud.firestore {
       match /settings/operations {
         allow read: if isTeamMember(teamId);
         allow create,update: if isTeamMember(teamId) && isTeamOwner(teamId)
-          && request.resource.data.keys().hasOnly(['teamOpsV1','campaignLeverageV1','financeReaders','associateSchedulerV1'])
-          && (!('associateSchedulerV1' in request.resource.data)||request.resource.data.associateSchedulerV1 is bool)
+          && request.resource.data.keys().hasOnly(['teamOpsV1','campaignLeverageV1','financeReaders'])
           && request.resource.data.teamOpsV1 is bool && request.resource.data.campaignLeverageV1 is bool
           && request.resource.data.financeReaders is list && request.resource.data.financeReaders.size()<=100;
         allow delete: if false;
       }
       match /opsProfiles/{memberId} {
-        match /history/{revision} {
-          allow read: if isTeamMember(teamId) && associateProfileManager(memberId);
-          allow create: if isTeamMember(teamId) && associateProfileManager(memberId) && request.resource.data.actorUid==request.auth.uid && request.resource.data.at==request.time && getAfter(/databases/$(database)/documents/teams/$(teamId)/opsProfiles/$(memberId)).data.updatedAt==request.time && request.resource.data.revision==getAfter(/databases/$(database)/documents/teams/$(teamId)/opsProfiles/$(memberId)).data.revision;
-          allow update,delete: if false;
-        }
-
         allow read: if isTeamMember(teamId) && opsOn();
-        allow create,update: if isTeamMember(teamId) && associateProfileManager(memberId) && opsOn()
-          && (isTeamOwner(teamId) || (exists(/databases/$(database)/documents/teams/$(teamId)/opsProfiles/$(memberId)) && request.resource.data.opsRole==resource.data.opsRole && request.resource.data.active==resource.data.active && request.resource.data.get('canManageTasks',false)==resource.data.get('canManageTasks',false)))
-          && associateRosterValid(request.resource.data)
+        allow create,update: if isTeamMember(teamId) && isTeamOwner(teamId) && opsOn()
           && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(memberId))
           && request.resource.data.uid==memberId && request.resource.data.teamId==teamId
           && request.resource.data.opsRole in ['agent','associate','operations'] && request.resource.data.active is bool
@@ -525,24 +472,10 @@ service cloud.firestore {
       }
       // Existing task path. New operations tasks are immutable-definition records with audited changes.
       match /tasks/{taskId} {
-        // Scheduled occurrences are server-created. Clients may complete or manually manage authorised work.
-        allow update: if isTeamMember(teamId) && opsOn() && 'schedule' in resource.data && resource.data.schedule.version==1
-          && request.resource.data.revision==resource.data.revision+1 && request.resource.data.updatedByUid==request.auth.uid && request.resource.data.updatedAt==request.time
-          && (request.resource.data.completedAt==resource.data.completedAt||request.resource.data.completedByUid==request.auth.uid)
-          && request.resource.data.completedAt is int && request.resource.data.completedAt>=0 && request.resource.data.startedAt is int && request.resource.data.startedAt>=0
-          && request.resource.data.note is string && request.resource.data.note.size()<=4000 && request.resource.data.archived is bool
-          && request.resource.data.date is string && request.resource.data.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
-          && linkedActivity('task',taskId,request.resource.data)
-          && (((resource.data.assignedToUid==request.auth.uid || isTeamOwner(teamId)) && !resource.data.archived && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completedAt','completedByUid','startedAt','updatedByUid','updatedAt','revision','eventId','noticeReadAt']))
-            || (associateManager(resource.data.ops.leadUid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['assignedToUid','assignedToName','date','note','archived','startedAt','accessUids','ops','schedule','noticeReadAt','updatedByUid','updatedAt','revision','eventId'])
-              && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.resource.data.assignedToUid))
-              && request.resource.data.accessUids.toSet()==[resource.data.ops.leadUid,request.resource.data.assignedToUid].toSet()
-              && request.resource.data.ops.diff(resource.data.ops).affectedKeys().hasOnly(['allocationSource'])
-              && request.resource.data.schedule.diff(resource.data.schedule).affectedKeys().hasOnly(['manual']) && request.resource.data.schedule.manual==true));
         allow get: if isTeamMember(teamId) && opsOn() && !exists(/databases/$(database)/documents/teams/$(teamId)/tasks/$(taskId));
-        allow get: if (isTeamMember(teamId) && (!isOpsTask(resource.data) || associateAdmin() || request.auth.uid in resource.data.accessUids))
+        allow get: if (isTeamMember(teamId) && (!isOpsTask(resource.data) || isTeamOwner(teamId) || request.auth.uid in resource.data.accessUids))
           || (!isOpsTask(resource.data) && hasActiveTeamManagerGrant(teamId));
-        allow list: if isTeamMember(teamId) && (associateAdmin() || resource.data.assignedToUid==request.auth.uid || resource.data.setterUid==request.auth.uid || request.auth.uid in resource.data.accessUids) || hasActiveTeamManagerGrant(teamId);
+        allow list: if isTeamMember(teamId) && (isTeamOwner(teamId) || resource.data.assignedToUid==request.auth.uid || resource.data.setterUid==request.auth.uid || request.auth.uid in resource.data.accessUids) || hasActiveTeamManagerGrant(teamId);
         allow create: if isTeamMember(teamId) && (
           (!isOpsTask(request.resource.data) && request.resource.data.setterUid==request.auth.uid && request.resource.data.assignedToUid is string && request.resource.data.assignedToUid!=request.auth.uid && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.resource.data.assignedToUid)))
           || (isOpsTask(request.resource.data) && opsOn() && request.resource.data.revision==1 && request.resource.data.setterUid==request.auth.uid && validOpsTask(request.resource.data,taskId) && request.resource.data.completedAt==0 && request.resource.data.startedAt==0 && (opsTaskActor(request.resource.data) || (request.resource.data.ops.category=='associate-daily' && request.resource.data.ops.leadUid==request.auth.uid))
@@ -550,7 +483,7 @@ service cloud.firestore {
             && linkedActivity('task',taskId,request.resource.data)));
         allow update: if isTeamMember(teamId) && (
           (!isOpsTask(resource.data) && !isOpsTask(request.resource.data) && ((resource.data.setterUid==request.auth.uid && request.resource.data.setterUid==resource.data.setterUid) || (resource.data.assignedToUid==request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completedAt','updatedAt']))))
-          || (!('schedule' in resource.data) && isOpsTask(resource.data) && isOpsTask(request.resource.data) && opsOn()
+          || (isOpsTask(resource.data) && isOpsTask(request.resource.data) && opsOn()
             && request.resource.data.setterUid==resource.data.setterUid && request.resource.data.taskId==resource.data.taskId
             && request.resource.data.revision==resource.data.revision+1 && validOpsTask(request.resource.data,taskId) && linkedActivity('task',taskId,request.resource.data)
             && request.resource.data.ops.diff(resource.data.ops).affectedKeys().hasOnly(['allocationSource'])
