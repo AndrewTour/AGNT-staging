@@ -1,4 +1,4 @@
-const RELEASE='1.49.0-staging-associate-1';
+const RELEASE='1.49.0-staging-associate-2';
 const CACHE=`agnt-v${RELEASE}`;
 const SDK_CACHE='agnt-sdk-11.10.0';
 const SDK_BASE='https://www.gstatic.com/firebasejs/11.10.0/';
@@ -29,6 +29,8 @@ self.addEventListener('fetch',event=>{
     event.respondWith((async()=>{const cache=await caches.open(SDK_CACHE),cached=await cache.match(url.href);if(cached)return cached;const response=await boundedFetch(event.request);event.waitUntil(cache.put(url.href,response.clone()).catch(error=>console.warn('SDK cache write failed',error)));return response})());return;
   }
   if(url.origin!==self.location.origin)return;
+  // Isolated staging review page: keep it separate from the installed AGNT shell.
+  if(url.pathname.endsWith('/associate-stage-1-preview.html')){event.respondWith(fetch(event.request));return;}
   if(event.request.mode==='navigate'){
     // Serve one complete installed release, even with a slow or failing connection.
     event.respondWith((async()=>{const cache=await caches.open(CACHE),cached=await cache.match('./index.html');if(cached)return cached;
