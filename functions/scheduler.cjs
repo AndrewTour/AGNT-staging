@@ -8,10 +8,10 @@ async function reconcileTeam(db,teamId,now=Date.now()){
  if(!settings.exists||!settings.data().teamOpsV1||!settings.data().associateSchedulerV1)return{disabled:true};
  const [ps,ms,cs,defs]=await Promise.all(['opsProfiles','members','campaigns','taskSchedules'].map(p=>team.collection(p).get()));
  if(defs.size>200)throw Error('More than 200 schedules: split scheduling workload before enabling.');
- const profiles=ps.docs.map(d=>({...d.data(),uid:d.id})),members=ms.docs.map(d=>d.id),campaigns=cs.docs.map(d=>({...d.data(),id:d.id})),today=A.today(now),from=A.plus(today,-14),to=A.plus(today,7);let changed=0;
+ const profiles=ps.docs.map(d=>({...d.data(),uid:d.id})),members=ms.docs.map(d=>d.id),campaigns=cs.docs.map(d=>({...d.data(),id:d.id})),today=A.today(now),from=A.plus(today,-14),to=A.plus(today,7);let changed=0;const errors=[];
  const [existing,future]=await Promise.all([team.collection('tasks').where('schedule.version','==',1).where('schedule.originDate','>=',from).where('schedule.originDate','<=',to).get(),team.collection('tasks').where('schedule.version','==',1).where('date','>=',today).get()]),known=new Map([...existing.docs,...future.docs].map(d=>[d.id,d.data()]));
  for(const snap of defs.docs){
-  const initial=snap.data();A.validate(initial);const accessUids=[...new Set([initial.leadUid,initial.assignedToUid,initial.backupUid,profiles.find(p=>p.uid===initial.leadUid)?.associateUid].filter(Boolean))];if(!same(initial.accessUids,accessUids)){await snap.ref.update({accessUids});initial.accessUids=accessUids}const policyKey=createHash('sha256').update(JSON.stringify([initial,profiles,members,campaigns.map(c=>[c.id,c.status,c.archived,c.leadUid])])).digest('hex');
+  const initial=snap.data();try{A.validate(initial)}catch(error){errors.push({id:snap.id,error:error.message});continue}const accessUids=[...new Set([initial.leadUid,initial.assignedToUid,initial.backupUid,profiles.find(p=>p.uid===initial.leadUid)?.associateUid].filter(Boolean))];if(!same(initial.accessUids,accessUids)){await snap.ref.update({accessUids});initial.accessUids=accessUids}const policyKey=createHash('sha256').update(JSON.stringify([initial,profiles,members,campaigns.map(c=>[c.id,c.status,c.archived,c.leadUid])])).digest('hex');
   const origins=new Set();for(let day=from;day<=to;day=A.plus(day,1))origins.add(day);for(const task of known.values())if(task.schedule?.templateId===snap.id&&task.date>=today)origins.add(task.schedule.originDate);
   for(const origin of [...origins].sort()){ 
    // Every identity is template + original date, independent of template revisions or assignee.
@@ -42,6 +42,6 @@ async function reconcileTeam(db,teamId,now=Date.now()){
    });
   }
  }
- await team.collection('settings').doc('schedulerStatus').set({lastRunAt:FieldValue.serverTimestamp(),through:to,changed});return{changed};
+ await team.collection('settings').doc('schedulerStatus').set({lastRunAt:FieldValue.serverTimestamp(),through:to,changed,errors:errors.slice(0,10)});return{changed,errors};
 }
 module.exports={reconcileTeam};

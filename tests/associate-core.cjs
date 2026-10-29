@@ -13,7 +13,7 @@ ok(!A.roster({...associate,schedule:{...associate.schedule,exceptions:[{date:'20
 ok(A.resolve(t,'2026-10-27',[{...lead,workingDays:[]},associate],members).blocked);
 for(const off of [2,3])for(let i=0;i<35;i++){const d=A.plus('2026-10-26',i),p={...associate,workingDays:[1,2,3,4,5,6].filter(n=>n!==off)};ok(A.roster(p,d).working===![0,off].includes(A.weekday(d)))}
 for(const frequency of ['once','daily','weekly']){const x={...t,frequency,repeatDays:[1,2,3,4,5]};ok(A.dueOn(x,'2026-10-26'));ok(!A.dueOn({...x,status:'paused'},'2026-10-26'));ok(!A.dueOn({...x,status:'ended'},'2026-10-26'));ok(!A.dueOn({...x,endDate:'2026-10-27'},'2026-10-28'));}
-ok(A.occurrenceId('template','2026-10-27')===A.occurrenceId('template','2026-10-27'));ok(A.plus('2028-02-28',1)==='2028-02-29');ok(A.today(Date.parse('2026-10-28T13:01:00Z'))==='2026-10-29');
+ok(A.occurrenceId('template','2026-10-27')===A.occurrenceId('template','2026-10-27'));ok(A.plus('2028-02-28',1)==='2028-02-29'&&!A.validDate('2026-99-99')&&!A.validDate('2026-02-30'));ok(A.today(Date.parse('2026-10-28T13:01:00Z'))==='2026-10-29');
 ok(A.standardPack('lead','2026-10-26').find(x=>x.key==='tuesday_reports').absencePolicy==='reassign');ok(A.standardPack('lead','2026-10-26').find(x=>x.key==='second_callbacks').repeatDays[0]===3);
 for(const x of A.standardPack('lead','2026-10-26'))ok(A.validate(x));
 assert.throws(()=>A.validate({...t,timeSensitive:true,absencePolicy:'move'}));checks++;assert.throws(()=>A.validate({...t,repeatDays:[]}));checks++;

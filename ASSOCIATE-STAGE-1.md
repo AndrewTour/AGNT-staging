@@ -25,7 +25,7 @@ The existing `firebase.json` already declares `functions` with Node 22, but that
 
 The process runs every 30 minutes in Australia/Sydney and also reacts to profile, responsibility and operations-setting changes. It prepares seven days ahead and reconciles fourteen days of recent history plus moved future occurrences whose original date is older. Earlier untouched history is retained. If a responsibility was never generated during an outage longer than fourteen days, that older gap requires review; it is not silently backfilled indefinitely.
 
-Unchanged policies and occurrences are skipped. Two indexed task queries bound the history reads; system activity identifies AGNT scheduler as the actor. If no cover is available, the deadline stays with the lead with a coverage blocker. This is a responsibility warning, not proof that a vendor report was issued.
+Unchanged policies and occurrences are skipped. Invalid definitions are isolated and visibly flagged without blocking the other schedules. Two indexed task queries bound the history reads; system activity identifies AGNT scheduler as the actor. If no cover is available, the deadline stays with the lead with a coverage blocker. This is a responsibility warning, not proof that a vendor report was issued.
 
 The scheduler supports up to 200 definitions per team in this first review version and fails explicitly above that bound. Review capacity before larger rollouts.
 

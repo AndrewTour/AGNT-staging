@@ -2,13 +2,13 @@
 (function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.AGNTAssociate=factory()})(typeof globalThis==='object'?globalThis:this,function(){
  'use strict';
  const DAYS=[1,2,3,4,5,6,0];
- function validDate(d){return typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&new Date(d+'T12:00:00Z').toISOString().slice(0,10)===d}
+ function validDate(d){if(typeof d!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(d))return false;const value=new Date(d+'T12:00:00Z');return Number.isFinite(value.valueOf())&&value.toISOString().slice(0,10)===d}
  function plus(d,n){if(!validDate(d))throw Error('Invalid date');return new Date(Date.parse(d+'T12:00:00Z')+n*86400000).toISOString().slice(0,10)}
  function weekday(d){return new Date(d+'T12:00:00Z').getUTCDay()}
  function today(ms=Date.now()){return new Intl.DateTimeFormat('en-CA',{timeZone:'Australia/Sydney',year:'numeric',month:'2-digit',day:'2-digit'}).format(ms)}
  function roster(p,d){
   if(!p||p.active===false)return{working:false,reason:'Inactive profile'};
-  const s=p.schedule||{},exception=(s.exceptions||[]).find(x=>x.date===d),absence=(s.absences||[]).find(x=>x.from<=d&&x.to>=d);
+  const s=p.schedule||{},exception=(s.exceptions||[]).find(x=>x&&x.date===d),absence=(s.absences||[]).find(x=>x&&x.from<=d&&x.to>=d);
   if(absence||(p.leaveDates||[]).includes(d))return{working:false,reason:absence?.label||'Approved absence'};
   const working=exception?exception.working:(p.workingDays||[1,2,4,5,6]).includes(weekday(d));
   return{working,reason:working?(weekday(d)===6?'Inspection day':'Working day'):'Rostered Day Off',start:exception?.start||s.start||'08:30',end:exception?.end||s.end||'18:00',kpiApplicable:working&&![0,6].includes(weekday(d))};
