@@ -1,0 +1,21 @@
+{
+  "name": "agnt-associate-scheduler",
+  "private": true,
+  "main": "index.cjs",
+  "engines": {
+    "node": "22"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0",
+    "firebase-functions": "^6.0.0"
+  },
+  "devDependencies": {
+    "firebase": "11.10.0",
+    "@firebase/rules-unit-testing": "4.0.1",
+    "firebase-tools": "14.27.0"
+  },
+  "scripts": {
+    "test": "node ../tests/associate-core.cjs && node ../tests/associate-static.cjs",
+    "test:integration": "cd .. && NODE_PATH=./functions/node_modules firebase emulators:exec --only firestore --project demo-associate --config firebase.test.json 'node tests/associate-integration.cjs'"
+  }
+}

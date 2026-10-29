@@ -1,3 +1,26 @@
+AGNT v1.49.0 — Associate operating system, Stage 1
+29 October 2026, Australia/Sydney. Separate development branch; no production/staging deployment or rules publication.
+
+BASELINE
+AndrewTour/AGNT-staging 839cf99d3de4c0e0bfec74df4396a27e00263345, matching v1.48.3 delivered in this thread. Older recovery/main sources were not mixed in. Manifest icons missing from GitHub were restored unchanged from the matching replacement ZIP.
+
+ADDED
+Native operational profile roster/absence/cover settings; owner-controlled roles and optional task-manager oversight; a Responsibilities tab within Team; once-off, daily and selected-day weekly task definitions; edit/pause/end; immutable definition/profile snapshots; existing task occurrences, outbox, My tasks, workload and activity reused. A reviewable 21-item operating pack groups the complete supplied Monday–Saturday responsibilities into editable tasks. No hardcoded people, seeded relationships, copied buyer database or calendar.
+
+SCHEDULING
+Shared browser/server policy; deterministic occurrence IDs and Firestore transactions; roster-aware move/reassign/skip; Tuesday vendor report cover without postponement; Wednesday-off callbacks move to Thursday; unavailable-cover warnings; preserved completed/started/manual work; reassignment notices in AGNT. One minimal Firebase function source with periodic and setting/profile/definition triggers is supplied, not deployed. A switch alone cannot activate a backend that is not deployed.
+
+SCOPE / NEXT STAGES
+This is the scheduling foundation, not the entire associate product. Configurable KPI targets and operations-surface N/A labels are present. Applying the new combined KPI/roster policy to main Today, Performance and leaderboard, generated-appointment credit displays and buyer callback integration belongs to Stage 2. Concise generated campaign reporting/lead oversight belongs to Stage 3. Existing agent reports and private contact permissions are unchanged. Do not enable live associate performance reporting before those stages are complete.
+
+INSTALLATION / ACCEPTANCE
+Read ASSOCIATE-STAGE-1.md first. This complete replacement includes the staging frontend, matching full rules/indexes and functions source. Approval is required before publishing staging rules, indexes, functions or site files. Two additive task indexes are required for bounded background reads. Existing firebase.json already points to functions/Node 22. Backend prerequisites and exact staging commands are included in the handoff. No GitHub Pages settings change or front-end build step. Real staging multi-account, function-trigger/Scheduler delivery and physical iPhone acceptance remain outstanding.
+
+VALIDATION
+122 dependency-free policy checks and 53 Firestore/real-scheduler emulator checks pass. Browser workflows use actual app/style/editor code with a sample-data adapter. See tests/VALIDATION.md for details, the source/cache checks, protected file checks and pre-existing legacy fixture failures reproduced on baseline. Do not interpret these as a production deployment or full physical-device sign-off.
+
+PRIOR RELEASE NOTES FOLLOW (superseded above where applicable)
+
 AGNT v1.48.3 — Sold workflow and named team activity
 29 October 2026, Australia/Sydney. STAGING REVIEW BUILD. Nothing deployed, merged or migrated.
 

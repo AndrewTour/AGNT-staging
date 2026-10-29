@@ -2276,3 +2276,12 @@ html[data-theme] body #app #teamWorkspace .sold-calculation span {color:var(--ds
 html[data-theme] body #app #teamWorkspace .sold-calculation strong {font-variant-numeric:tabular-nums}
 html[data-theme] body #app #teamWorkspace .sold-summary {display:grid;gap:6px;margin-top:12px;font-size:12px;line-height:1.5}
 html[data-theme] body #app #teamWorkspace .activity-property {display:block;font-size:13px;line-height:1.5;color:var(--ds-secondary);margin-top:6px}
+
+/* Associate Stage 1: retain native Team controls and disclosure rhythm. */
+html[data-theme] body #app #teamWorkspace #opsEditor [data-specific-assignee][hidden],
+html[data-theme] body #app #teamWorkspace #opsEditor [data-repeat-days][hidden] {display:none!important}
+html[data-theme] body #app #teamWorkspace #opsEditor fieldset {min-width:0}
+html[data-theme] body #app #teamWorkspace #opsEditor textarea {max-width:100%;box-sizing:border-box}
+html[data-theme] body #app #teamWorkspace .work-row details {grid-column:1 / -1;min-width:0}
+html[data-theme] body #app #teamWorkspace #opsPage .campaign-row > span:first-child {display:grid;gap:6px;min-width:0}
+html[data-theme] body #app #teamWorkspace #opsPage .campaign-row strong {overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
